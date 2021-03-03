@@ -15,7 +15,7 @@ export default function Word(props) {
             <Letter
               letter={letter.value}
               typed={letter.typed}
-              key={`${props.id}-${i}`}
+              key={`${props.id}-${i}-${letter.typed}`}
             />
           );
         })}

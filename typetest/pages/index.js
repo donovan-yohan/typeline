@@ -22,37 +22,48 @@ export default function Home() {
   const [activeLetter, setActiveLetter] = useState(0);
   const [oldLength, setOldLength] = useState(0);
   const [textDatabase, setTextDatabase] = useState(textData);
+  const [activeChar, setActiveChar] = useState("");
 
-  console.log(textDatabase);
-
-  useEffect(() => {
-    return () => {
-      //cleanup
-    };
-  });
-
-  let handleTextTyped = (text) => {
+  let handleTextTyped = async (text) => {
     if (text.length > oldLength) {
-      console.log(textDatabase);
-      console.log(text.charAt(text.length - 1));
-
       let temp = textDatabase;
       temp[activeWord][activeLetter].typed = text.charAt(text.length - 1);
       setTextDatabase(temp);
 
       let l = textDatabase[activeWord][activeLetter];
-
       if (l.typed == l.value) {
         // it's correct
       } else {
         // it's incorrect
       }
-      // move the cursor
-      console.log(l.typed == l.value);
+
+      let nextLetter = activeLetter + 1;
+      setActiveLetter(nextLetter);
+
+      if (nextLetter == textDatabase[activeWord].length) {
+        setActiveWord(activeWord + 1);
+        setActiveLetter(0);
+      }
     } else {
-      // character was deleted
+      let previousLetter = activeLetter - 1;
+      setActiveLetter(previousLetter);
+
+      if (previousLetter < 0 && activeWord > 0) {
+        let previousWord = activeWord - 1;
+        setActiveWord(previousWord);
+        setActiveLetter(textDatabase[previousWord].length - 1);
+      } else if (previousLetter < 0 && activeWord == 0) {
+        setActiveLetter(0);
+      }
+
+      let temp = textDatabase;
+      temp[activeWord][previousLetter].typed = "";
+      setTextDatabase(temp);
     }
+    setOldLength(text.length);
+    console.log(textDatabase);
   };
+
 
   return (
     <div className={styles.container}>
@@ -71,7 +82,7 @@ export default function Home() {
                   id={i}
                   active={activeWord}
                   word={word}
-                  key={"WORD-" + i + "-" + word}
+                  key={i + "-" + word + "-" + textDatabase.toString()}
                 />
               );
             })}

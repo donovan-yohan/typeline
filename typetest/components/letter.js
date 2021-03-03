@@ -13,7 +13,7 @@ export default function Letter(props) {
           : "incorrect"
       }
     >
-      {props.letter}
+      {props.typed ? props.typed : props.letter}
       <style jsx>{`
         .untouched {
           opacity: 0.5;
