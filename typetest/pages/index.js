@@ -1,7 +1,59 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import Head from "next/head";
+import React, { useState, useEffect } from "react";
+import styles from "../styles/Home.module.css";
+import Word from "../components/word.js";
+import Cursor from "../components/cursor.js";
 
 export default function Home() {
+  let text =
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non felis congue, scelerisque lacus eu, interdum libero. Pellentesque consectetur vel nulla non faucibus. Curabitur rhoncus turpis sit amet augue placerat, ut facilisis velit condimentum. Nulla et nisi at libero euismod iaculis nec at purus. Etiam consequat enim a felis vehicula accumsan. Aliquam erat volutpat. Nullam ac scelerisque metus, in suscipit orci. Pellentesque consectetur nulla neque, nec lacinia arcu iaculis eu.";
+  let textData = text.split(" ").map((word) => {
+    let wordWithSpace = word.split("");
+    wordWithSpace.push(" ");
+    return wordWithSpace.map((letter) => {
+      return {
+        value: letter,
+        typed: "",
+      };
+    });
+  });
+
+  const [activeWord, setActiveWord] = useState(0);
+  const [activeLetter, setActiveLetter] = useState(0);
+  const [oldLength, setOldLength] = useState(0);
+  const [textDatabase, setTextDatabase] = useState(textData);
+
+  console.log(textDatabase);
+
+  useEffect(() => {
+    return () => {
+      //cleanup
+    };
+  });
+
+  let handleTextTyped = (text) => {
+    if (text.length > oldLength) {
+      console.log(textDatabase);
+      console.log(text.charAt(text.length - 1));
+
+      let temp = textDatabase;
+      temp[activeWord][activeLetter].typed = text.charAt(text.length - 1);
+      setTextDatabase(temp);
+
+      let l = textDatabase[activeWord][activeLetter];
+
+      if (l.typed == l.value) {
+        // it's correct
+      } else {
+        // it's incorrect
+      }
+      // move the cursor
+      console.log(l.typed == l.value);
+    } else {
+      // character was deleted
+    }
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -10,43 +62,20 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+        <div className={styles.textColumn}>
+          <Cursor onTextTyped={handleTextTyped} />
+          <div className={styles.textWrapper}>
+            {textDatabase.map((word, i) => {
+              return (
+                <Word
+                  id={i}
+                  active={activeWord}
+                  word={word}
+                  key={"WORD-" + i + "-" + word}
+                />
+              );
+            })}
+          </div>
         </div>
       </main>
 
@@ -56,10 +85,10 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{' '}
+          Powered by{" "}
           <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
         </a>
       </footer>
     </div>
-  )
+  );
 }
