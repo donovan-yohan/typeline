@@ -29,16 +29,28 @@ export default function Home() {
   }, 0);
 
   const [activeWord, setActiveWord] = useState(0);
-  const [activeLetter, setActiveLetter] = useState(0);
-  const [oldLength, setOldLength] = useState(0);
   const [textDatabase, setTextDatabase] = useState(textData);
   const [textTyped, setTextTyped] = useState("");
+  const [letterRef, setLetterRef] = useState(null);
 
   let handleTextTyped = (text) => {
     setTextTyped(text);
   };
 
-  useEffect(() => {}, [textTyped]);
+  let placeCursor = (ref) => {
+    setLetterRef(ref);
+  };
+
+  useEffect(() => {
+    if (
+      textTyped.length >
+      textDatabase[activeWord][textDatabase[activeWord].length - 1].flatIndex
+    ) {
+      setActiveWord(activeWord + 1);
+    } else if (textTyped.length < textDatabase[activeWord][0].flatIndex) {
+      setActiveWord(activeWord - 1);
+    }
+  }, [textTyped]);
 
   return (
     <div className={styles.container}>
@@ -49,7 +61,7 @@ export default function Home() {
 
       <main className={styles.main}>
         <div className={styles.textColumn}>
-          <Cursor onTextTyped={handleTextTyped} />
+          <Cursor onTextTyped={handleTextTyped} letterRef={letterRef} />
           <div className={styles.textWrapper}>
             {textDatabase.map((word, i) => {
               return (
@@ -60,6 +72,7 @@ export default function Home() {
                   typed={textTyped}
                   data={textDatabase}
                   key={`WORD-${i}`}
+                  onLetterUpdate={placeCursor}
                 />
               );
             })}

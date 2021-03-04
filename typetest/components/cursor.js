@@ -2,16 +2,13 @@ import React, { useEffect, useRef, useState } from "react";
 
 export default function Cursor(props) {
   const typingField = useRef(null);
-  const [typedText, setTypedText] = useState("");
-  const [displaceString, setDisplaceString] = useState("");
+  const cursorRef = useRef(null);
 
   let handleTextTyped = () => {
-    setDisplaceString(typingField.current.value);
     props.onTextTyped(typingField.current.value);
   };
 
   let focusTextField = () => {
-    console.log("focused");
     typingField.current.focus();
     let temp = typingField.current.value;
     typingField.current.value = "";
@@ -22,10 +19,16 @@ export default function Cursor(props) {
     typingField.current.focus();
   });
 
+  useEffect(() => {
+    if (props.letterRef) {
+      props.letterRef.current.parentNode.appendChild(cursorRef.current);
+    }
+  }, [props.letterRef]);
+
   return (
     <div>
       <p className={"cursorPlacement"} onClick={focusTextField}>
-        <span className={"cursor"}></span>
+        <span ref={cursorRef} className={"cursor"}></span>
       </p>
 
       <textarea

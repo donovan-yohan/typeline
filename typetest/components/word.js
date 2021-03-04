@@ -13,12 +13,14 @@ export default function Word(props) {
         {props.word.map((letter, i) => {
           return (
             <Letter
+              active={props.active}
               letter={letter.value}
               flatIndex={letter.flatIndex}
               typed={props.typed}
               wordIndex={props.id}
               data={props.data}
               key={`${props.id}-CHAR-${i}`}
+              onLetterUpdate={props.onLetterUpdate}
             />
           );
         })}
@@ -34,16 +36,6 @@ export default function Word(props) {
           white-space: pre;
           user-select: none;
           position: relative;
-        }
-
-        .active::before {
-          content: "";
-          position: absolute;
-          bottom: 0px;
-          height: 100%;
-          width: calc(100% - 0.25em);
-          background-color: lightgray;
-          z-index: -1;
         }
       `}</style>
     </span>
