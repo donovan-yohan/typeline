@@ -13,8 +13,11 @@ export default function Word(props) {
         {props.word.map((letter, i) => {
           return (
             <Letter
-              letter={letter}
+              letter={letter.value}
+              flatIndex={letter.flatIndex}
               typed={props.typed}
+              wordIndex={props.id}
+              data={props.data}
               key={`${props.id}-CHAR-${i}`}
             />
           );

@@ -1,21 +1,23 @@
 import React, { useEffect, useState } from "react";
 
 export default function Letter(props) {
-  const [state, setState] = useState("untouched");
+  let flatData = props.data.flat();
 
   return (
     <span
       className={
-        !props.typed
-          ? "untouched"
-          : props.typed == props.letter
+        !props.typed[props.flatIndex]
+          ? "untyped"
+          : props.typed[props.flatIndex] == props.letter
           ? "correct"
           : "incorrect"
       }
     >
-      {props.typed ? props.typed : props.letter}
+      {props.typed[props.flatIndex]
+        ? props.typed[props.flatIndex]
+        : props.letter}
       <style jsx>{`
-        .untouched {
+        .untyped {
           opacity: 0.5;
         }
         .correct {

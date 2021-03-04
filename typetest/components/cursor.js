@@ -11,7 +11,11 @@ export default function Cursor(props) {
   };
 
   let focusTextField = () => {
+    console.log("focused");
     typingField.current.focus();
+    let temp = typingField.current.value;
+    typingField.current.value = "";
+    typingField.current.value = temp;
   };
 
   useEffect(() => {
@@ -21,18 +25,22 @@ export default function Cursor(props) {
   return (
     <div>
       <p className={"cursorPlacement"} onClick={focusTextField}>
-        {displaceString}
         <span className={"cursor"}></span>
       </p>
 
-      <textarea ref={typingField} onChange={handleTextTyped}></textarea>
+      <textarea
+        ref={typingField}
+        onChange={handleTextTyped}
+        onClick={focusTextField}
+      ></textarea>
       <style jsx>{`
         div {
           position: absolute;
-          z-index: 999;
+          z-index: 99;
         }
 
-        p {
+        p,
+        textarea {
           max-width: 50vw;
           font-size: 1.33em;
           line-height: 2em;
@@ -51,18 +59,21 @@ export default function Cursor(props) {
           left: -2px;
         }
         .cursorPlacement {
-          color: transparent;
+          max-width: 50vw;
           white-space: pre-wrap;
         }
 
         textarea {
+          position: absolute;
+          overflow: hidden;
+          top: 0;
           z-index: 999;
           opacity: 0;
           font-family: Roboto;
           padding: 0;
           border: none;
-          width: 0;
-          height: 0;
+          width: 50vw;
+          height: 25vh;
           outline: none;
           resize: none;
           background-color: transparent;
