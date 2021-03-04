@@ -13,9 +13,9 @@ export default function Word(props) {
         {props.word.map((letter, i) => {
           return (
             <Letter
-              letter={letter.value}
-              typed={letter.typed}
-              key={`${props.id}-${i}-${letter.typed}`}
+              letter={letter}
+              typed={props.typed}
+              key={`${props.id}-CHAR-${i}`}
             />
           );
         })}

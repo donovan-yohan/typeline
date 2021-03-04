@@ -6,7 +6,7 @@ export default function Letter(props) {
   return (
     <span
       className={
-        props.typed == ""
+        !props.typed
           ? "untouched"
           : props.typed == props.letter
           ? "correct"
