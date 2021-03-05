@@ -36,6 +36,7 @@ export default function Letter(props) {
       <style jsx>{`
         span {
           position: relative;
+          transition: color 0.5s ease;
         }
         .untyped {
           color: rgba(0, 0, 0, 0.5);

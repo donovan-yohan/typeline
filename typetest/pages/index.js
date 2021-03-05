@@ -149,36 +149,7 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <div className={styles.wpmColumn}>
-          <div className={styles.largeScore}>
-            <span className={styles.largeScoreLabel}>WPM</span>
-            <span className={styles.largeScoreNumber}>
-              {wpm.toLocaleString("en-US", {
-                maximumIntegerDigits: 3,
-                useGrouping: false,
-              })}
-            </span>
-          </div>
-          <div className={styles.smallScoreWrapper}>
-            <div className={styles.smallScore}>
-              <span className={styles.smallScoreLabel}>Acc</span>
-              <span className={styles.smallScoreNumber}>
-                {(
-                  (correct / (incorrect + correct)) * 100.0 || 0
-                ).toLocaleString("en-US", { maximumFractionDigits: 2 })}
-                %
-              </span>
-            </div>
-            <div className={styles.smallScore}>
-              <span className={styles.smallScoreLabel}>Right</span>
-              <span className={styles.smallScoreNumber}>{correct}</span>
-            </div>
-            <div className={styles.smallScore}>
-              <span className={styles.smallScoreLabel}>Wrong</span>
-              <span className={styles.smallScoreNumber}>{incorrect}</span>
-            </div>
-          </div>
-        </div>
+        <div className={styles.wpmColumn}></div>
         <div className={styles.textColumn}>
           <Cursor
             onTextTyped={handleTextTyped}
@@ -221,12 +192,6 @@ export default function Home() {
                 useGrouping: false,
               })}
             </span>
-          </div>
-          <div className={styles.smallScoreWrapper}>
-            <div className={styles.smallScore}>
-              <span className={styles.smallScoreLabel}>Streak</span>
-              <span className={styles.smallScoreNumber}>{streak}</span>
-            </div>
           </div>
         </div>
       </main>

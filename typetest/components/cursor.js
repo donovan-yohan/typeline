@@ -26,8 +26,11 @@ export default function Cursor(props) {
   useEffect(() => {
     if (props.letterRef) {
       let pos = props.letterRef.current.getBoundingClientRect();
+      let height = pos.bottom - pos.top;
       cursorRef.current.style.top = pos.top + "px";
       cursorRef.current.style.left = pos.left + "px";
+      cursorRef.current.style.height = height + "px";
+
       setWordRef(props.letterRef.current.parentNode.parentNode);
       setWordRefPos(
         props.letterRef.current.parentNode.parentNode.getBoundingClientRect()
@@ -76,24 +79,16 @@ export default function Cursor(props) {
         .cursor,
         textarea {
           max-width: 50vw;
-          font-size: 1.5em;
+          font-size: 2em;
           margin: 0;
           user-select: none;
         }
         .cursor {
-          color: black;
+          background-color: black;
+          width: 2px;
           animation: blink 1s infinite;
           position: absolute;
-          transition: all 0.05s ease;
-        }
-        .cursor::after {
-          content: "|";
-          position: absolute;
-          left: -2px;
-        }
-        .cursorPlacement {
-          max-width: 50vw;
-          white-space: pre-wrap;
+          transition: all 0.25s ease;
         }
 
         textarea {
@@ -113,19 +108,13 @@ export default function Cursor(props) {
 
         .activeHighlight {
           position: absolute;
-          background-color: rgba(0, 0, 0, 0.25);
+          background-color: rgba(0, 0, 0, 0);
           transition: all 0.2s ease;
         }
 
         @keyframes blink {
-          50% {
-            opacity: 1;
-          }
-          60% {
-            opacity: 0;
-          }
-          90% {
-            opacity: 0;
+          30% {
+            opacity: 0.1;
           }
           100% {
             opacity: 1;
