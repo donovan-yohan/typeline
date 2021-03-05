@@ -1,8 +1,9 @@
 import Head from "next/head";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "../styles/Home.module.css";
 import Word from "../components/word.js";
 import Cursor from "../components/cursor.js";
+import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 
 export default function Home() {
   let text =
@@ -37,16 +38,58 @@ export default function Home() {
   const [incorrect, setIncorrect] = useState(0);
   const [accuracy, setAccuracy] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [started, setStarted] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [timeTotal, setTimeTotal] = useState(30);
+  const [timeElapsed, setTimeElapsed] = useState("");
+  const [timeBarWidth, setTimeBarWidth] = useState(0);
+  const [oldLength, setOldLength] = useState(0);
+  const [maxStreak, setMaxStreak] = useState(0);
 
-  let handleTextTyped = (text) => {
-    setTextTyped(text);
+  const timeBarRef = useRef(null);
+
+  let handleTextTyped = (textEl) => {
+    setTextTyped(textEl.value);
   };
 
   let placeCursor = (ref) => {
     setLetterRef(ref);
   };
 
+  // START GAME
   useEffect(() => {
+    if (started && !finished) {
+      setTimeElapsed(0);
+    }
+  }, [started]);
+
+  // FINISH GAME
+  useEffect(() => {
+    setTextTyped("");
+    setActiveWord(0);
+    placeCursor(letterRef);
+  }, [finished]);
+
+  // COUNTER
+  useEffect(() => {
+    if (started) {
+      const timer = setTimeout(() => {
+        setTimeElapsed(timeElapsed + 1);
+        if (timeElapsed >= timeTotal) {
+          setStarted(false);
+          setFinished(true);
+          setTimeElapsed(timeTotal);
+        }
+      }, 1000);
+      setTimeBarWidth(
+        (timeBarRef.current.clientWidth * (timeTotal - timeElapsed)) / timeTotal
+      );
+      return () => clearTimeout(timer);
+    }
+  }, [timeElapsed]);
+
+  // HANDLE TEXT TYPED
+  useDidUpdateEffect(() => {
     if (
       textTyped.length >
       textDatabase[activeWord][textDatabase[activeWord].length - 1].flatIndex
@@ -55,7 +98,48 @@ export default function Home() {
     } else if (textTyped.length < textDatabase[activeWord][0].flatIndex) {
       setActiveWord(activeWord - 1);
     }
+
+    setStarted(true);
   }, [textTyped]);
+
+  // UPDATE STATS
+  useDidUpdateEffect(() => {
+    let newIncorrect = incorrect;
+    let newCorrect = correct;
+    if (started && !finished) {
+      if (
+        textTyped.charAt(textTyped.length - 1) ==
+          textDatabase.flat()[textTyped.length - 1].value &&
+        textTyped.length > oldLength
+      ) {
+        newCorrect += 1;
+        setCorrect(newCorrect);
+        setStreak(streak + 1);
+      } else if (
+        textTyped.charAt(textTyped.length - 1) !=
+          textDatabase.flat()[textTyped.length - 1].value &&
+        textTyped.length > oldLength
+      ) {
+        newIncorrect += 1;
+        setIncorrect(newIncorrect);
+        setStreak(0);
+      } else {
+        setStreak(0);
+      }
+      setWpm(Math.floor(newCorrect / 5 / (timeElapsed / 60)));
+      setOldLength(textTyped.length);
+    }
+  }, [textTyped]);
+
+  useEffect(() => {
+    if (streak > maxStreak) {
+      setMaxStreak(streak);
+    }
+  }, [streak]);
+
+  useDidUpdateEffect(() => {
+    setWpm(Math.floor(correct / 5 / (timeElapsed / 60)));
+  }, [timeElapsed]);
 
   return (
     <div className={styles.container}>
@@ -72,17 +156,25 @@ export default function Home() {
           </div>
           <div className={styles.smallScoreWrapper}>
             <div className={styles.smallScore}>
-              <span className={styles.smallScoreLabel}>R</span>
+              <span className={styles.smallScoreLabel}>MAX</span>
+              <span className={styles.smallScoreNumber}>{maxStreak}</span>
+            </div>
+            <div className={styles.smallScore}>
+              <span className={styles.smallScoreLabel}>Good</span>
               <span className={styles.smallScoreNumber}>{correct}</span>
             </div>
             <div className={styles.smallScore}>
-              <span className={styles.smallScoreLabel}>W</span>
+              <span className={styles.smallScoreLabel}>Miss</span>
               <span className={styles.smallScoreNumber}>{incorrect}</span>
             </div>
           </div>
         </div>
         <div className={styles.textColumn}>
-          <Cursor onTextTyped={handleTextTyped} letterRef={letterRef} />
+          <Cursor
+            onTextTyped={handleTextTyped}
+            letterRef={letterRef}
+            finished={finished}
+          />
           <div className={styles.textWrapper}>
             {textDatabase.map((word, i) => {
               return (
@@ -99,14 +191,29 @@ export default function Home() {
             })}
           </div>
           <div className={styles.timeWrapper}>
-            <span className={styles.timeBar}></span>
-            <span className={styles.time}>0:00</span>
+            <span
+              className={styles.timeBarProgress}
+              style={{ width: timeBarWidth }}
+            ></span>
+            <span className={styles.timeBar} ref={timeBarRef}></span>
+            <span className={styles.time}>
+              {Math.floor((timeTotal - timeElapsed) / 60)}:
+              {((timeTotal - timeElapsed) % 60).toLocaleString("en-US", {
+                minimumIntegerDigits: 2,
+                useGrouping: false,
+              })}
+            </span>
           </div>
         </div>
         <div className={styles.wpmColumn}>
           <div className={styles.largeScore}>
             <span className={styles.largeScoreLabel}>WPM</span>
-            <span className={styles.largeScoreNumber}>{streak}</span>
+            <span className={styles.largeScoreNumber}>
+              {wpm.toLocaleString("en-US", {
+                maximumIntegerDigits: 3,
+                useGrouping: false,
+              })}
+            </span>
           </div>
           <div className={styles.smallScoreWrapper}>
             <div className={styles.smallScore}>

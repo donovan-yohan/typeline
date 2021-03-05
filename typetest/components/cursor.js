@@ -5,7 +5,7 @@ export default function Cursor(props) {
   const cursorRef = useRef(null);
 
   let handleTextTyped = () => {
-    props.onTextTyped(typingField.current.value);
+    props.onTextTyped(typingField.current);
   };
 
   let focusTextField = () => {
@@ -24,6 +24,11 @@ export default function Cursor(props) {
       props.letterRef.current.parentNode.appendChild(cursorRef.current);
     }
   }, [props.letterRef]);
+
+  // RESET STATE
+  useEffect(() => {
+    if (props.finished) typingField.current.value = "";
+  }, [props.finished]);
 
   return (
     <div>

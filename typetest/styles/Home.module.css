@@ -71,6 +71,13 @@
 
 .smallScore .smallScoreLabel {
   font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.33em;
+  text-align: center;
+}
+
+.smallScore .smallScoreNumber {
+  font-weight: bold;
 }
 
 .timeWrapper {
@@ -86,4 +93,12 @@
   height: 1px;
   margin-right: 8px;
   background-color: rgba(0, 0, 0, 0.33);
+}
+
+.timeBarProgress {
+  height: 1px;
+  margin-right: 8px;
+  background-color: rgba(0, 0, 0, 1);
+  position: absolute;
+  transition: width 1s linear;
 }
