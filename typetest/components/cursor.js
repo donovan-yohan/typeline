@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 
 export default function Cursor(props) {
+  const [wordRef, setWordRef] = useState(null);
+  const [wordRefPos, setWordRefPos] = useState(null);
   const typingField = useRef(null);
   const cursorRef = useRef(null);
+  const highlightRef = useRef(null);
 
   let handleTextTyped = () => {
     props.onTextTyped(typingField.current);
@@ -19,11 +22,36 @@ export default function Cursor(props) {
     typingField.current.focus();
   });
 
+  // UPDATE CURSOR
   useEffect(() => {
     if (props.letterRef) {
-      props.letterRef.current.parentNode.appendChild(cursorRef.current);
+      let pos = props.letterRef.current.getBoundingClientRect();
+      cursorRef.current.style.top = pos.top + "px";
+      cursorRef.current.style.left = pos.left + "px";
+      setWordRef(props.letterRef.current.parentNode.parentNode);
+      setWordRefPos(
+        props.letterRef.current.parentNode.parentNode.getBoundingClientRect()
+      );
     }
   }, [props.letterRef]);
+
+  // UPDATE HIGHLIGHT
+  useEffect(() => {
+    if (wordRef && wordRefPos) {
+      let pos = wordRefPos;
+      let rightBound = pos.right;
+      if (wordRef.lastChild.childNodes[0].innerHTML == " ") {
+        rightBound = wordRef.lastChild.childNodes[0].getBoundingClientRect()
+          .left;
+      }
+      let width = rightBound - pos.left;
+      let height = pos.bottom - pos.top;
+      highlightRef.current.style.top = pos.top + "px";
+      highlightRef.current.style.left = pos.left + "px";
+      highlightRef.current.style.width = width + "px";
+      highlightRef.current.style.height = height + "px";
+    }
+  }, [wordRef, wordRefPos]);
 
   // RESET STATE
   useEffect(() => {
@@ -32,9 +60,8 @@ export default function Cursor(props) {
 
   return (
     <div>
-      <p className={"cursorPlacement"} onClick={focusTextField}>
-        <span ref={cursorRef} className={"cursor"}></span>
-      </p>
+      <span ref={cursorRef} className={"cursor"}></span>
+      <span ref={highlightRef} className={"activeHighlight"}></span>
 
       <textarea
         ref={typingField}
@@ -43,26 +70,24 @@ export default function Cursor(props) {
       ></textarea>
       <style jsx>{`
         div {
-          position: absolute;
           z-index: 99;
         }
 
-        p,
+        .cursor,
         textarea {
           max-width: 50vw;
-          font-size: 1.33em;
-          line-height: 2em;
+          font-size: 1.5em;
           margin: 0;
           user-select: none;
         }
         .cursor {
           color: black;
           animation: blink 1s infinite;
-          position: relative;
+          position: absolute;
+          transition: all 0.05s ease;
         }
         .cursor::after {
           content: "|";
-
           position: absolute;
           left: -2px;
         }
@@ -74,7 +99,6 @@ export default function Cursor(props) {
         textarea {
           position: absolute;
           overflow: hidden;
-          top: 0;
           z-index: 999;
           opacity: 0;
           font-family: Roboto;
@@ -85,6 +109,12 @@ export default function Cursor(props) {
           outline: none;
           resize: none;
           background-color: transparent;
+        }
+
+        .activeHighlight {
+          position: absolute;
+          background-color: rgba(0, 0, 0, 0.25);
+          transition: all 0.2s ease;
         }
 
         @keyframes blink {

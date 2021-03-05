@@ -4,7 +4,10 @@ export default function Letter(props) {
   const letterRef = useRef(null);
 
   useEffect(() => {
-    if (props.typed.length - 1 == props.flatIndex) {
+    if (props.typed.length == props.flatIndex) {
+      props.onLetterUpdate(letterRef);
+    }
+    if (props.finished && props.flatIndex == 0) {
       props.onLetterUpdate(letterRef);
     }
   }, [props.typed]);
@@ -45,15 +48,6 @@ export default function Letter(props) {
         }
         .space {
           text-decoration: underline;
-        }
-        .active::before {
-          content: "";
-          position: absolute;
-          bottom: 0px;
-          height: 100%;
-          width: 100%;
-          background-color: rgba(0, 0, 0, 0.15);
-          z-index: -1;
         }
       `}</style>
     </span>

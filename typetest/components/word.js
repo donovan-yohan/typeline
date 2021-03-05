@@ -21,6 +21,7 @@ export default function Word(props) {
               data={props.data}
               key={`${props.id}-CHAR-${i}`}
               onLetterUpdate={props.onLetterUpdate}
+              finished={props.finished}
             />
           );
         })}

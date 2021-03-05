@@ -149,62 +149,6 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <div className={styles.streakColumn}>
-          <div className={styles.largeScore}>
-            <span className={styles.largeScoreLabel}>Streak</span>
-            <span className={styles.largeScoreNumber}>{streak}</span>
-          </div>
-          <div className={styles.smallScoreWrapper}>
-            <div className={styles.smallScore}>
-              <span className={styles.smallScoreLabel}>MAX</span>
-              <span className={styles.smallScoreNumber}>{maxStreak}</span>
-            </div>
-            <div className={styles.smallScore}>
-              <span className={styles.smallScoreLabel}>Good</span>
-              <span className={styles.smallScoreNumber}>{correct}</span>
-            </div>
-            <div className={styles.smallScore}>
-              <span className={styles.smallScoreLabel}>Miss</span>
-              <span className={styles.smallScoreNumber}>{incorrect}</span>
-            </div>
-          </div>
-        </div>
-        <div className={styles.textColumn}>
-          <Cursor
-            onTextTyped={handleTextTyped}
-            letterRef={letterRef}
-            finished={finished}
-          />
-          <div className={styles.textWrapper}>
-            {textDatabase.map((word, i) => {
-              return (
-                <Word
-                  id={i}
-                  word={word}
-                  active={activeWord}
-                  typed={textTyped}
-                  data={textDatabase}
-                  key={`WORD-${i}`}
-                  onLetterUpdate={placeCursor}
-                />
-              );
-            })}
-          </div>
-          <div className={styles.timeWrapper}>
-            <span
-              className={styles.timeBarProgress}
-              style={{ width: timeBarWidth }}
-            ></span>
-            <span className={styles.timeBar} ref={timeBarRef}></span>
-            <span className={styles.time}>
-              {Math.floor((timeTotal - timeElapsed) / 60)}:
-              {((timeTotal - timeElapsed) % 60).toLocaleString("en-US", {
-                minimumIntegerDigits: 2,
-                useGrouping: false,
-              })}
-            </span>
-          </div>
-        </div>
         <div className={styles.wpmColumn}>
           <div className={styles.largeScore}>
             <span className={styles.largeScoreLabel}>WPM</span>
@@ -217,8 +161,71 @@ export default function Home() {
           </div>
           <div className={styles.smallScoreWrapper}>
             <div className={styles.smallScore}>
-              <span className={styles.smallScoreLabel}>%</span>
-              <span className={styles.smallScoreNumber}>{accuracy}</span>
+              <span className={styles.smallScoreLabel}>Acc</span>
+              <span className={styles.smallScoreNumber}>
+                {(
+                  (correct / (incorrect + correct)) * 100.0 || 0
+                ).toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                %
+              </span>
+            </div>
+            <div className={styles.smallScore}>
+              <span className={styles.smallScoreLabel}>Right</span>
+              <span className={styles.smallScoreNumber}>{correct}</span>
+            </div>
+            <div className={styles.smallScore}>
+              <span className={styles.smallScoreLabel}>Wrong</span>
+              <span className={styles.smallScoreNumber}>{incorrect}</span>
+            </div>
+          </div>
+        </div>
+        <div className={styles.textColumn}>
+          <Cursor
+            onTextTyped={handleTextTyped}
+            letterRef={letterRef}
+            activeWord={activeWord}
+            textDatabase={textDatabase}
+          />
+          <div className={styles.textWrapper}>
+            {textDatabase.map((word, i) => {
+              return (
+                <Word
+                  id={i}
+                  word={word}
+                  active={activeWord}
+                  typed={textTyped}
+                  data={textDatabase}
+                  key={`WORD-${i}`}
+                  onLetterUpdate={placeCursor}
+                  finished={finished}
+                />
+              );
+            })}
+          </div>
+          <div className={styles.timeWrapper}>
+            <span
+              className={styles.timeBarProgress}
+              style={{ width: timeBarWidth }}
+            ></span>
+            <span className={styles.timeBar} ref={timeBarRef}></span>
+          </div>
+        </div>
+        <div className={styles.streakColumn}>
+          <div className={styles.largeScore}>
+            <span className={styles.largeScoreLabel}>Time</span>
+            <span className={styles.largeScoreNumber}>
+              {" "}
+              {Math.floor((timeTotal - timeElapsed) / 60)}:
+              {((timeTotal - timeElapsed) % 60).toLocaleString("en-US", {
+                minimumIntegerDigits: 2,
+                useGrouping: false,
+              })}
+            </span>
+          </div>
+          <div className={styles.smallScoreWrapper}>
+            <div className={styles.smallScore}>
+              <span className={styles.smallScoreLabel}>Streak</span>
+              <span className={styles.smallScoreNumber}>{streak}</span>
             </div>
           </div>
         </div>
