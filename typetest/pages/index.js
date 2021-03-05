@@ -149,7 +149,29 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <div className={styles.wpmColumn}></div>
+        {finished && (
+          <div className={styles.wpmColumn}>
+            <div className={styles.largeScore}>
+              <span className={styles.largeScoreLabel}>WPM</span>
+              <span className={styles.largeScoreNumber}>
+                {wpm.toLocaleString("en-US", {
+                  maximumIntegerDigits: 3,
+                  useGrouping: false,
+                })}
+              </span>
+            </div>
+            <div className={styles.smallScoreWrapper}>
+              <div className={styles.smallScore}>
+                <span className={styles.smallScoreLabel}>%</span>
+                <span className={styles.smallScoreNumber}>
+                  {(
+                    (correct / (correct + incorrect)) * 100 || 0
+                  ).toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
         <div className={styles.textColumn}>
           <Cursor
             onTextTyped={handleTextTyped}
@@ -188,7 +210,24 @@ export default function Home() {
             </span>
           </div>
         </div>
-        <div className={styles.streakColumn}></div>
+        {finished && (
+          <div className={styles.streakColumn}>
+            <div className={styles.largeScore}>
+              <span className={styles.largeScoreLabel}>Highest Streak</span>
+              <span className={styles.largeScoreNumber}>{maxStreak}</span>
+            </div>
+            <div className={styles.smallScoreWrapper}>
+              <div className={styles.smallScore}>
+                <span className={styles.smallScoreLabel}>Good</span>
+                <span className={styles.smallScoreNumber}>{correct}</span>
+              </div>
+              <div className={styles.smallScore}>
+                <span className={styles.smallScoreLabel}>Miss</span>
+                <span className={styles.smallScoreNumber}>{incorrect}</span>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

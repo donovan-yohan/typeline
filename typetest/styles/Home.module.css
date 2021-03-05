@@ -32,6 +32,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  animation: fade 1s;
 }
 
 .largeScore {
@@ -102,4 +103,13 @@
   background-color: rgba(0, 0, 0, 1);
   position: absolute;
   transition: width 1s linear;
+}
+
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
