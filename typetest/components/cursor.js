@@ -27,8 +27,8 @@ export default function Cursor(props) {
     if (props.letterRef) {
       let pos = props.letterRef.current.getBoundingClientRect();
       let height = pos.bottom - pos.top;
-      cursorRef.current.style.top = pos.top + "px";
-      cursorRef.current.style.left = pos.left + "px";
+
+      cursorRef.current.style.transform = `translate(${pos.left}px, ${pos.top}px)`;
       cursorRef.current.style.height = height + "px";
 
       setWordRef(props.letterRef.current.parentNode.parentNode);
@@ -39,22 +39,22 @@ export default function Cursor(props) {
   }, [props.letterRef]);
 
   // UPDATE HIGHLIGHT
-  useEffect(() => {
-    if (wordRef && wordRefPos) {
-      let pos = wordRefPos;
-      let rightBound = pos.right;
-      if (wordRef.lastChild.childNodes[0].innerHTML == " ") {
-        rightBound = wordRef.lastChild.childNodes[0].getBoundingClientRect()
-          .left;
-      }
-      let width = rightBound - pos.left;
-      let height = pos.bottom - pos.top;
-      highlightRef.current.style.top = pos.top + "px";
-      highlightRef.current.style.left = pos.left + "px";
-      highlightRef.current.style.width = width + "px";
-      highlightRef.current.style.height = height + "px";
-    }
-  }, [wordRef, wordRefPos]);
+  // useEffect(() => {
+  //   if (wordRef && wordRefPos) {
+  //     let pos = wordRefPos;
+  //     let rightBound = pos.right;
+  //     if (wordRef.lastChild.childNodes[0].innerHTML == " ") {
+  //       rightBound = wordRef.lastChild.childNodes[0].getBoundingClientRect()
+  //         .left;
+  //     }
+  //     let width = rightBound - pos.left;
+  //     let height = pos.bottom - pos.top;
+  //     highlightRef.current.style.top = pos.top + "px";
+  //     highlightRef.current.style.left = pos.left + "px";
+  //     highlightRef.current.style.width = width + "px";
+  //     highlightRef.current.style.height = height + "px";
+  //   }
+  // }, [wordRef, wordRefPos]);
 
   // RESET STATE
   useEffect(() => {
@@ -87,9 +87,14 @@ export default function Cursor(props) {
           background-color: #0077ff;
           width: 3px;
           border-radius: 4px;
-          animation: blink 1s infinite;
           position: absolute;
-          transition: all 0.25s ease;
+          top: 0;
+          left: 0;
+          transition: transform 0.25s ease;
+          will-change: transform;
+        }
+        .cursorAnimate {
+          animation: blink 1s infinite;
         }
 
         textarea {

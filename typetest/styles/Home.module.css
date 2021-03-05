@@ -23,6 +23,14 @@
 .textWrapper {
   display: flex;
   flex-wrap: wrap;
+  position: relative;
+}
+.textWrapper:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 1em;
 }
 
 .streakColumn,

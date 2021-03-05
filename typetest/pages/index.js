@@ -7,7 +7,7 @@ import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 
 export default function Home() {
   let text =
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non felis congue, scelerisque lacus eu, interdum libero. Pellentesque consectetur vel nulla non faucibus. Curabitur rhoncus turpis sit amet augue placerat, ut facilisis velit condimentum. Nulla et nisi at libero euismod iaculis nec at purus. Etiam consequat enim a felis vehicula accumsan. Aliquam erat volutpat. Nullam ac scelerisque metus, in suscipit orci. Pellentesque consectetur nulla neque, nec lacinia arcu iaculis eu.";
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non felis congue, scelerisque lacus eu, interdum libero. Pellentesque consectetur vel nulla non faucibus. Curabitur rhoncus turpis sit amet augue placerat, ut facilisis velit condimentum. Nulla et nisi at libero euismod iaculis nec at purus. Etiam consequat enim a felis vehicula accumsan.";
 
   // create array of words and letters
   let textData = text.split(" ").map((word) => {
@@ -36,7 +36,6 @@ export default function Home() {
   const [wpm, setWpm] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [incorrect, setIncorrect] = useState(0);
-  const [accuracy, setAccuracy] = useState(0);
   const [streak, setStreak] = useState(0);
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
