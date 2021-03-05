@@ -106,7 +106,7 @@ export default function Home() {
   useDidUpdateEffect(() => {
     let newIncorrect = incorrect;
     let newCorrect = correct;
-    if (started && !finished) {
+    if (started && !finished && textTyped.length > 0) {
       if (
         textTyped.charAt(textTyped.length - 1) ==
           textDatabase.flat()[textTyped.length - 1].value &&
