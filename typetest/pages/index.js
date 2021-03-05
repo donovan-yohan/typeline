@@ -179,13 +179,7 @@ export default function Home() {
               style={{ width: timeBarWidth }}
             ></span>
             <span className={styles.timeBar} ref={timeBarRef}></span>
-          </div>
-        </div>
-        <div className={styles.streakColumn}>
-          <div className={styles.largeScore}>
-            <span className={styles.largeScoreLabel}>Time</span>
-            <span className={styles.largeScoreNumber}>
-              {" "}
+            <span className={styles.time}>
               {Math.floor((timeTotal - timeElapsed) / 60)}:
               {((timeTotal - timeElapsed) % 60).toLocaleString("en-US", {
                 minimumIntegerDigits: 2,
@@ -194,6 +188,7 @@ export default function Home() {
             </span>
           </div>
         </div>
+        <div className={styles.streakColumn}></div>
       </main>
     </div>
   );

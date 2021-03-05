@@ -84,8 +84,9 @@ export default function Cursor(props) {
           user-select: none;
         }
         .cursor {
-          background-color: black;
-          width: 2px;
+          background-color: #0077ff;
+          width: 3px;
+          border-radius: 4px;
           animation: blink 1s infinite;
           position: absolute;
           transition: all 0.25s ease;
