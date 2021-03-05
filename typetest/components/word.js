@@ -28,7 +28,7 @@ export default function Word(props) {
       <style jsx>{`
         .word,
         input {
-          font-size: 1.33em;
+          font-size: 1.45em;
           line-height: 2em;
         }
 

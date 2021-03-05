@@ -32,6 +32,11 @@ export default function Home() {
   const [textDatabase, setTextDatabase] = useState(textData);
   const [textTyped, setTextTyped] = useState("");
   const [letterRef, setLetterRef] = useState(null);
+  const [wpm, setWpm] = useState(0);
+  const [correct, setCorrect] = useState(0);
+  const [incorrect, setIncorrect] = useState(0);
+  const [accuracy, setAccuracy] = useState(0);
+  const [streak, setStreak] = useState(0);
 
   let handleTextTyped = (text) => {
     setTextTyped(text);
@@ -56,10 +61,26 @@ export default function Home() {
     <div className={styles.container}>
       <Head>
         <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel='icon' href='/favicon.ico' />
       </Head>
 
       <main className={styles.main}>
+        <div className={styles.streakColumn}>
+          <div className={styles.largeScore}>
+            <span className={styles.largeScoreLabel}>Streak</span>
+            <span className={styles.largeScoreNumber}>{streak}</span>
+          </div>
+          <div className={styles.smallScoreWrapper}>
+            <div className={styles.smallScore}>
+              <span className={styles.smallScoreLabel}>R</span>
+              <span className={styles.smallScoreNumber}>{correct}</span>
+            </div>
+            <div className={styles.smallScore}>
+              <span className={styles.smallScoreLabel}>W</span>
+              <span className={styles.smallScoreNumber}>{incorrect}</span>
+            </div>
+          </div>
+        </div>
         <div className={styles.textColumn}>
           <Cursor onTextTyped={handleTextTyped} letterRef={letterRef} />
           <div className={styles.textWrapper}>
@@ -76,6 +97,22 @@ export default function Home() {
                 />
               );
             })}
+          </div>
+          <div className={styles.timeWrapper}>
+            <span className={styles.timeBar}></span>
+            <span className={styles.time}>0:00</span>
+          </div>
+        </div>
+        <div className={styles.wpmColumn}>
+          <div className={styles.largeScore}>
+            <span className={styles.largeScoreLabel}>WPM</span>
+            <span className={styles.largeScoreNumber}>{streak}</span>
+          </div>
+          <div className={styles.smallScoreWrapper}>
+            <div className={styles.smallScore}>
+              <span className={styles.smallScoreLabel}>%</span>
+              <span className={styles.smallScoreNumber}>{accuracy}</span>
+            </div>
           </div>
         </div>
       </main>
