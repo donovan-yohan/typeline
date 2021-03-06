@@ -5,13 +5,13 @@ import Word from "../components/word.js";
 import Cursor from "../components/cursor.js";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useInterval from "@use-it/interval";
+import generateWords from "../utils/generateWords.js"
+
+let text = generateWords();
 
 export default function Home() {
-  let text =
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non felis congue, scelerisque lacus eu, interdum libero. Pellentesque consectetur vel nulla non faucibus. Curabitur rhoncus turpis sit amet augue placerat, ut facilisis velit condimentum. Nulla et nisi at libero euismod iaculis nec at purus. Etiam consequat enim a felis vehicula accumsan.";
-
   // create array of words and letters
-  let textData = text.split(" ").map((word) => {
+  let textData = text.map((word) => {
     let letters = word.split("");
     letters.push(" ");
     return letters.map((l, i) => {
@@ -166,21 +166,23 @@ export default function Home() {
             textDatabase={textDatabase}
             finished={finished}
           />
-          <div className={styles.textWrapper}>
-            {textDatabase.map((word, i) => {
-              return (
-                <Word
-                  id={i}
-                  word={word}
-                  active={activeWord}
-                  typed={textTyped}
-                  data={textDatabase}
-                  key={`WORD-${i}`}
-                  onLetterUpdate={placeCursor}
-                  finished={finished}
-                />
-              );
-            })}
+          <div className={styles.textFrame}>
+            <div className={styles.textWrapper}>
+              {textDatabase.map((word, i) => {
+                return (
+                  <Word
+                    id={i}
+                    word={word}
+                    active={activeWord}
+                    typed={textTyped}
+                    data={textDatabase}
+                    key={`WORD-${i}`}
+                    onLetterUpdate={placeCursor}
+                    finished={finished}
+                  />
+                );
+              })}
+            </div>
           </div>
           <div className={styles.timeWrapper}>
             <span className={styles.timeBar}>
@@ -197,7 +199,7 @@ export default function Home() {
               })}
             </span>
           </div>
-          <pre>{JSON.stringify({timeFraction, timeBarOffset}, null, 4)}</pre>
+          {/* <pre>{JSON.stringify({timeFraction, timeBarOffset}, null, 4)}</pre> */}
         </div>
         {finished && (
           <div className={styles.streakColumn}>
