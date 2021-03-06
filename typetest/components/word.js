@@ -1,25 +1,41 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import Letter from "../components/letter.js";
 
-export default function Word(props) {
+export default function Word({
+  active,
+  word,
+  typed,
+  id,
+  data,
+  onLetterUpdate,
+  finished,
+}) {
+  const overflowText =
+    typed.length > word.length
+      ? typed.substring(word.length, typed.length)
+      : "";
+
   return (
     <span className={"wordWrapper"}>
       <span className={"word"}>
-        {props.word.map((letter, i) => {
-          return (
-            <Letter
-              active={props.active}
-              letter={letter.value}
-              flatIndex={letter.flatIndex}
-              typed={props.typed}
-              wordIndex={props.id}
-              data={props.data}
-              key={`${props.id}-CHAR-${i}`}
-              onLetterUpdate={props.onLetterUpdate}
-              finished={props.finished}
-            />
-          );
-        })}
+        <span>
+          {word.map((letter, i) => {
+            return (
+              <Letter
+                id={i}
+                active={active}
+                letter={letter}
+                typed={typed}
+                wordId={id}
+                data={data}
+                key={`${id}-CHAR-${i}`}
+                onLetterUpdate={onLetterUpdate}
+                finished={finished}
+              />
+            );
+          })}
+        </span>
+        <span className={"overflow"}>{overflowText}</span>
       </span>
       <style jsx>{`
         .word,
@@ -33,6 +49,12 @@ export default function Word(props) {
           white-space: pre;
           user-select: none;
           position: relative;
+          margin-right: 0.3em;
+        }
+
+        .overflow {
+          color: red;
+          opacity: 0.66;
         }
       `}</style>
     </span>

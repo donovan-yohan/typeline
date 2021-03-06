@@ -5,34 +5,20 @@ import Word from "../components/word.js";
 import Cursor from "../components/cursor.js";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useInterval from "@use-it/interval";
-import generateWords from "../utils/generateWords.js"
+import generateWords from "../utils/generateWords.js";
+import createTextDatabase from "../utils/createTextDatabase.js";
 
 let text = generateWords();
+let textData = createTextDatabase(text);
+let textHolder = textData.map((word) => {
+  return "";
+});
 
 export default function Home() {
-  // create array of words and letters
-  let textData = text.map((word) => {
-    let letters = word.split("");
-    letters.push(" ");
-    return letters.map((l, i) => {
-      return { value: l, flatIndex: i };
-    });
-  });
-
-  // generate flat indexes for 2D array
-  textData.reduce((a, w, i) => {
-    return (
-      a +
-      w.reduce((a2, l, k) => {
-        l.flatIndex = a + k;
-        return a2 + 1;
-      }, 0)
-    );
-  }, 0);
-
   const [activeWord, setActiveWord] = useState(0);
   const [textDatabase, setTextDatabase] = useState(textData);
-  const [textTyped, setTextTyped] = useState("");
+  const [textTyped, setTextTyped] = useState(textHolder);
+  const [charTyped, setCharTyped] = useState(null);
   const [letterRef, setLetterRef] = useState(null);
   const [wpm, setWpm] = useState(0);
   const [correct, setCorrect] = useState(0);
@@ -40,16 +26,35 @@ export default function Home() {
   const [streak, setStreak] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
-  const [timeTotal, setTimeTotal] = useState(10);
+  const [timeTotal, setTimeTotal] = useState(60);
   const [time, setTime] = useState(timeTotal);
   const [oldLength, setOldLength] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
 
-  const timeFraction = (time / timeTotal);
-  const timeBarOffset = (timeFraction - (1 / timeTotal) * (1 - timeFraction));
+  const timeFraction = time / timeTotal;
+  const timeBarOffset = timeFraction - (1 / timeTotal) * (1 - timeFraction);
 
-  let handleTextTyped = (textEl) => {
-    setTextTyped(textEl.value);
+  // HELPER FUNCTIONS
+
+  let updateTextTypedArray = (targetIndex, newValue) => {
+    setTextTyped((textTyped) => {
+      return textTyped.map((w, i) => {
+        if (i == targetIndex) {
+          return newValue;
+        } else {
+          return w;
+        }
+      });
+    });
+  };
+
+  // TYPING LOGIC
+  let handleTextTyped = (text) => {
+    updateTextTypedArray(activeWord, text);
+  };
+
+  let handleWordChanged = (newActiveWord) => {
+    setActiveWord(newActiveWord);
   };
 
   let placeCursor = (ref) => {
@@ -58,7 +63,6 @@ export default function Home() {
 
   // FINISH GAME
   useEffect(() => {
-    setTextTyped("");
     setActiveWord(0);
     placeCursor(letterRef);
   }, [finished]);
@@ -81,41 +85,32 @@ export default function Home() {
 
   // HANDLE TEXT TYPED
   useDidUpdateEffect(() => {
-    if (
-      textTyped.length >
-      textDatabase[activeWord][textDatabase[activeWord].length - 1].flatIndex
-    ) {
-      setActiveWord(activeWord + 1);
-    } else if (textTyped.length < textDatabase[activeWord][0].flatIndex) {
-      setActiveWord(activeWord - 1);
-    }
-
     setIsRunning(true);
   }, [textTyped]);
 
   // UPDATE STATS
-  useDidUpdateEffect(() => {
-    if (!finished && textTyped.length > 0) {
-      if (
-        textTyped.charAt(textTyped.length - 1) ==
-          textDatabase.flat()[textTyped.length - 1].value &&
-        textTyped.length > oldLength
-      ) {
-        setCorrect((correct) => correct + 1);
-        setStreak((streak) => streak + 1);
-      } else if (
-        textTyped.charAt(textTyped.length - 1) !=
-          textDatabase.flat()[textTyped.length - 1].value &&
-        textTyped.length > oldLength
-      ) {
-        setIncorrect((incorrect) => incorrect + 1);
-        setStreak(0);
-      } else {
-        setStreak(0);
-      }
-      setOldLength(textTyped.length);
-    }
-  }, [textTyped]);
+  // useDidUpdateEffect(() => {
+  //   if (!finished && textTyped.length > 0) {
+  //     if (
+  //       textTyped.charAt(textTyped.length - 1) ==
+  //         textDatabase.flat()[textTyped.length - 1].value &&
+  //       textTyped.length > oldLength
+  //     ) {
+  //       setCorrect((correct) => correct + 1);
+  //       setStreak((streak) => streak + 1);
+  //     } else if (
+  //       textTyped.charAt(textTyped.length - 1) !=
+  //         textDatabase.flat()[textTyped.length - 1].value &&
+  //       textTyped.length > oldLength
+  //     ) {
+  //       setIncorrect((incorrect) => incorrect + 1);
+  //       setStreak(0);
+  //     } else {
+  //       setStreak(0);
+  //     }
+  //     setOldLength(textTyped.length);
+  //   }
+  // }, [textTyped]);
 
   useEffect(() => {
     if (streak > maxStreak) {
@@ -161,8 +156,10 @@ export default function Home() {
         <div className={styles.textColumn}>
           <Cursor
             onTextTyped={handleTextTyped}
+            onWordChanged={handleWordChanged}
             letterRef={letterRef}
             activeWord={activeWord}
+            activeWordTyped={textTyped[activeWord]}
             textDatabase={textDatabase}
             finished={finished}
           />
@@ -173,8 +170,8 @@ export default function Home() {
                   <Word
                     id={i}
                     word={word}
-                    active={activeWord}
-                    typed={textTyped}
+                    active={activeWord == i}
+                    typed={textTyped[i]}
                     data={textDatabase}
                     key={`WORD-${i}`}
                     onLetterUpdate={placeCursor}
@@ -188,7 +185,9 @@ export default function Home() {
             <span className={styles.timeBar}>
               <span
                 className={styles.timeBarProgress}
-                style={{ transform: `translateX(${-1 * (1 - timeBarOffset) * 100}%)`  }}
+                style={{
+                  transform: `translateX(${-1 * (1 - timeBarOffset) * 100}%)`,
+                }}
               ></span>
             </span>
             <span className={styles.time}>
@@ -199,7 +198,7 @@ export default function Home() {
               })}
             </span>
           </div>
-          {/* <pre>{JSON.stringify({timeFraction, timeBarOffset}, null, 4)}</pre> */}
+          {/* <pre>{JSON.stringify({ activeWord, textTyped }, null, 4)}</pre> */}
         </div>
         {finished && (
           <div className={styles.streakColumn}>

@@ -10,7 +10,7 @@ export default function generateWords(short = true, medium = false, long = false
     let words = [];
 
     while (words.length < (time / 60) * 100) {
-        words.push(shortWords[Math.floor(getRandomWithBias(0, shortWords.length - 1, 10, 0.75))])
+        words.push(shortWords[Math.floor(getRandomWithBias(0, shortWords.length - 1, 0, 1))])
     }
     return words;
 }

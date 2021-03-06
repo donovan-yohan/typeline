@@ -2,46 +2,45 @@ import React, { useRef, useEffect } from "react";
 import cx from "classnames";
 
 export default function Letter({
+  active,
   typed,
-  flatIndex,
+  wordId,
   letter,
   finished,
   onLetterUpdate,
+  id,
 }) {
   const letterRef = useRef(null);
+  const letterClassList = cx({
+    untyped: !typed.charAt(id),
+    correct: typed.charAt(id) == letter,
+    incorrect: typed.charAt(id) && typed?.charAt(id) != letter,
+  });
 
   useEffect(() => {
-    if (typed.length == flatIndex) {
+    if (active && id == typed?.length - 1) {
       onLetterUpdate(letterRef);
     }
-    if (finished && flatIndex == 0) {
+    if (finished && id == 0 && wordId == 0) {
       onLetterUpdate(letterRef);
     }
   }, [typed]);
 
   return (
     <span className={"letterWrapper"}>
-      <span
-        ref={letterRef}
-        className={cx({
-          untyped: !typed[flatIndex],
-          correct: typed[flatIndex] == letter,
-          incorrect: typed[flatIndex] && typed[flatIndex] != letter,
-          space: typed[flatIndex] == " " && typed[flatIndex] != letter,
-        })}
-      >
-        {typed[flatIndex] ? typed[flatIndex] : letter}
+      <span ref={letterRef} className={letterClassList}>
+        {letter}
       </span>
       <style jsx>{`
         span {
           position: relative;
-          transition: color 0.5s ease;
         }
         .untyped {
           color: rgba(0, 0, 0, 0.5);
         }
         .correct {
           color: rgba(0, 0, 0, 1);
+          transition: color 0.5s ease;
         }
         .incorrect {
           color: red;
