@@ -1,37 +1,36 @@
 import React, { useRef, useEffect } from "react";
+import cx from "classnames";
 
-export default function Letter(props) {
+export default function Letter({
+  typed,
+  flatIndex,
+  letter,
+  finished,
+  onLetterUpdate,
+}) {
   const letterRef = useRef(null);
 
   useEffect(() => {
-    if (props.typed.length == props.flatIndex) {
-      props.onLetterUpdate(letterRef);
+    if (typed.length == flatIndex) {
+      onLetterUpdate(letterRef);
     }
-    if (props.finished && props.flatIndex == 0) {
-      props.onLetterUpdate(letterRef);
+    if (finished && flatIndex == 0) {
+      onLetterUpdate(letterRef);
     }
-  }, [props.typed]);
+  }, [typed]);
 
   return (
     <span className={"letterWrapper"}>
       <span
         ref={letterRef}
-        className={
-          (!props.typed[props.flatIndex]
-            ? "untyped"
-            : props.typed[props.flatIndex] == props.letter
-            ? "correct"
-            : props.typed[props.flatIndex] == " "
-            ? "incorrect space"
-            : "incorrect") +
-          (props.letter != " " && props.wordIndex == props.active
-            ? " active"
-            : "")
-        }
+        className={cx({
+          untyped: !typed[flatIndex],
+          correct: typed[flatIndex] == letter,
+          incorrect: typed[flatIndex] && typed[flatIndex] != letter,
+          space: typed[flatIndex] == " " && typed[flatIndex] != letter,
+        })}
       >
-        {props.typed[props.flatIndex]
-          ? props.typed[props.flatIndex]
-          : props.letter}
+        {typed[flatIndex] ? typed[flatIndex] : letter}
       </span>
       <style jsx>{`
         span {

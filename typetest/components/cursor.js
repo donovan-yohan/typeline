@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-export default function Cursor(props) {
+export default function Cursor({ letterRef, onTextTyped, finished }) {
   const [wordRef, setWordRef] = useState(null);
   const [wordRefPos, setWordRefPos] = useState(null);
   const typingField = useRef(null);
@@ -8,7 +8,7 @@ export default function Cursor(props) {
   const highlightRef = useRef(null);
 
   let handleTextTyped = () => {
-    props.onTextTyped(typingField.current);
+    onTextTyped(typingField.current);
   };
 
   let focusTextField = () => {
@@ -24,19 +24,19 @@ export default function Cursor(props) {
 
   // UPDATE CURSOR
   useEffect(() => {
-    if (props.letterRef) {
-      let pos = props.letterRef.current.getBoundingClientRect();
+    if (letterRef) {
+      let pos = letterRef.current.getBoundingClientRect();
       let height = pos.bottom - pos.top;
 
       cursorRef.current.style.transform = `translate(${pos.left}px, ${pos.top}px)`;
       cursorRef.current.style.height = height + "px";
 
-      setWordRef(props.letterRef.current.parentNode.parentNode);
+      setWordRef(letterRef.current.parentNode.parentNode);
       setWordRefPos(
-        props.letterRef.current.parentNode.parentNode.getBoundingClientRect()
+        letterRef.current.parentNode.parentNode.getBoundingClientRect()
       );
     }
-  }, [props.letterRef]);
+  }, [letterRef]);
 
   // UPDATE HIGHLIGHT
   // useEffect(() => {
@@ -58,8 +58,8 @@ export default function Cursor(props) {
 
   // RESET STATE
   useEffect(() => {
-    if (props.finished) typingField.current.value = "";
-  }, [props.finished]);
+    if (finished) typingField.current.value = "";
+  }, [finished]);
 
   return (
     <div>
@@ -70,6 +70,7 @@ export default function Cursor(props) {
         ref={typingField}
         onChange={handleTextTyped}
         onClick={focusTextField}
+        disabled={finished}
       ></textarea>
       <style jsx>{`
         div {

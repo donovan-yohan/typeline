@@ -4,6 +4,7 @@ import styles from "../styles/Home.module.css";
 import Word from "../components/word.js";
 import Cursor from "../components/cursor.js";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
+import useInterval from "@use-it/interval";
 
 export default function Home() {
   let text =
@@ -37,15 +38,15 @@ export default function Home() {
   const [correct, setCorrect] = useState(0);
   const [incorrect, setIncorrect] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [started, setStarted] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
-  const [timeTotal, setTimeTotal] = useState(30);
-  const [timeElapsed, setTimeElapsed] = useState("");
-  const [timeBarWidth, setTimeBarWidth] = useState(0);
+  const [timeTotal, setTimeTotal] = useState(10);
+  const [time, setTime] = useState(timeTotal);
   const [oldLength, setOldLength] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
 
-  const timeBarRef = useRef(null);
+  const timeFraction = (time / timeTotal);
+  const timeBarOffset = (timeFraction - (1 / timeTotal) * (1 - timeFraction));
 
   let handleTextTyped = (textEl) => {
     setTextTyped(textEl.value);
@@ -55,13 +56,6 @@ export default function Home() {
     setLetterRef(ref);
   };
 
-  // START GAME
-  useEffect(() => {
-    if (started && !finished) {
-      setTimeElapsed(0);
-    }
-  }, [started]);
-
   // FINISH GAME
   useEffect(() => {
     setTextTyped("");
@@ -70,22 +64,20 @@ export default function Home() {
   }, [finished]);
 
   // COUNTER
+  useInterval(
+    () => {
+      setTime((time) => time - 1);
+    },
+    isRunning ? 1000 : null
+  );
+
   useEffect(() => {
-    if (started) {
-      const timer = setTimeout(() => {
-        setTimeElapsed(timeElapsed + 1);
-        if (timeElapsed >= timeTotal) {
-          setStarted(false);
-          setFinished(true);
-          setTimeElapsed(timeTotal);
-        }
-      }, 1000);
-      setTimeBarWidth(
-        (timeBarRef.current.clientWidth * (timeTotal - timeElapsed)) / timeTotal
-      );
-      return () => clearTimeout(timer);
+    if (time <= 0) {
+      setIsRunning(false);
+      setFinished(true);
+      setTime(0);
     }
-  }, [timeElapsed]);
+  }, [time]);
 
   // HANDLE TEXT TYPED
   useDidUpdateEffect(() => {
@@ -98,34 +90,29 @@ export default function Home() {
       setActiveWord(activeWord - 1);
     }
 
-    setStarted(true);
+    setIsRunning(true);
   }, [textTyped]);
 
   // UPDATE STATS
   useDidUpdateEffect(() => {
-    let newIncorrect = incorrect;
-    let newCorrect = correct;
-    if (started && !finished && textTyped.length > 0) {
+    if (!finished && textTyped.length > 0) {
       if (
         textTyped.charAt(textTyped.length - 1) ==
           textDatabase.flat()[textTyped.length - 1].value &&
         textTyped.length > oldLength
       ) {
-        newCorrect += 1;
-        setCorrect(newCorrect);
-        setStreak(streak + 1);
+        setCorrect((correct) => correct + 1);
+        setStreak((streak) => streak + 1);
       } else if (
         textTyped.charAt(textTyped.length - 1) !=
           textDatabase.flat()[textTyped.length - 1].value &&
         textTyped.length > oldLength
       ) {
-        newIncorrect += 1;
-        setIncorrect(newIncorrect);
+        setIncorrect((incorrect) => incorrect + 1);
         setStreak(0);
       } else {
         setStreak(0);
       }
-      setWpm(Math.floor(newCorrect / 5 / (timeElapsed / 60)));
       setOldLength(textTyped.length);
     }
   }, [textTyped]);
@@ -137,8 +124,8 @@ export default function Home() {
   }, [streak]);
 
   useDidUpdateEffect(() => {
-    setWpm(Math.floor(correct / 5 / (timeElapsed / 60)));
-  }, [timeElapsed]);
+    setWpm(Math.floor(correct / 5 / ((timeTotal - time) / 60)));
+  }, [time]);
 
   return (
     <div className={styles.container}>
@@ -177,6 +164,7 @@ export default function Home() {
             letterRef={letterRef}
             activeWord={activeWord}
             textDatabase={textDatabase}
+            finished={finished}
           />
           <div className={styles.textWrapper}>
             {textDatabase.map((word, i) => {
@@ -195,19 +183,21 @@ export default function Home() {
             })}
           </div>
           <div className={styles.timeWrapper}>
-            <span
-              className={styles.timeBarProgress}
-              style={{ width: timeBarWidth }}
-            ></span>
-            <span className={styles.timeBar} ref={timeBarRef}></span>
+            <span className={styles.timeBar}>
+              <span
+                className={styles.timeBarProgress}
+                style={{ transform: `translateX(${-1 * (1 - timeBarOffset) * 100}%)`  }}
+              ></span>
+            </span>
             <span className={styles.time}>
-              {Math.floor((timeTotal - timeElapsed) / 60)}:
-              {((timeTotal - timeElapsed) % 60).toLocaleString("en-US", {
+              {Math.floor(time / 60)}:
+              {(time % 60).toLocaleString("en-US", {
                 minimumIntegerDigits: 2,
                 useGrouping: false,
               })}
             </span>
           </div>
+          <pre>{JSON.stringify({timeFraction, timeBarOffset}, null, 4)}</pre>
         </div>
         {finished && (
           <div className={styles.streakColumn}>
