@@ -10,6 +10,7 @@ export default function Cursor({
   activeWordTyped,
   textDatabase,
   isFirstChar,
+  onLineChange,
 }) {
   const [text, setText] = useState("");
   const typingField = useRef(null);
@@ -70,9 +71,22 @@ export default function Cursor({
   // UPDATE HIGHLIGHT
   useEffect(() => {
     if (wordRef) {
+      let lineChange = 0;
       let pos = wordRef.current.getBoundingClientRect();
       let width = pos.right - pos.left;
       let height = pos.bottom - pos.top;
+      if (
+        Math.floor(pos.top) >
+        Math.floor(parseFloat(highlightRef.current.style.top))
+      ) {
+        lineChange += 1;
+      } else if (
+        Math.floor(pos.top) <
+        Math.floor(parseFloat(highlightRef.current.style.top))
+      ) {
+        lineChange -= 1;
+      }
+      onLineChange(lineChange);
       highlightRef.current.style.top = pos.top + "px";
       highlightRef.current.style.left = pos.left + "px";
       highlightRef.current.style.width = width + "px";

@@ -48,9 +48,9 @@ export default function Word({
       <style jsx>{`
         .word,
         input {
-          font-size: 1.75em;
+          font-size: 2em;
           letter-spacing: 0.02em;
-          line-height: 2.5em;
+          line-height: 2.25em;
         }
 
         .word {

@@ -31,6 +31,7 @@ export default function Home() {
   const [time, setTime] = useState(timeTotal);
   const [oldLength, setOldLength] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
+  const [linesPassed, setLinesPassed] = useState(0);
 
   const timeFraction = time / timeTotal;
   const timeBarOffset = timeFraction - (1 / timeTotal) * (1 - timeFraction);
@@ -66,6 +67,13 @@ export default function Home() {
 
   let placeHighlight = (wordRef) => {
     setWordRef(wordRef);
+  };
+
+  let handleLineChange = (lineChange) => {
+    if (lineChange != 0) {
+      let lines = linesPassed;
+      setLinesPassed(lines + lineChange);
+    }
   };
 
   // COUNTER
@@ -158,6 +166,7 @@ export default function Home() {
           <Cursor
             onTextTyped={handleTextTyped}
             onWordChanged={handleWordChanged}
+            onLineChange={handleLineChange}
             wordRef={wordRef}
             letterRef={letterRef}
             activeWord={activeWord}
@@ -167,7 +176,10 @@ export default function Home() {
             isFirstChar={isFirstChar}
           />
           <div className={styles.textFrame}>
-            <div className={styles.textWrapper}>
+            <div
+              className={styles.textWrapper}
+              style={{ transform: `translateY(-${8 * linesPassed}vh)` }}
+            >
               {textDatabase.map((word, i) => {
                 return (
                   <Word
