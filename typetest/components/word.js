@@ -2,14 +2,9 @@ import React, { useState, useContext } from "react";
 import Letter from "../components/letter.js";
 
 export default function Word(props) {
-  let active = props.id == props.active;
-  let activeClass = active ? "active" : "";
-
-  let classList = activeClass;
-
   return (
     <span className={"wordWrapper"}>
-      <span className={classList + " word"}>
+      <span className={"word"}>
         {props.word.map((letter, i) => {
           return (
             <Letter

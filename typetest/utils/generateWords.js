@@ -8,8 +8,9 @@ function getRandomWithBias(min, max, bias, influence) {
 
 export default function generateWords(short = true, medium = false, long = false, time = 60, length) {
     let words = [];
+
     while (words.length < (time / 60) * 100) {
-        words.push(shortWords[Math.floor(getRandomWithBias(0, shortWords.length - 10, 10, 0.75))])
+        words.push(shortWords[Math.floor(getRandomWithBias(0, shortWords.length - 1, 10, 0.75))])
     }
     return words;
 }
