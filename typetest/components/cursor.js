@@ -2,15 +2,17 @@ import React, { useEffect, useRef, useState } from "react";
 
 export default function Cursor({
   letterRef,
+  wordRef,
   onTextTyped,
   onWordChanged,
   finished,
   activeWord,
   activeWordTyped,
+  textDatabase,
+  isFirstChar,
 }) {
-  const [wordRef, setWordRef] = useState(null);
-  const [wordRefPos, setWordRefPos] = useState(null);
   const [text, setText] = useState("");
+  const typingField = useRef(null);
   const cursorRef = useRef(null);
   const highlightRef = useRef(null);
 
@@ -42,41 +44,41 @@ export default function Cursor({
     if (newActiveWord != activeWord) onWordChanged(newActiveWord);
   };
 
+  useEffect(() => {
+    typingField.current.focus();
+  });
+
   // UPDATE CURSOR
-  // useEffect(() => {
-  //   if (letterRef) {
-  //     let pos = letterRef.current.getBoundingClientRect();
-  //     let height = pos.bottom - pos.top;
+  useEffect(() => {
+    if (letterRef) {
+      let pos;
+      if (activeWordTyped.length <= textDatabase[activeWord].length) {
+        pos = letterRef.current.getBoundingClientRect();
+      } else {
+        pos = wordRef.current.getBoundingClientRect();
+      }
 
-  //     cursorRef.current.style.transform = `translate(${pos.left}px, ${pos.top}px)`;
-  //     cursorRef.current.style.height = height + "px";
-
-  //     setWordRef(letterRef.current.parentNode.parentNode);
-  //     setWordRefPos(
-  //       letterRef.current.parentNode.parentNode.getBoundingClientRect()
-  //     );
-  //   }
-  // }, [letterRef]);
-
-  useEffect(() => {}, [letterRef?.current.getBoundingClientRect()]);
+      let height = pos.bottom - pos.top;
+      let offset = isFirstChar ? pos.left : pos.right;
+      cursorRef.current.style.transform = `translate(${offset}px, ${pos.top}px)`;
+      cursorRef.current.style.height = height + "px";
+    } else {
+      // TODO: initial state
+    }
+  }, [letterRef, activeWordTyped, isFirstChar]);
 
   // UPDATE HIGHLIGHT
   useEffect(() => {
-    if (wordRef && wordRefPos) {
-      let pos = wordRefPos;
-      let rightBound = pos.right;
-      if (wordRef.lastChild.childNodes[0].innerHTML == " ") {
-        rightBound = wordRef.lastChild.childNodes[0].getBoundingClientRect()
-          .left;
-      }
-      let width = rightBound - pos.left;
+    if (wordRef) {
+      let pos = wordRef.current.getBoundingClientRect();
+      let width = pos.right - pos.left;
       let height = pos.bottom - pos.top;
       highlightRef.current.style.top = pos.top + "px";
       highlightRef.current.style.left = pos.left + "px";
       highlightRef.current.style.width = width + "px";
       highlightRef.current.style.height = height + "px";
     }
-  }, [wordRef, wordRefPos]);
+  }, [wordRef, activeWordTyped]);
 
   // RESET STATE
   // useEffect(() => {
@@ -89,6 +91,7 @@ export default function Cursor({
       <span ref={highlightRef} className={"activeHighlight"}></span>
 
       <input
+        ref={typingField}
         value={text}
         onKeyDown={handleSpecialChar}
         onChange={handleTextTyped}
@@ -107,6 +110,7 @@ export default function Cursor({
           user-select: none;
         }
         .cursor {
+          z-index: 999;
           background-color: #0077ff;
           width: 3px;
           border-radius: 4px;
@@ -137,8 +141,9 @@ export default function Cursor({
 
         .activeHighlight {
           position: absolute;
-          background-color: rgba(0, 0, 0, 0);
-          transition: all 0.2s ease;
+          background-color: rgba(0, 0, 0, 0.15);
+          transition: all 0.25s ease;
+          will-change: top, left, width, height;
         }
 
         @keyframes blink {

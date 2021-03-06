@@ -18,8 +18,9 @@ export default function Home() {
   const [activeWord, setActiveWord] = useState(0);
   const [textDatabase, setTextDatabase] = useState(textData);
   const [textTyped, setTextTyped] = useState(textHolder);
-  const [charTyped, setCharTyped] = useState(null);
+  const [wordRef, setWordRef] = useState(null);
   const [letterRef, setLetterRef] = useState(null);
+  const [isFirstChar, setIsFirstChar] = useState(true);
   const [wpm, setWpm] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [incorrect, setIncorrect] = useState(0);
@@ -57,15 +58,15 @@ export default function Home() {
     setActiveWord(newActiveWord);
   };
 
-  let placeCursor = (ref) => {
-    setLetterRef(ref);
+  let placeCursor = (letterRef, isFirstChar) => {
+    console.log(letterRef);
+    setLetterRef(letterRef);
+    setIsFirstChar(isFirstChar);
   };
 
-  // FINISH GAME
-  useEffect(() => {
-    setActiveWord(0);
-    placeCursor(letterRef);
-  }, [finished]);
+  let placeHighlight = (wordRef) => {
+    setWordRef(wordRef);
+  };
 
   // COUNTER
   useInterval(
@@ -157,11 +158,13 @@ export default function Home() {
           <Cursor
             onTextTyped={handleTextTyped}
             onWordChanged={handleWordChanged}
+            wordRef={wordRef}
             letterRef={letterRef}
             activeWord={activeWord}
             activeWordTyped={textTyped[activeWord]}
             textDatabase={textDatabase}
             finished={finished}
+            isFirstChar={isFirstChar}
           />
           <div className={styles.textFrame}>
             <div className={styles.textWrapper}>
@@ -175,6 +178,7 @@ export default function Home() {
                     data={textDatabase}
                     key={`WORD-${i}`}
                     onLetterUpdate={placeCursor}
+                    onWordUpdate={placeHighlight}
                     finished={finished}
                   />
                 );
@@ -198,7 +202,8 @@ export default function Home() {
               })}
             </span>
           </div>
-          {/* <pre>{JSON.stringify({ activeWord, textTyped }, null, 4)}</pre> */}
+          {/* DEBUG */}
+          {/* <pre>{JSON.stringify({ activeWord }, null, 4)}</pre> */}
         </div>
         {finished && (
           <div className={styles.streakColumn}>

@@ -18,13 +18,12 @@ export default function Letter({
   });
 
   useEffect(() => {
-    if (active && id == typed?.length - 1) {
+    if (active && id == typed.length - 1) {
       onLetterUpdate(letterRef);
+    } else if (active && typed.length == 0 && id == 0) {
+      onLetterUpdate(letterRef, true);
     }
-    if (finished && id == 0 && wordId == 0) {
-      onLetterUpdate(letterRef);
-    }
-  }, [typed]);
+  }, [typed, active]);
 
   return (
     <span className={"letterWrapper"}>

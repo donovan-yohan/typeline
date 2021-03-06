@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useEffect } from "react";
 import Letter from "../components/letter.js";
 
 export default function Word({
@@ -8,16 +8,24 @@ export default function Word({
   id,
   data,
   onLetterUpdate,
+  onWordUpdate,
   finished,
 }) {
+  const wordRef = useRef(null);
   const overflowText =
     typed.length > word.length
       ? typed.substring(word.length, typed.length)
       : "";
 
+  useEffect(() => {
+    if (active) {
+      onWordUpdate(wordRef);
+    }
+  }, [active]);
+
   return (
     <span className={"wordWrapper"}>
-      <span className={"word"}>
+      <span ref={wordRef} className={"word"}>
         <span>
           {word.map((letter, i) => {
             return (
