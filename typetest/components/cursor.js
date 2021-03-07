@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import getDocumentCoords from "../utils/getDocumentCoords.js";
+import { useOffset } from "../hooks/useOffset.js";
 
 export default function Cursor({
   letterRef,
   wordRef,
+  paragraphRef,
   onTextTyped,
   onWordChanged,
   finished,
@@ -11,14 +13,51 @@ export default function Cursor({
   activeWordTyped,
   textDatabase,
   isFirstChar,
+  onLineChange,
+  onValidateWord,
+  onResetStreak,
+  onUpdateScore,
 }) {
   const [text, setText] = useState("");
   const typingField = useRef(null);
   const cursorRef = useRef(null);
   const highlightRef = useRef(null);
+  const cursorOffset = useOffset(paragraphRef, letterRef);
+  const highlightOffset = useOffset(paragraphRef, wordRef, [activeWordTyped]);
+  const [lastHeight, setLastHeight] = useState(0);
 
   let handleTextTyped = (e) => {
-    setText(e.target.value);
+    let w = e.target.value;
+    setText(w);
+
+    let expected = textDatabase[activeWord];
+    console.log(w.charAt(w.length - 1));
+    if (w.length > 0 && w.charAt(w.length - 1) == expected[w.length - 1]) {
+      updateScore(1);
+    } else if (
+      w.length > 0 &&
+      w.charAt(w.length - 1) != expected[w.length - 1]
+    ) {
+      updateScore(-1);
+      resetStreak();
+    }
+  };
+
+  let validateWord = (typed, expected) => {
+    if (typed.join("") == expected) {
+      updateScore(1);
+    } else {
+      updateScore(-1);
+      resetStreak();
+    }
+  };
+
+  let resetStreak = () => {
+    onResetStreak();
+  };
+
+  let updateScore = (change) => {
+    onUpdateScore(change);
   };
 
   useEffect(() => {
@@ -33,9 +72,11 @@ export default function Cursor({
     let newActiveWord = activeWord;
 
     if (e.key == " " || e.key == "Spacebar") {
+      validateWord(textDatabase[activeWord], activeWordTyped);
       e.preventDefault();
       newActiveWord += 1;
     } else if (e.key == "Backspace") {
+      resetStreak();
       // if new value matches old and backsapce was pressed, move to previous word
       if (text.length == 0 && text.length == activeWordTyped.length) {
         if (activeWord > 0) newActiveWord -= 1;
@@ -45,41 +86,47 @@ export default function Cursor({
     if (newActiveWord != activeWord) onWordChanged(newActiveWord);
   };
 
+  let handleLineChange = (change) => {
+    onLineChange(change);
+  };
+
   useEffect(() => {
     typingField.current.focus();
   });
 
   // UPDATE CURSOR
   useEffect(() => {
-    if (letterRef) {
+    if (cursorOffset) {
       let pos;
+      let x;
       if (activeWordTyped.length <= textDatabase[activeWord].length) {
-        pos = getDocumentCoords(letterRef.current);
+        pos = cursorOffset;
+        x = isFirstChar ? pos.left : pos.right;
       } else {
-        pos = getDocumentCoords(wordRef.current);
+        pos = highlightOffset;
+        x = pos.right;
       }
 
-      let height = pos.bottom - pos.top;
-      let offset = isFirstChar ? pos.left : pos.right;
-      cursorRef.current.style.transform = `translate(${offset}px, ${pos.top}px)`;
-      cursorRef.current.style.height = height + "px";
-    } else {
-      // TODO: initial state
+      let y = pos.top;
+      if (y != lastHeight) {
+      }
+      cursorRef.current.style.transform = `translate(${x}px, ${y}px)`;
     }
-  }, [letterRef, activeWordTyped, isFirstChar]);
+  }, [cursorOffset, highlightOffset, isFirstChar]);
 
   // UPDATE HIGHLIGHT
-  // useEffect(() => {
-  //   if (wordRef) {
-  //     let pos = getDocumentCoords(wordRef.current);
-  //     let width = pos.right - pos.left;
-  //     let height = pos.bottom - pos.top;
-  //     highlightRef.current.style.top = pos.top + "px";
-  //     highlightRef.current.style.left = pos.left + "px";
-  //     highlightRef.current.style.width = width + "px";
-  //     highlightRef.current.style.height = height + "px";
-  //   }
-  // }, [wordRef, activeWordTyped]);
+  useEffect(() => {
+    if (highlightOffset) {
+      let pos = highlightOffset;
+      let width = pos.right - pos.left;
+      let height = pos.bottom - pos.top;
+      highlightRef.current.style.top = pos.top + "px";
+      highlightRef.current.style.left = pos.left + "px";
+      highlightRef.current.style.width = width + "px";
+      highlightRef.current.style.height = height + "px";
+      handleLineChange(highlightOffset.bottom);
+    }
+  }, [highlightOffset]);
 
   // RESET STATE
   // useEffect(() => {
@@ -103,7 +150,6 @@ export default function Cursor({
           z-index: 99;
         }
 
-        .cursor,
         input {
           max-width: 50vw;
           font-size: 2em;
@@ -111,13 +157,12 @@ export default function Cursor({
           user-select: none;
         }
         .cursor {
-          z-index: 999;
+          position: absolute;
+          display: block;
           background-color: #0077ff;
           width: 3px;
+          height: 2.5em;
           border-radius: 4px;
-          position: absolute;
-          top: 0;
-          left: 0;
           transition: transform 0.25s ease;
           will-change: transform;
         }
@@ -142,7 +187,8 @@ export default function Cursor({
 
         .activeHighlight {
           position: absolute;
-          background-color: rgba(0, 0, 0, 0.15);
+          background-color: #0077ff;
+          opacity: 0.2;
           transition: all 0.25s ease;
           will-change: top, left, width, height;
         }

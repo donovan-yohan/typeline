@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import Letter from "../components/letter.js";
-
+import { useOffset } from "../hooks/useOffset.js";
 export default function Word({
   active,
   word,
@@ -11,6 +11,7 @@ export default function Word({
   onWordUpdate,
   finished,
   currentId,
+  paragraphRef,
 }) {
   const wordRef = useRef(null);
   const overflowText =
@@ -23,7 +24,6 @@ export default function Word({
       onWordUpdate(wordRef);
     }
   }, [active]);
-
 
   return (
     <span className={"wordWrapper"}>
@@ -42,6 +42,8 @@ export default function Word({
                 key={`${id}-CHAR-${i}`}
                 onLetterUpdate={onLetterUpdate}
                 finished={finished}
+                paragraphRef={paragraphRef}
+                wordRef={wordRef}
               />
             );
           })}
@@ -51,16 +53,16 @@ export default function Word({
       <style jsx>{`
         .word,
         input {
-          font-size: 2em;
+          font-size: 2.25em;
           letter-spacing: 0.02em;
-          line-height: 2.5em;
+          line-height: 2.25;
         }
 
         .word {
           white-space: pre;
           user-select: none;
           position: relative;
-          margin-right: 0.6em;
+          margin-right: 0.5em;
         }
 
         .overflow {

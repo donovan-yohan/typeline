@@ -1,5 +1,10 @@
+.container {
+  position: relative;
+}
+
 .main {
   width: 100%;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -10,51 +15,53 @@
   max-width: 50vw;
 }
 
-.textWrapper {
-  padding: 40vh 0;
-  display: flex;
-  align-content: center;
-  flex-wrap: wrap;
-}
-
-.textFrame {
-  z-index: 1;
+.textPage {
+  position: relative;
   width: 50vw;
-  height: 100vh;
-  position: fixed;
-  top: 0;
+  min-height: 43vh;
+  max-height: 43vh;
+  overflow: hidden;
+  overflow: hidden;
 }
 
-.textFrame:before,
-.textFrame:after {
-  z-index: 1;
+.textPage:before,
+.textPage:after {
+  z-index: 99;
   content: "";
   position: absolute;
   width: 100%;
   height: 50%;
 }
-
-.textFrame:before {
+.textPage:before {
   top: 0;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 1) 55%,
-    transparent 95%
+    rgba(255, 255, 255, 0.9) 20%,
+    transparent 100%
   );
 }
-.textFrame:after {
+.textPage:after {
   bottom: 0;
   background: linear-gradient(
     0deg,
-    rgba(255, 255, 255, 1) 55%,
-    transparent 95%
+    rgba(255, 255, 255, 0.8) 0%,
+    transparent 100%
   );
+}
+
+.textFrame {
+  position: relative;
+  transition: transform 1s ease;
+}
+
+.textWrapper {
+  display: flex;
+  position: relative;
+  flex-wrap: wrap;
 }
 
 .streakColumn,
 .wpmColumn {
-  top: 0;
-  position: fixed;
   width: 25vw;
   height: 100vh;
   max-width: 25vw;
@@ -118,14 +125,13 @@
 }
 
 .timeWrapper {
-  z-index: 2;
   font-weight: bold;
   color: rgba(0, 0, 0, 0.33);
-  position: fixed;
   bottom: 25vh;
   width: 50vw;
   display: flex;
   align-items: center;
+  margin-top: 32px;
 }
 
 .timeBar {

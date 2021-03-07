@@ -7,10 +7,7 @@ import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useInterval from "@use-it/interval";
 import generateWords from "../utils/generateWords.js";
 import createTextDatabase from "../utils/createTextDatabase.js";
-import disableScroll from "disable-scroll";
-import getDocumentCoords from "../utils/getDocumentCoords.js";
-import getMiddleCoord from "../utils/getMiddleCoord.js";
-import Scroll, { animateScroll } from "react-scroll";
+import { useOffset } from "../hooks/useOffset.js";
 
 let text = generateWords();
 let textData = createTextDatabase(text);
@@ -24,24 +21,34 @@ export default function Home() {
   const [textTyped, setTextTyped] = useState(textHolder);
   const [wordRef, setWordRef] = useState(null);
   const [letterRef, setLetterRef] = useState(null);
+  const [highlightOffset, setHighlightOffset] = useState({
+    left: 0,
+    top: 0,
+    bottom: 0,
+    right: 0,
+  });
+  const [lineOffset, setLineOffset] = useState(0);
   const [isFirstChar, setIsFirstChar] = useState(true);
+  const [oldLength, setOldLength] = useState(0);
   const [wpm, setWpm] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [incorrect, setIncorrect] = useState(0);
   const [streak, setStreak] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
-  const [timeTotal, setTimeTotal] = useState(60);
+  const [timeTotal, setTimeTotal] = useState(30);
   const [time, setTime] = useState(timeTotal);
-  const [oldLength, setOldLength] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
-  const [lastHeight, setLastHeight] = useState(0);
+
+  const paragraphRef = useRef(null);
+  const rootRef = useRef(null);
+  const textPageRef = useRef(null);
+  const textOffset = useOffset(rootRef, textPageRef);
 
   const timeFraction = time / timeTotal;
   const timeBarOffset = timeFraction - (1 / timeTotal) * (1 - timeFraction);
 
   // HELPER FUNCTIONS
-
   let updateTextTypedArray = (targetIndex, newValue) => {
     setTextTyped((textTyped) => {
       return textTyped.map((w, i) => {
@@ -72,23 +79,10 @@ export default function Home() {
     setWordRef(wordRef);
   };
 
-  // HANDLE LINE SCROLLING
-  useEffect(() => {
-    if (
-      wordRef?.current &&
-      getDocumentCoords(wordRef.current).top != lastHeight
-    ) {
-      setLastHeight(getDocumentCoords(wordRef.current).top);
-    }
-  }, [wordRef]);
+  let handleLineChange = (change) => {
+    setLineOffset(textOffset.top - change);
+  };
 
-  useDidUpdateEffect(() => {
-    animateScroll.scrollTo(getMiddleCoord(wordRef.current), {
-      duration: 1000,
-      smooth: true,
-      ignoreCancelEvents: true,
-    });
-  }, [lastHeight]);
   // COUNTER
   useInterval(
     () => {
@@ -108,36 +102,24 @@ export default function Home() {
   // HANDLE TEXT TYPED
   useDidUpdateEffect(() => {
     setIsRunning(true);
-  }, [textTyped]);
+  }, [textTyped[0]]);
 
   // UPDATE STATS
-  // useDidUpdateEffect(() => {
-  //   if (!finished && textTyped.length > 0) {
-  //     if (
-  //       textTyped.charAt(textTyped.length - 1) ==
-  //         textDatabase.flat()[textTyped.length - 1].value &&
-  //       textTyped.length > oldLength
-  //     ) {
-  //       setCorrect((correct) => correct + 1);
-  //       setStreak((streak) => streak + 1);
-  //     } else if (
-  //       textTyped.charAt(textTyped.length - 1) !=
-  //         textDatabase.flat()[textTyped.length - 1].value &&
-  //       textTyped.length > oldLength
-  //     ) {
-  //       setIncorrect((incorrect) => incorrect + 1);
-  //       setStreak(0);
-  //     } else {
-  //       setStreak(0);
-  //     }
-  //     setOldLength(textTyped.length);
-  //   }
-  // }, [textTyped]);
+  let handleValidateWord = () => {};
 
-  // PREVENT DEFAULT SCROLL BEHAVIOUR
-  useEffect(() => {
-    disableScroll.on();
-  });
+  let handleResetStreak = () => {
+    setStreak(0);
+  };
+
+  let handleUpdateScore = (change) => {
+    if (change > 0) {
+      setCorrect((correct) => correct + 1);
+      setStreak((streak) => streak + 1);
+    } else {
+      setIncorrect((incorrect) => incorrect + 1);
+      handleResetStreak();
+    }
+  };
 
   useEffect(() => {
     if (streak > maxStreak) {
@@ -150,7 +132,7 @@ export default function Home() {
   }, [time]);
 
   return (
-    <div className={styles.container}>
+    <div ref={rootRef} className={styles.container}>
       <Head>
         <title>Create Next App</title>
         <link rel='icon' href='/favicon.ico' />
@@ -181,36 +163,48 @@ export default function Home() {
           </div>
         )}
         <div className={styles.textColumn}>
-          <div className={styles.textPage}>
-            <div className={styles.textFrame}></div>
-            <Cursor
-              onTextTyped={handleTextTyped}
-              onWordChanged={handleWordChanged}
-              wordRef={wordRef}
-              letterRef={letterRef}
-              activeWord={activeWord}
-              activeWordTyped={textTyped[activeWord]}
-              textDatabase={textDatabase}
-              finished={finished}
-              isFirstChar={isFirstChar}
-            />
-            <div className={styles.textWrapper}>
-              {textDatabase.map((word, i) => {
-                return (
-                  <Word
-                    id={i}
-                    word={word}
-                    active={activeWord == i}
-                    currentId={activeWord}
-                    typed={textTyped[i]}
-                    data={textDatabase}
-                    key={`WORD-${i}`}
-                    onLetterUpdate={placeCursor}
-                    onWordUpdate={placeHighlight}
-                    finished={finished}
-                  />
-                );
-              })}
+          <div ref={textPageRef} className={styles.textPage}>
+            <div
+              ref={paragraphRef}
+              className={styles.textFrame}
+              style={{ transform: `translateY(${lineOffset}px)` }}
+            >
+              <Cursor
+                onTextTyped={handleTextTyped}
+                onWordChanged={handleWordChanged}
+                wordRef={wordRef}
+                letterRef={letterRef}
+                paragraphRef={paragraphRef}
+                highlightOffset={highlightOffset}
+                activeWord={activeWord}
+                activeWordTyped={textTyped[activeWord]}
+                textDatabase={textDatabase}
+                finished={finished}
+                isFirstChar={isFirstChar}
+                onLineChange={handleLineChange}
+                onValidateWord={handleValidateWord}
+                onResetStreak={handleResetStreak}
+                onUpdateScore={handleUpdateScore}
+              />
+              <div className={styles.textWrapper}>
+                {textDatabase.map((word, i) => {
+                  return (
+                    <Word
+                      id={i}
+                      word={word}
+                      active={activeWord == i}
+                      currentId={activeWord}
+                      typed={textTyped[i]}
+                      data={textDatabase}
+                      key={`WORD-${i}`}
+                      onLetterUpdate={placeCursor}
+                      onWordUpdate={placeHighlight}
+                      finished={finished}
+                      paragraphRef={paragraphRef}
+                    />
+                  );
+                })}
+              </div>
             </div>
           </div>
           <div className={styles.timeWrapper}>

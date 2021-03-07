@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import cx from "classnames";
+import { useOffset } from "../hooks/useOffset.js";
 
 export default function Letter({
   active,
@@ -10,6 +11,9 @@ export default function Letter({
   onLetterUpdate,
   id,
   currentId,
+  paragraphRef,
+  data,
+  wordRef,
 }) {
   const letterRef = useRef(null);
   const letterClassList = cx({
