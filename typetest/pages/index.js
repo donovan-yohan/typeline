@@ -29,7 +29,7 @@ export default function Home() {
   const [streak, setStreak] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
-  const [timeTotal, setTimeTotal] = useState(5);
+  const [timeTotal, setTimeTotal] = useState(30);
   const [time, setTime] = useState(timeTotal);
   const [maxStreak, setMaxStreak] = useState(0);
 
