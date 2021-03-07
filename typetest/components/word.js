@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import Letter from "../components/letter.js";
+import scrollToMiddle from "../utils/scrollToMiddle.js";
 
 export default function Word({
   active,
@@ -20,6 +21,7 @@ export default function Word({
   useEffect(() => {
     if (active) {
       onWordUpdate(wordRef);
+      scrollToMiddle(wordRef.current);
     }
   }, [active]);
 
@@ -50,14 +52,14 @@ export default function Word({
         input {
           font-size: 2em;
           letter-spacing: 0.02em;
-          line-height: 2.25em;
+          line-height: 2.5em;
         }
 
         .word {
           white-space: pre;
           user-select: none;
           position: relative;
-          margin-right: 0.3em;
+          margin-right: 0.6em;
         }
 
         .overflow {

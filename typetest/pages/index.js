@@ -7,6 +7,7 @@ import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useInterval from "@use-it/interval";
 import generateWords from "../utils/generateWords.js";
 import createTextDatabase from "../utils/createTextDatabase.js";
+import disableScroll from "disable-scroll";
 
 let text = generateWords();
 let textData = createTextDatabase(text);
@@ -60,7 +61,6 @@ export default function Home() {
   };
 
   let placeCursor = (letterRef, isFirstChar) => {
-    console.log(letterRef);
     setLetterRef(letterRef);
     setIsFirstChar(isFirstChar);
   };
@@ -121,6 +121,11 @@ export default function Home() {
   //   }
   // }, [textTyped]);
 
+  // PREVENT DEFAULT SCROLL BEHAVIOUR
+  // useEffect(() => {
+  //   disableScroll["on"]();
+  // });
+
   useEffect(() => {
     if (streak > maxStreak) {
       setMaxStreak(streak);
@@ -163,23 +168,21 @@ export default function Home() {
           </div>
         )}
         <div className={styles.textColumn}>
-          <Cursor
-            onTextTyped={handleTextTyped}
-            onWordChanged={handleWordChanged}
-            onLineChange={handleLineChange}
-            wordRef={wordRef}
-            letterRef={letterRef}
-            activeWord={activeWord}
-            activeWordTyped={textTyped[activeWord]}
-            textDatabase={textDatabase}
-            finished={finished}
-            isFirstChar={isFirstChar}
-          />
-          <div className={styles.textFrame}>
-            <div
-              className={styles.textWrapper}
-              style={{ transform: `translateY(-${8 * linesPassed}vh)` }}
-            >
+          <div className={styles.textPage}>
+            <div className={styles.textFrame}></div>
+            <Cursor
+              onTextTyped={handleTextTyped}
+              onWordChanged={handleWordChanged}
+              onLineChange={handleLineChange}
+              wordRef={wordRef}
+              letterRef={letterRef}
+              activeWord={activeWord}
+              activeWordTyped={textTyped[activeWord]}
+              textDatabase={textDatabase}
+              finished={finished}
+              isFirstChar={isFirstChar}
+            />
+            <div className={styles.textWrapper}>
               {textDatabase.map((word, i) => {
                 return (
                   <Word

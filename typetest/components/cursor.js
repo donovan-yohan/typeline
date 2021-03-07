@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import getDocumentCoords from "../utils/getDocumentCoords.js";
 
 export default function Cursor({
   letterRef,
@@ -54,9 +55,9 @@ export default function Cursor({
     if (letterRef) {
       let pos;
       if (activeWordTyped.length <= textDatabase[activeWord].length) {
-        pos = letterRef.current.getBoundingClientRect();
+        pos = getDocumentCoords(letterRef.current);
       } else {
-        pos = wordRef.current.getBoundingClientRect();
+        pos = getDocumentCoords(wordRef.current);
       }
 
       let height = pos.bottom - pos.top;
@@ -72,7 +73,7 @@ export default function Cursor({
   useEffect(() => {
     if (wordRef) {
       let lineChange = 0;
-      let pos = wordRef.current.getBoundingClientRect();
+      let pos = getDocumentCoords(wordRef.current);
       let width = pos.right - pos.left;
       let height = pos.bottom - pos.top;
       if (
