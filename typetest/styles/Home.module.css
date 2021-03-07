@@ -11,12 +11,10 @@
 }
 
 .textWrapper {
-  margin: 45vh 0;
+  padding: 40vh 0;
   display: flex;
+  align-content: center;
   flex-wrap: wrap;
-  transition: transform 1s ease;
-
-  transform: translateY(0vh);
 }
 
 .textFrame {
@@ -40,16 +38,16 @@
   top: 0;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.9) 50%,
-    transparent 100%
+    rgba(255, 255, 255, 1) 55%,
+    transparent 95%
   );
 }
 .textFrame:after {
   bottom: 0;
   background: linear-gradient(
     0deg,
-    rgba(255, 255, 255, 0.9) 50%,
-    transparent 100%
+    rgba(255, 255, 255, 1) 55%,
+    transparent 95%
   );
 }
 

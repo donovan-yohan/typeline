@@ -1,6 +1,5 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Letter from "../components/letter.js";
-import scrollToMiddle from "../utils/scrollToMiddle.js";
 
 export default function Word({
   active,
@@ -11,6 +10,7 @@ export default function Word({
   onLetterUpdate,
   onWordUpdate,
   finished,
+  currentId,
 }) {
   const wordRef = useRef(null);
   const overflowText =
@@ -21,9 +21,9 @@ export default function Word({
   useEffect(() => {
     if (active) {
       onWordUpdate(wordRef);
-      scrollToMiddle(wordRef.current);
     }
   }, [active]);
+
 
   return (
     <span className={"wordWrapper"}>
@@ -34,6 +34,7 @@ export default function Word({
               <Letter
                 id={i}
                 active={active}
+                currentId={currentId}
                 letter={letter}
                 typed={typed}
                 wordId={id}

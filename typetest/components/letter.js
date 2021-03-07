@@ -9,12 +9,15 @@ export default function Letter({
   finished,
   onLetterUpdate,
   id,
+  currentId,
 }) {
   const letterRef = useRef(null);
   const letterClassList = cx({
     untyped: !typed.charAt(id),
     correct: typed.charAt(id) == letter,
-    incorrect: typed.charAt(id) && typed?.charAt(id) != letter,
+    incorrect:
+      (typed.charAt(id) && typed.charAt(id) != letter) ||
+      (currentId > wordId && typed.charAt(id) != letter),
   });
 
   useEffect(() => {

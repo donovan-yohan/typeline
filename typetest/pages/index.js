@@ -8,6 +8,9 @@ import useInterval from "@use-it/interval";
 import generateWords from "../utils/generateWords.js";
 import createTextDatabase from "../utils/createTextDatabase.js";
 import disableScroll from "disable-scroll";
+import getDocumentCoords from "../utils/getDocumentCoords.js";
+import getMiddleCoord from "../utils/getMiddleCoord.js";
+import Scroll, { animateScroll } from "react-scroll";
 
 let text = generateWords();
 let textData = createTextDatabase(text);
@@ -32,7 +35,7 @@ export default function Home() {
   const [time, setTime] = useState(timeTotal);
   const [oldLength, setOldLength] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
-  const [linesPassed, setLinesPassed] = useState(0);
+  const [lastHeight, setLastHeight] = useState(0);
 
   const timeFraction = time / timeTotal;
   const timeBarOffset = timeFraction - (1 / timeTotal) * (1 - timeFraction);
@@ -69,13 +72,23 @@ export default function Home() {
     setWordRef(wordRef);
   };
 
-  let handleLineChange = (lineChange) => {
-    if (lineChange != 0) {
-      let lines = linesPassed;
-      setLinesPassed(lines + lineChange);
+  // HANDLE LINE SCROLLING
+  useEffect(() => {
+    if (
+      wordRef?.current &&
+      getDocumentCoords(wordRef.current).top != lastHeight
+    ) {
+      setLastHeight(getDocumentCoords(wordRef.current).top);
     }
-  };
+  }, [wordRef]);
 
+  useDidUpdateEffect(() => {
+    animateScroll.scrollTo(getMiddleCoord(wordRef.current), {
+      duration: 1000,
+      smooth: true,
+      ignoreCancelEvents: true,
+    });
+  }, [lastHeight]);
   // COUNTER
   useInterval(
     () => {
@@ -122,9 +135,9 @@ export default function Home() {
   // }, [textTyped]);
 
   // PREVENT DEFAULT SCROLL BEHAVIOUR
-  // useEffect(() => {
-  //   disableScroll["on"]();
-  // });
+  useEffect(() => {
+    disableScroll.on();
+  });
 
   useEffect(() => {
     if (streak > maxStreak) {
@@ -173,7 +186,6 @@ export default function Home() {
             <Cursor
               onTextTyped={handleTextTyped}
               onWordChanged={handleWordChanged}
-              onLineChange={handleLineChange}
               wordRef={wordRef}
               letterRef={letterRef}
               activeWord={activeWord}
@@ -189,6 +201,7 @@ export default function Home() {
                     id={i}
                     word={word}
                     active={activeWord == i}
+                    currentId={activeWord}
                     typed={textTyped[i]}
                     data={textDatabase}
                     key={`WORD-${i}`}

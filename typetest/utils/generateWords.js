@@ -15,7 +15,7 @@ export default function generateWords(
 ) {
   let words = [];
 
-  while (words.length < (time / 60) * 125) {
+  while (words.length < (time / 60) * 60) {
     words.push(
       shortWords[Math.floor(getRandomWithBias(0, shortWords.length - 1, 0, 1))]
     );
