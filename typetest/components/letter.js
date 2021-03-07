@@ -7,13 +7,9 @@ export default function Letter({
   typed,
   wordId,
   letter,
-  finished,
   onLetterUpdate,
   id,
   currentId,
-  paragraphRef,
-  data,
-  wordRef,
 }) {
   const letterRef = useRef(null);
   const letterClassList = cx({
@@ -46,13 +42,10 @@ export default function Letter({
         }
         .correct {
           color: rgba(0, 0, 0, 1);
-          transition: color 0.5s ease;
+          transition: color 0.4s ease;
         }
         .incorrect {
-          color: red;
-        }
-        .space {
-          text-decoration: underline;
+          color: rgb(210, 0, 0);
         }
       `}</style>
     </span>

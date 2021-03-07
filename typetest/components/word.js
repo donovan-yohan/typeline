@@ -6,12 +6,10 @@ export default function Word({
   word,
   typed,
   id,
-  data,
   onLetterUpdate,
   onWordUpdate,
   finished,
   currentId,
-  paragraphRef,
 }) {
   const wordRef = useRef(null);
   const overflowText =
@@ -38,12 +36,9 @@ export default function Word({
                 letter={letter}
                 typed={typed}
                 wordId={id}
-                data={data}
                 key={`${id}-CHAR-${i}`}
                 onLetterUpdate={onLetterUpdate}
                 finished={finished}
-                paragraphRef={paragraphRef}
-                wordRef={wordRef}
               />
             );
           })}
@@ -66,7 +61,7 @@ export default function Word({
         }
 
         .overflow {
-          color: red;
+          color: rgb(210, 0, 0);
           opacity: 0.66;
         }
       `}</style>

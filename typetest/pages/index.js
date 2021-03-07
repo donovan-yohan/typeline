@@ -21,22 +21,15 @@ export default function Home() {
   const [textTyped, setTextTyped] = useState(textHolder);
   const [wordRef, setWordRef] = useState(null);
   const [letterRef, setLetterRef] = useState(null);
-  const [highlightOffset, setHighlightOffset] = useState({
-    left: 0,
-    top: 0,
-    bottom: 0,
-    right: 0,
-  });
   const [lineOffset, setLineOffset] = useState(0);
   const [isFirstChar, setIsFirstChar] = useState(true);
-  const [oldLength, setOldLength] = useState(0);
   const [wpm, setWpm] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [incorrect, setIncorrect] = useState(0);
   const [streak, setStreak] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
-  const [timeTotal, setTimeTotal] = useState(30);
+  const [timeTotal, setTimeTotal] = useState(5);
   const [time, setTime] = useState(timeTotal);
   const [maxStreak, setMaxStreak] = useState(0);
 
@@ -175,7 +168,6 @@ export default function Home() {
                 wordRef={wordRef}
                 letterRef={letterRef}
                 paragraphRef={paragraphRef}
-                highlightOffset={highlightOffset}
                 activeWord={activeWord}
                 activeWordTyped={textTyped[activeWord]}
                 textDatabase={textDatabase}
@@ -195,12 +187,10 @@ export default function Home() {
                       active={activeWord == i}
                       currentId={activeWord}
                       typed={textTyped[i]}
-                      data={textDatabase}
                       key={`WORD-${i}`}
                       onLetterUpdate={placeCursor}
                       onWordUpdate={placeHighlight}
                       finished={finished}
-                      paragraphRef={paragraphRef}
                     />
                   );
                 })}

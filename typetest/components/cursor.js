@@ -14,33 +14,32 @@ export default function Cursor({
   textDatabase,
   isFirstChar,
   onLineChange,
-  onValidateWord,
   onResetStreak,
   onUpdateScore,
 }) {
   const [text, setText] = useState("");
+  const [oldLength, setOldLength] = useState(0);
   const typingField = useRef(null);
   const cursorRef = useRef(null);
   const highlightRef = useRef(null);
   const cursorOffset = useOffset(paragraphRef, letterRef);
   const highlightOffset = useOffset(paragraphRef, wordRef, [activeWordTyped]);
-  const [lastHeight, setLastHeight] = useState(0);
 
   let handleTextTyped = (e) => {
     let w = e.target.value;
     setText(w);
 
     let expected = textDatabase[activeWord];
-    console.log(w.charAt(w.length - 1));
-    if (w.length > 0 && w.charAt(w.length - 1) == expected[w.length - 1]) {
-      updateScore(1);
-    } else if (
-      w.length > 0 &&
-      w.charAt(w.length - 1) != expected[w.length - 1]
-    ) {
-      updateScore(-1);
-      resetStreak();
+    if (w.length > 0 && w.length > oldLength) {
+      if (w.charAt(w.length - 1) == expected[w.length - 1]) {
+        updateScore(1);
+      } else if (w.charAt(w.length - 1) != expected[w.length - 1]) {
+        updateScore(-1);
+        resetStreak();
+      }
     }
+
+    setOldLength(w.length);
   };
 
   let validateWord = (typed, expected) => {
@@ -92,7 +91,7 @@ export default function Cursor({
 
   useEffect(() => {
     typingField.current.focus();
-  });
+  }, []);
 
   // UPDATE CURSOR
   useEffect(() => {
@@ -106,10 +105,7 @@ export default function Cursor({
         pos = highlightOffset;
         x = pos.right;
       }
-
       let y = pos.top;
-      if (y != lastHeight) {
-      }
       cursorRef.current.style.transform = `translate(${x}px, ${y}px)`;
     }
   }, [cursorOffset, highlightOffset, isFirstChar]);
@@ -127,11 +123,6 @@ export default function Cursor({
       handleLineChange(highlightOffset.bottom);
     }
   }, [highlightOffset]);
-
-  // RESET STATE
-  // useEffect(() => {
-  //   if (finished) setText("");
-  // }, [finished]);
 
   return (
     <div>
