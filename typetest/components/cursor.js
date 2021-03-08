@@ -14,8 +14,7 @@ export default function Cursor({
   textDatabase,
   isFirstChar,
   onLineChange,
-  onResetStreak,
-  onUpdateScore,
+  onUpdateStats,
 }) {
   const [text, setText] = useState("");
   const [oldLength, setOldLength] = useState(0);
@@ -32,10 +31,10 @@ export default function Cursor({
     let expected = textDatabase[activeWord];
     if (w.length > 0 && w.length > oldLength) {
       if (w.charAt(w.length - 1) == expected[w.length - 1]) {
-        updateScore(1);
+        console.log("correct");
+        onUpdateStats({ type: "addCorrect" });
       } else if (w.charAt(w.length - 1) != expected[w.length - 1]) {
-        updateScore(-1);
-        resetStreak();
+        onUpdateStats({ type: "addIncorrect" });
       }
     }
 
@@ -44,19 +43,10 @@ export default function Cursor({
 
   let validateWord = (typed, expected) => {
     if (typed.join("") == expected) {
-      updateScore(1);
+      onUpdateStats({ type: "addCorrect" });
     } else {
-      updateScore(-1);
-      resetStreak();
+      onUpdateStats({ type: "addIncorrect" });
     }
-  };
-
-  let resetStreak = () => {
-    onResetStreak();
-  };
-
-  let updateScore = (change) => {
-    onUpdateScore(change);
   };
 
   useEffect(() => {
@@ -74,8 +64,9 @@ export default function Cursor({
       validateWord(textDatabase[activeWord], activeWordTyped);
       e.preventDefault();
       newActiveWord += 1;
+      setOldLength(0);
     } else if (e.key == "Backspace") {
-      resetStreak();
+      onUpdateStats({ type: "resetStreak" });
       // if new value matches old and backsapce was pressed, move to previous word
       if (text.length == 0 && text.length == activeWordTyped.length) {
         if (activeWord > 0) newActiveWord -= 1;
