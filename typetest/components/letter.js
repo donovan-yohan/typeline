@@ -1,30 +1,33 @@
 import React, { useRef, useEffect } from "react";
 import cx from "classnames";
-import { useOffset } from "../hooks/useOffset.js";
 
-export default function Letter({
+export default React.memo(function Letter({
   active,
   typed,
-  wordId,
   letter,
   onLetterUpdate,
   id,
-  currentId,
+  word,
 }) {
   const letterRef = useRef(null);
   const letterClassList = cx({
-    untyped: !typed.charAt(id),
     correct: typed.charAt(id) == letter,
-    incorrect:
-      (typed.charAt(id) && typed.charAt(id) != letter) ||
-      (currentId > wordId && typed.charAt(id) != letter),
+    incorrect: typed.charAt(id) && typed.charAt(id) != letter,
   });
 
   useEffect(() => {
     if (active && id == typed.length - 1) {
-      onLetterUpdate(letterRef);
+      onLetterUpdate({
+        type: "setLetterRef",
+        payload: letterRef,
+        isFirstChar: false,
+      });
     } else if (active && typed.length == 0 && id == 0) {
-      onLetterUpdate(letterRef, true);
+      onLetterUpdate({
+        type: "setLetterRef",
+        payload: letterRef,
+        isFirstChar: true,
+      });
     }
   }, [typed, active]);
 
@@ -50,4 +53,4 @@ export default function Letter({
       `}</style>
     </span>
   );
-}
+});

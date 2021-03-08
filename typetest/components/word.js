@@ -1,7 +1,7 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
 import Letter from "../components/letter.js";
-import { useOffset } from "../hooks/useOffset.js";
-export default function Word({
+
+export default React.memo(function Word({
   active,
   word,
   typed,
@@ -9,7 +9,6 @@ export default function Word({
   onLetterUpdate,
   onWordUpdate,
   finished,
-  currentId,
 }) {
   const wordRef = useRef(null);
   const overflowText =
@@ -19,7 +18,7 @@ export default function Word({
 
   useEffect(() => {
     if (active) {
-      onWordUpdate(wordRef);
+      onWordUpdate({ type: "setWordRef", payload: wordRef });
     }
   }, [active]);
 
@@ -32,9 +31,9 @@ export default function Word({
               <Letter
                 id={i}
                 active={active}
-                currentId={currentId}
                 letter={letter}
                 typed={typed}
+                word={word}
                 wordId={id}
                 key={`${id}-CHAR-${i}`}
                 onLetterUpdate={onLetterUpdate}
@@ -45,6 +44,7 @@ export default function Word({
         </span>
         <span className={"overflow"}>{overflowText}</span>
       </span>
+
       <style jsx>{`
         .word,
         input {
@@ -67,4 +67,4 @@ export default function Word({
       `}</style>
     </span>
   );
-}
+});

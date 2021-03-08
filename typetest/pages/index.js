@@ -1,5 +1,5 @@
 import Head from "next/head";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useReducer } from "react";
 import styles from "../styles/Home.module.css";
 import Word from "../components/word.js";
 import Cursor from "../components/cursor.js";
@@ -15,12 +15,51 @@ let textHolder = textData.map((word) => {
   return "";
 });
 
+let initialCursorState = {
+  letterRef: null,
+  isFirstChar: true,
+};
+
+function cursorReducer(state, action) {
+  switch (action.type) {
+    case "setLetterRef":
+      return {
+        letterRef: action.payload || state.letterRef,
+        isFirstChar: action.isFirstChar,
+      };
+
+    default:
+      throw new Error();
+  }
+}
+
+let initialHighlightState = {
+  wordRef: null,
+};
+
+function highlightReducer(state, action) {
+  switch (action.type) {
+    case "setWordRef":
+      return {
+        wordRef: action.payload || state.wordRef,
+      };
+    default:
+      throw new Error();
+  }
+}
+
 export default function Home() {
   const [activeWord, setActiveWord] = useState(0);
   const [textDatabase, setTextDatabase] = useState(textData);
   const [textTyped, setTextTyped] = useState(textHolder);
-  const [wordRef, setWordRef] = useState(null);
-  const [letterRef, setLetterRef] = useState(null);
+  const [cursorState, cursorDispatcher] = useReducer(
+    cursorReducer,
+    initialCursorState
+  );
+  const [highlightState, highlightDispatcher] = useReducer(
+    highlightReducer,
+    initialHighlightState
+  );
   const [lineOffset, setLineOffset] = useState(0);
   const [isFirstChar, setIsFirstChar] = useState(true);
   const [wpm, setWpm] = useState(0);
@@ -42,7 +81,7 @@ export default function Home() {
   const timeBarOffset = timeFraction - (1 / timeTotal) * (1 - timeFraction);
 
   // HELPER FUNCTIONS
-  let updateTextTypedArray = (targetIndex, newValue) => {
+  const updateTextTypedArray = (targetIndex, newValue) => {
     setTextTyped((textTyped) => {
       return textTyped.map((w, i) => {
         if (i == targetIndex) {
@@ -55,24 +94,15 @@ export default function Home() {
   };
 
   // TYPING LOGIC
-  let handleTextTyped = (text) => {
+  const handleTextTyped = (text) => {
     updateTextTypedArray(activeWord, text);
   };
 
-  let handleWordChanged = (newActiveWord) => {
+  const handleWordChanged = (newActiveWord) => {
     setActiveWord(newActiveWord);
   };
 
-  let placeCursor = (letterRef, isFirstChar) => {
-    setLetterRef(letterRef);
-    setIsFirstChar(isFirstChar);
-  };
-
-  let placeHighlight = (wordRef) => {
-    setWordRef(wordRef);
-  };
-
-  let handleLineChange = (change) => {
+  const handleLineChange = (change) => {
     setLineOffset(textOffset.top - change);
   };
 
@@ -106,10 +136,10 @@ export default function Home() {
 
   let handleUpdateScore = (change) => {
     if (change > 0) {
-      setCorrect((correct) => correct + 1);
-      setStreak((streak) => streak + 1);
+      setCorrect((correct) => correct + change);
+      setStreak((streak) => streak + change);
     } else {
-      setIncorrect((incorrect) => incorrect + 1);
+      setIncorrect((incorrect) => incorrect - change);
       handleResetStreak();
     }
   };
@@ -165,31 +195,30 @@ export default function Home() {
               <Cursor
                 onTextTyped={handleTextTyped}
                 onWordChanged={handleWordChanged}
-                wordRef={wordRef}
-                letterRef={letterRef}
+                wordRef={highlightState.wordRef}
+                letterRef={cursorState.letterRef}
                 paragraphRef={paragraphRef}
                 activeWord={activeWord}
                 activeWordTyped={textTyped[activeWord]}
                 textDatabase={textDatabase}
                 finished={finished}
-                isFirstChar={isFirstChar}
+                isFirstChar={cursorState.isFirstChar}
                 onLineChange={handleLineChange}
                 onValidateWord={handleValidateWord}
                 onResetStreak={handleResetStreak}
                 onUpdateScore={handleUpdateScore}
               />
-              <div className={styles.textWrapper}>
+              <div className={`${styles.textWrapper} ${styles.untyped}`}>
                 {textDatabase.map((word, i) => {
                   return (
                     <Word
                       id={i}
                       word={word}
                       active={activeWord == i}
-                      currentId={activeWord}
                       typed={textTyped[i]}
                       key={`WORD-${i}`}
-                      onLetterUpdate={placeCursor}
-                      onWordUpdate={placeHighlight}
+                      onLetterUpdate={cursorDispatcher}
+                      onWordUpdate={highlightDispatcher}
                       finished={finished}
                     />
                   );

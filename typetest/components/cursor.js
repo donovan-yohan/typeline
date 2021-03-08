@@ -93,6 +93,10 @@ export default function Cursor({
     typingField.current.focus();
   }, []);
 
+  const handleClick = (e) => {
+    e.target.focus();
+  };
+
   // UPDATE CURSOR
   useEffect(() => {
     if (cursorOffset) {
@@ -116,8 +120,7 @@ export default function Cursor({
       let pos = highlightOffset;
       let width = pos.right - pos.left;
       let height = pos.bottom - pos.top;
-      highlightRef.current.style.top = pos.top + "px";
-      highlightRef.current.style.left = pos.left + "px";
+      highlightRef.current.style.transform = `translate(${pos.left}px, ${pos.top}px)`;
       highlightRef.current.style.width = width + "px";
       highlightRef.current.style.height = height + "px";
       handleLineChange(highlightOffset.bottom);
@@ -132,6 +135,7 @@ export default function Cursor({
       <input
         ref={typingField}
         value={text}
+        onClick={handleClick}
         onKeyDown={handleSpecialChar}
         onChange={handleTextTyped}
         disabled={finished}
@@ -139,13 +143,6 @@ export default function Cursor({
       <style jsx>{`
         div {
           z-index: 99;
-        }
-
-        input {
-          max-width: 50vw;
-          font-size: 2em;
-          margin: 0;
-          user-select: none;
         }
         .cursor {
           position: absolute;
@@ -163,25 +160,29 @@ export default function Cursor({
 
         input {
           position: absolute;
+          z-index: 9999;
+          max-width: 50vw;
+          font-size: 2em;
           overflow: hidden;
-          z-index: 999;
           opacity: 0;
           font-family: Roboto;
           padding: 0;
           border: none;
+          margin: 0;
+          user-select: none;
           width: 50vw;
           height: 25vh;
           outline: none;
-          resize: none;
           background-color: transparent;
         }
 
         .activeHighlight {
+          top: 0;
           position: absolute;
           background-color: #0077ff;
           opacity: 0.2;
           transition: all 0.25s ease;
-          will-change: top, left, width, height;
+          will-change: transform, width, height;
         }
 
         @keyframes blink {
