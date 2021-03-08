@@ -19,6 +19,7 @@ export default function Cursor({
   const [text, setText] = useState("");
   const [oldLength, setOldLength] = useState(0);
   const [valid, setValid] = useState(true);
+  const [repeat, setRepeat] = useState(false);
   const typingField = useRef(null);
   const cursorRef = useRef(null);
   const highlightRef = useRef(null);
@@ -59,19 +60,22 @@ export default function Cursor({
   }, [text]);
 
   // HANDLE SPACEBAR AND BACKSPACE FOR CHANGING WORDS
-  let handleSpecialChar = (e) => {
+
+  const handleSpecialChar = (e) => {
     let newActiveWord = activeWord;
 
     if (e.key == " " || e.key == "Spacebar") {
-      // Update stats
-      validateWord(textDatabase[activeWord], text);
-
       e.preventDefault();
-      newActiveWord += 1;
-      setOldLength(0);
+      if (!repeat) {
+        setRepeat(true);
+        // Update stats
+        validateWord(textDatabase[activeWord], text);
+        newActiveWord += 1;
+        setOldLength(0);
 
-      // update word visited
-      onTextTyped({ value: text, visited: true }, activeWord);
+        // update word visited
+        onTextTyped({ value: text, visited: true }, activeWord);
+      }
     } else if (e.key == "Backspace") {
       onUpdateStats({ type: "resetStreak" });
       // if new value matches old and backsapce was pressed, move to previous word
@@ -89,6 +93,10 @@ export default function Cursor({
       setText(textTyped[newActiveWord].value);
       onWordChanged(newActiveWord);
     }
+  };
+
+  const checkIfHoldingKey = (e) => {
+    setRepeat(false);
   };
 
   // UPDATE TEXT POSITION
@@ -154,6 +162,7 @@ export default function Cursor({
         value={text}
         onClick={handleClick}
         onKeyDown={handleSpecialChar}
+        onKeyUp={checkIfHoldingKey}
         onChange={handleTextTyped}
         disabled={finished}
       />
