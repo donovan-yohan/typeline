@@ -7,7 +7,6 @@ export default React.memo(function Letter({
   letter,
   onLetterUpdate,
   id,
-  word,
 }) {
   const letterRef = useRef(null);
   const letterClassList = cx({
@@ -30,7 +29,7 @@ export default React.memo(function Letter({
         isFirstChar: true,
       });
     }
-  }, [typed, active]);
+  }, [typed.value, active]);
 
   return (
     <span className={"letterWrapper"}>

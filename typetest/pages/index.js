@@ -104,7 +104,7 @@ export default function Home() {
   // HANDLE TEXT TYPED
   useDidUpdateEffect(() => {
     setIsRunning(true);
-  }, [textTyped[0]]);
+  }, [textTyped[0].value]);
 
   // Stats
   useDidUpdateEffect(() => {

@@ -33,7 +33,6 @@ export default React.memo(function Word({
                 active={active}
                 letter={letter}
                 typed={typed}
-                word={word}
                 wordId={id}
                 key={`${id}-CHAR-${i}`}
                 onLetterUpdate={onLetterUpdate}

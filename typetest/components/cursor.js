@@ -23,7 +23,9 @@ export default function Cursor({
   const cursorRef = useRef(null);
   const highlightRef = useRef(null);
   const cursorOffset = useOffset(paragraphRef, letterRef);
-  const highlightOffset = useOffset(paragraphRef, wordRef, [text]);
+  const highlightOffset = useOffset(paragraphRef, wordRef, [
+    textTyped[activeWord],
+  ]);
 
   // UPDATE STATS AND SEND TO INDEX
   let handleTextTyped = (e) => {
@@ -107,6 +109,7 @@ export default function Cursor({
   // UPDATE CURSOR
   useEffect(() => {
     if (cursorOffset) {
+      console.log("CURSOR", cursorOffset);
       let pos;
       let x;
       if (text.length <= textDatabase[activeWord].length) {
@@ -124,6 +127,7 @@ export default function Cursor({
   // UPDATE HIGHLIGHT
   useEffect(() => {
     if (highlightOffset) {
+      console.log("HIGHLIGHT", highlightOffset);
       let pos = highlightOffset;
       let width = pos.right - pos.left;
       let height = pos.bottom - pos.top;
