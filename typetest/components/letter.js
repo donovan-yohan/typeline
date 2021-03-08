@@ -7,12 +7,15 @@ export default React.memo(function Letter({
   letter,
   onLetterUpdate,
   id,
+  overflow,
 }) {
   const letterRef = useRef(null);
   const letterClassList = cx({
-    correct: typed.value.charAt(id) == letter,
+    letterWrapper: true,
+    correct: typed.value.charAt(id) == letter && !overflow,
     incorrect: typed.value.charAt(id) && typed.value.charAt(id) != letter,
     incorrectUntyped: typed.visited && !typed.value.charAt(id),
+    overflow: overflow,
   });
 
   useEffect(() => {
@@ -32,17 +35,27 @@ export default React.memo(function Letter({
   }, [typed.value, active]);
 
   return (
-    <span className={"letterWrapper"}>
-      <span ref={letterRef} className={letterClassList}>
-        {letter}
-      </span>
+    <span className={"letterWrapper"} className={letterClassList}>
+      <span ref={letterRef}>{letter}</span>
       <style jsx>{`
-        span {
+        .letterWrapper {
+          display: inline-block;
           position: relative;
           transition: color 0.4s ease;
         }
+        .letter {
+        }
         .untyped {
           color: rgba(0, 0, 0, 0.5);
+        }
+        .incorrect,
+        .incorrectUntyped,
+        .overflow {
+          animation: springWiggle 0.2s cubic-bezier(0, 0.95, 0.25, 1);
+        }
+        .overflow {
+          color: rgb(210, 0, 0);
+          opacity: 0.66;
         }
         .incorrect {
           color: rgb(210, 0, 0);
@@ -51,8 +64,27 @@ export default React.memo(function Letter({
           text-decoration: underline;
           color: rgba(210, 0, 0, 0.5);
         }
+
         .correct {
           color: rgba(0, 0, 0, 1);
+        }
+
+        @keyframes springWiggle {
+          0% {
+            transform: translateX(-0.1em);
+          }
+          25% {
+            transform: translateX(0.08em);
+          }
+          50% {
+            transform: translateX(-0.06em);
+          }
+          75% {
+            transform: translateX(0.03em);
+          }
+          100% {
+            transform: translateX(0);
+          }
         }
       `}</style>
     </span>

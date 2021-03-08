@@ -41,7 +41,23 @@ export default React.memo(function Word({
             );
           })}
         </span>
-        <span className={"overflow"}>{overflowText}</span>
+        <span className={"overflow"}>
+          {overflowText.split("").map((letter, i) => {
+            return (
+              <Letter
+                id={i + word.length}
+                active={active}
+                letter={letter}
+                typed={typed}
+                wordId={id}
+                key={`${id}-OVERFLOW-${i + word.length}`}
+                onLetterUpdate={onLetterUpdate}
+                finished={finished}
+                overflow={true}
+              />
+            );
+          })}
+        </span>
       </span>
 
       <style jsx>{`
