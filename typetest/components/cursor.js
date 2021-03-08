@@ -109,7 +109,6 @@ export default function Cursor({
   // UPDATE CURSOR
   useEffect(() => {
     if (cursorOffset) {
-      console.log("CURSOR", cursorOffset);
       let pos;
       let x;
       if (text.length <= textDatabase[activeWord].length) {
@@ -127,7 +126,6 @@ export default function Cursor({
   // UPDATE HIGHLIGHT
   useEffect(() => {
     if (highlightOffset) {
-      console.log("HIGHLIGHT", highlightOffset);
       let pos = highlightOffset;
       let width = pos.right - pos.left;
       let height = pos.bottom - pos.top;
@@ -167,7 +165,7 @@ export default function Cursor({
           z-index: 99;
           position: absolute;
           display: block;
-          background-color: #0077ff;
+          background-color: var(--highlight);
           width: 3px;
           height: 3em;
           border-radius: 4px;
@@ -199,7 +197,7 @@ export default function Cursor({
         .activeHighlight {
           top: 0;
           position: absolute;
-          background-color: ${valid ? "#0077ff" : "rgb(210,0,0)"};
+          background-color: ${valid ? "var(--highlight)" : "var(--incorrect)"};
           opacity: 0.2;
           transition: all 0.25s ease;
           will-change: transform, width, height;

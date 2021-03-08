@@ -41,32 +41,30 @@ export default React.memo(function Letter({
         .letterWrapper {
           display: inline-block;
           position: relative;
-          transition: color 0.4s ease;
+          transition: all 0.4s ease;
+          color: var(--gray);
         }
-        .letter {
-        }
-        .untyped {
-          color: rgba(0, 0, 0, 0.5);
-        }
+
         .incorrect,
         .incorrectUntyped,
         .overflow {
           animation: springWiggle 0.2s cubic-bezier(0, 0.95, 0.25, 1);
         }
         .overflow {
-          color: rgb(210, 0, 0);
-          opacity: 0.66;
+          color: var(--incorrect);
+          opacity: var(--fade);
         }
         .incorrect {
-          color: rgb(210, 0, 0);
+          color: var(--incorrect);
         }
         .incorrectUntyped {
           text-decoration: underline;
-          color: rgba(210, 0, 0, 0.5);
+          color: var(--incorrect);
+          opacity: var(--fade);
         }
 
         .correct {
-          color: rgba(0, 0, 0, 1);
+          color: var(--main);
         }
 
         @keyframes springWiggle {

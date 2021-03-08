@@ -74,11 +74,6 @@ export default React.memo(function Word({
           position: relative;
           margin-right: 0.5em;
         }
-
-        .overflow {
-          color: rgb(210, 0, 0);
-          opacity: 0.66;
-        }
       `}</style>
     </span>
   );

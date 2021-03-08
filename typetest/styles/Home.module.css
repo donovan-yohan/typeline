@@ -8,6 +8,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: var(--background);
+  color: var(--main);
 }
 
 .textColumn {
@@ -69,7 +71,7 @@
 .largeScore .largeScoreNumber {
   font-size: 100px;
   line-height: 1em;
-  color: #0077ff;
+  color: var(--highlight);
 }
 .smallScoreWrapper {
   display: flex;
@@ -96,16 +98,16 @@
 
 .smallScore .smallScoreNumber {
   font-weight: bold;
-  color: #0077ff;
+  color: var(--highlight);
 }
 
 .smallScore .miss {
-  color: rgb(210, 0, 0);
+  color: var(--incorrect);
 }
 
 .timeWrapper {
   font-weight: bold;
-  color: rgba(0, 0, 0, 0.33);
+  color: var(--gray);
   bottom: 25vh;
   width: 50vw;
   display: flex;
@@ -118,22 +120,17 @@
   width: 100%;
   height: 1px;
   margin-right: 8px;
-  background-color: rgba(0, 0, 0, 0.25);
+  background-color: var(--gray);
   overflow: hidden;
 }
 
 .timeBarProgress {
   display: block;
   height: 1px;
-  background-color: rgba(0, 0, 0, 1);
+  background-color: var(--main);
   transition: transform 1s linear;
   width: 100%;
 }
-
-.untyped {
-  color: rgba(0, 0, 0, 0.5);
-}
-
 @keyframes fade {
   0% {
     opacity: 0;
@@ -142,4 +139,3 @@
     opacity: 1;
   }
 }
-

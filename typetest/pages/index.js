@@ -1,6 +1,7 @@
 import Head from "next/head";
 import React, { useState, useEffect, useRef, useReducer } from "react";
 import styles from "../styles/Home.module.css";
+
 import Word from "../components/word.js";
 import Cursor from "../components/cursor.js";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
@@ -165,7 +166,7 @@ export default function Home() {
                 onLineChange={handleLineChange}
                 onUpdateStats={statsDispatcher}
               />
-              <div className={`${styles.textWrapper} ${styles.untyped}`}>
+              <div className={styles.textWrapper}>
                 {textDatabase.map((word, i) => {
                   return (
                     <Word
@@ -200,6 +201,7 @@ export default function Home() {
               })}
             </span>
           </div>
+          <div className={"test"}></div>
           {/* DEBUG */}
           {/* <pre>{JSON.stringify({ activeWord }, null, 4)}</pre> */}
         </div>
@@ -228,6 +230,7 @@ export default function Home() {
           </div>
         )}
       </main>
+      <style jsx>{``}</style>
     </div>
   );
 }
