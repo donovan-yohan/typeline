@@ -80,7 +80,6 @@ export default function Home() {
   };
 
   const handleLineChange = (linePos) => {
-    console.log(linePos);
     if (linePos.bottom > window.innerHeight / 2 - textOffset.top) {
       setLineOffset(window.innerHeight / 2 - textOffset.top - linePos.bottom);
     }

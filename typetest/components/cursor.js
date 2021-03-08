@@ -136,7 +136,6 @@ export default function Cursor({
 
   useEffect(() => {
     if (textDatabase[activeWord].join("").substring(0, text.length) != text) {
-      console.log(textDatabase[activeWord].join(",").substring(0, text.length));
       setValid(false);
     } else {
       setValid(true);
