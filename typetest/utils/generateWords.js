@@ -26,9 +26,6 @@ export default function generateWords(
         mediumWords[
           Math.floor(getRandomWithBias(0, mediumWords.length - 1, 0, 1))
         ];
-    } else if (r > 0.95 && r <= 1.0 && long) {
-      word =
-        longWords[Math.floor(getRandomWithBias(0, longWords.length - 1, 0, 1))];
     } else {
       word =
         shortWords[

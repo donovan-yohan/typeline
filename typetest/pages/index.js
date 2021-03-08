@@ -20,7 +20,7 @@ import {
 let text = generateWords();
 let textData = createTextDatabase(text);
 let textHolder = textData.map((word) => {
-  return "";
+  return { value: "", visited: false };
 });
 
 export default function Home() {
@@ -44,7 +44,7 @@ export default function Home() {
   );
   const [wpm, setWpm] = useState(0);
 
-  const [timeTotal, setTimeTotal] = useState(5);
+  const [timeTotal, setTimeTotal] = useState(30);
   const [time, setTime] = useState(timeTotal);
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
@@ -71,16 +71,19 @@ export default function Home() {
   };
 
   // TYPING LOGIC
-  const handleTextTyped = (text) => {
-    updateTextTypedArray(activeWord, text);
+  const handleTextTyped = (value, index = activeWord) => {
+    updateTextTypedArray(index, value);
   };
 
   const handleWordChanged = (newActiveWord) => {
     setActiveWord(newActiveWord);
   };
 
-  const handleLineChange = (change) => {
-    setLineOffset(textOffset.top - change);
+  const handleLineChange = (linePos) => {
+    console.log(linePos);
+    if (linePos.bottom > window.innerHeight / 2 - textOffset.top) {
+      setLineOffset(window.innerHeight / 2 - textOffset.top - linePos.bottom);
+    }
   };
 
   // COUNTER
@@ -156,7 +159,7 @@ export default function Home() {
                 letterRef={cursorState.letterRef}
                 paragraphRef={paragraphRef}
                 activeWord={activeWord}
-                activeWordTyped={textTyped[activeWord]}
+                textTyped={textTyped}
                 textDatabase={textDatabase}
                 finished={finished}
                 isFirstChar={cursorState.isFirstChar}
@@ -218,7 +221,7 @@ export default function Home() {
               </div>
               <div className={styles.smallScore}>
                 <span className={styles.smallScoreLabel}>Miss</span>
-                <span className={styles.smallScoreNumber}>
+                <span className={`${styles.smallScoreNumber} ${styles.miss}`}>
                   {statsState.incorrect}
                 </span>
               </div>

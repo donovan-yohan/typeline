@@ -12,8 +12,8 @@ export default React.memo(function Word({
 }) {
   const wordRef = useRef(null);
   const overflowText =
-    typed.length > word.length
-      ? typed.substring(word.length, typed.length)
+    typed.value.length > word.length
+      ? typed.value.substring(word.length, typed.value.length)
       : "";
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default React.memo(function Word({
       <style jsx>{`
         .word,
         input {
-          font-size: 2.25em;
+          font-size: 2.5em;
           letter-spacing: 0.02em;
           line-height: 2.25;
         }

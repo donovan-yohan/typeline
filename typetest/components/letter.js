@@ -11,18 +11,19 @@ export default React.memo(function Letter({
 }) {
   const letterRef = useRef(null);
   const letterClassList = cx({
-    correct: typed.charAt(id) == letter,
-    incorrect: typed.charAt(id) && typed.charAt(id) != letter,
+    correct: typed.value.charAt(id) == letter,
+    incorrect: typed.value.charAt(id) && typed.value.charAt(id) != letter,
+    incorrectUntyped: typed.visited && !typed.value.charAt(id),
   });
 
   useEffect(() => {
-    if (active && id == typed.length - 1) {
+    if (active && id == typed.value.length - 1) {
       onLetterUpdate({
         type: "setLetterRef",
         payload: letterRef,
         isFirstChar: false,
       });
-    } else if (active && typed.length == 0 && id == 0) {
+    } else if (active && typed.value.length == 0 && id == 0) {
       onLetterUpdate({
         type: "setLetterRef",
         payload: letterRef,
@@ -39,16 +40,20 @@ export default React.memo(function Letter({
       <style jsx>{`
         span {
           position: relative;
+          transition: color 0.4s ease;
         }
         .untyped {
           color: rgba(0, 0, 0, 0.5);
         }
-        .correct {
-          color: rgba(0, 0, 0, 1);
-          transition: color 0.4s ease;
-        }
         .incorrect {
           color: rgb(210, 0, 0);
+        }
+        .incorrectUntyped {
+          text-decoration: underline;
+          color: rgba(210, 0, 0, 0.5);
+        }
+        .correct {
+          color: rgba(0, 0, 0, 1);
         }
       `}</style>
     </span>

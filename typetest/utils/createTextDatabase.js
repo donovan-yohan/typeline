@@ -1,13 +1,13 @@
 export default function createTextDatabase(text) {
-    // create array of words and letters
-    let textData = text.map((word) => {
-        return word.split("");
-        // let letters = word.split("");
-        // return letters.map((l, i) => {
-        //  return { value: l, flatIndex: i };
-        // });
-    });
-  
+  // create array of words and letters
+  let textData = text.map((word) => {
+    return word.split("");
+    // let letters = word.split("");
+    // return letters.map((l, i) => {
+    //  return { value: l, flatIndex: i };
+    // });
+  });
+
   // generate flat indexes for 2D array
   // textData.reduce((a, w, i) => {
   //   return (
@@ -19,5 +19,5 @@ export default function createTextDatabase(text) {
   //   );
   // }, 0);
 
-  return textData
+  return textData;
 }
