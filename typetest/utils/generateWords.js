@@ -19,7 +19,7 @@ export default function generateWords(
 
   while (words.length < (time / 60) * 400) {
     let r = Math.random();
-    console.log(r);
+
     let word;
     if (r > 0.8 && r <= 0.95 && medium) {
       word =
