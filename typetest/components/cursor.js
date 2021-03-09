@@ -60,13 +60,12 @@ export default function Cursor({
   }, [text]);
 
   // HANDLE SPACEBAR AND BACKSPACE FOR CHANGING WORDS
-
   const handleSpecialChar = (e) => {
     let newActiveWord = activeWord;
 
     if (e.key == " " || e.key == "Spacebar") {
       e.preventDefault();
-      if (!repeat) {
+      if (!repeat && (activeWord != 0 || text.length > 0)) {
         setRepeat(true);
         // Update stats
         validateWord(textDatabase[activeWord], text);
@@ -178,7 +177,7 @@ export default function Cursor({
           width: 3px;
           height: 3em;
           border-radius: 4px;
-          transition: all 0.15s ease-in-out;
+          transition: all 0.13s ease;
           will-change: transform;
         }
         .cursorAnimate {

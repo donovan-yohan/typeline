@@ -108,7 +108,7 @@ export default function Home() {
   // Stats
   useDidUpdateEffect(() => {
     setWpm(Math.floor(statsState.correct / 5 / ((timeTotal - time) / 60)));
-  }, [time, statsState.correct]);
+  }, [time]);
 
   // CUSTOMIZE SETTINGS
 

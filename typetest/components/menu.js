@@ -87,12 +87,17 @@ export default function Menu({
         </div>
       )}
       <button
+        onClick={() => window.location.reload()}
+        className={menuButtonClassList}
+      >
+        Refresh
+      </button>
+      {/* <button
         onClick={handleMenuClick}
         className={menuButtonClassList}
-        style={{ order: 1 }}
       >
         {menuButtonText}
-      </button>
+      </button> */}
       <style jsx>{`
         .container {
           display: flex;
@@ -106,6 +111,7 @@ export default function Menu({
           background: none;
           border: none;
           margin-top: 32px;
+          transition: all 0.5s ease;
         }
         button:active {
           opacity: 0.75;
@@ -149,7 +155,6 @@ export default function Menu({
           width: 15px;
           background-color: var(--gray);
           transition: all 0.2s ease;
-          transform: rotate(45deg);
         }
 
         /* On mouse-over, add a grey background color */
