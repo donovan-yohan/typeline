@@ -28,7 +28,7 @@ export default function Cursor({
     textTyped[activeWord],
   ]);
 
-  // UPDATE STATS AND SEND TO INDEX
+  // UPDATE STATS AND SEND TO INDEX PAGE
   let handleTextTyped = (e) => {
     let w = e.target.value;
     setText(w);
@@ -178,7 +178,7 @@ export default function Cursor({
           width: 3px;
           height: 3em;
           border-radius: 4px;
-          transition: transform 0.25s ease;
+          transition: all 0.15s ease-in-out;
           will-change: transform;
         }
         .cursorAnimate {
@@ -208,7 +208,7 @@ export default function Cursor({
           position: absolute;
           background-color: ${valid ? "var(--highlight)" : "var(--incorrect)"};
           opacity: 0.2;
-          transition: all 0.25s ease;
+          transition: all 0.25s cubic-bezier(0.33, 0, 0, 1);
           will-change: transform, width, height;
         }
 

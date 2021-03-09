@@ -32,7 +32,7 @@ export default function generateWords(
           Math.floor(getRandomWithBias(0, shortWords.length - 1, 0, 1))
         ];
     }
-    words.push(word);
+    words.push(word.toLowerCase());
   }
   return words;
 }
