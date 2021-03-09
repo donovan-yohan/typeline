@@ -7,48 +7,82 @@ export default React.memo(function Letter({
   letter,
   onLetterUpdate,
   id,
-  word,
+  overflow,
 }) {
   const letterRef = useRef(null);
   const letterClassList = cx({
-    correct: typed.charAt(id) == letter,
-    incorrect: typed.charAt(id) && typed.charAt(id) != letter,
+    letterWrapper: true,
+    correct: typed.value.charAt(id) == letter && !overflow,
+    incorrect: typed.value.charAt(id) && typed.value.charAt(id) != letter,
+    incorrectUntyped: typed.visited && !typed.value.charAt(id),
+    overflow: overflow,
   });
 
   useEffect(() => {
-    if (active && id == typed.length - 1) {
+    if (active && id == typed.value.length - 1) {
       onLetterUpdate({
         type: "setLetterRef",
         payload: letterRef,
         isFirstChar: false,
       });
-    } else if (active && typed.length == 0 && id == 0) {
+    } else if (active && typed.value.length == 0 && id == 0) {
       onLetterUpdate({
         type: "setLetterRef",
         payload: letterRef,
         isFirstChar: true,
       });
     }
-  }, [typed, active]);
+  }, [typed.value, active]);
 
   return (
-    <span className={"letterWrapper"}>
-      <span ref={letterRef} className={letterClassList}>
-        {letter}
-      </span>
+    <span className={"letterWrapper"} className={letterClassList}>
+      <span ref={letterRef}>{letter}</span>
       <style jsx>{`
-        span {
+        .letterWrapper {
+          display: inline-block;
           position: relative;
+          transition: all 0.4s ease;
+          color: var(--gray);
         }
-        .untyped {
-          color: rgba(0, 0, 0, 0.5);
+
+        .incorrect,
+        .incorrectUntyped,
+        .overflow {
+          animation: springWiggle 0.2s cubic-bezier(0, 0.95, 0.25, 1);
         }
-        .correct {
-          color: rgba(0, 0, 0, 1);
-          transition: color 0.4s ease;
+        .overflow {
+          color: var(--incorrect);
+          opacity: var(--fade);
         }
         .incorrect {
-          color: rgb(210, 0, 0);
+          color: var(--incorrect);
+        }
+        .incorrectUntyped {
+          text-decoration: underline;
+          color: var(--incorrect);
+          opacity: var(--fade);
+        }
+
+        .correct {
+          color: var(--main);
+        }
+
+        @keyframes springWiggle {
+          0% {
+            transform: translateX(-0.1em);
+          }
+          25% {
+            transform: translateX(0.08em);
+          }
+          50% {
+            transform: translateX(-0.06em);
+          }
+          75% {
+            transform: translateX(0.03em);
+          }
+          100% {
+            transform: translateX(0);
+          }
         }
       `}</style>
     </span>

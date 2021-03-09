@@ -12,8 +12,8 @@ export default React.memo(function Word({
 }) {
   const wordRef = useRef(null);
   const overflowText =
-    typed.length > word.length
-      ? typed.substring(word.length, typed.length)
+    typed.value.length > word.length
+      ? typed.value.substring(word.length, typed.value.length)
       : "";
 
   useEffect(() => {
@@ -33,7 +33,6 @@ export default React.memo(function Word({
                 active={active}
                 letter={letter}
                 typed={typed}
-                word={word}
                 wordId={id}
                 key={`${id}-CHAR-${i}`}
                 onLetterUpdate={onLetterUpdate}
@@ -42,13 +41,29 @@ export default React.memo(function Word({
             );
           })}
         </span>
-        <span className={"overflow"}>{overflowText}</span>
+        <span className={"overflow"}>
+          {overflowText.split("").map((letter, i) => {
+            return (
+              <Letter
+                id={i + word.length}
+                active={active}
+                letter={letter}
+                typed={typed}
+                wordId={id}
+                key={`${id}-OVERFLOW-${i + word.length}`}
+                onLetterUpdate={onLetterUpdate}
+                finished={finished}
+                overflow={true}
+              />
+            );
+          })}
+        </span>
       </span>
 
       <style jsx>{`
         .word,
         input {
-          font-size: 2.25em;
+          font-size: 2.5em;
           letter-spacing: 0.02em;
           line-height: 2.25;
         }
@@ -58,11 +73,6 @@ export default React.memo(function Word({
           user-select: none;
           position: relative;
           margin-right: 0.5em;
-        }
-
-        .overflow {
-          color: rgb(210, 0, 0);
-          opacity: 0.66;
         }
       `}</style>
     </span>

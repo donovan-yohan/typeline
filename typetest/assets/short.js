@@ -937,7 +937,6 @@ export default [
   "surf",
   "hook",
   "cord",
-  "val",
   "crop",
   "hub",
   "ace",

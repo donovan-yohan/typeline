@@ -10,21 +10,25 @@ export default function Cursor({
   onWordChanged,
   finished,
   activeWord,
-  activeWordTyped,
+  textTyped,
   textDatabase,
   isFirstChar,
   onLineChange,
-  onResetStreak,
-  onUpdateScore,
+  onUpdateStats,
 }) {
   const [text, setText] = useState("");
   const [oldLength, setOldLength] = useState(0);
+  const [valid, setValid] = useState(true);
+  const [repeat, setRepeat] = useState(false);
   const typingField = useRef(null);
   const cursorRef = useRef(null);
   const highlightRef = useRef(null);
   const cursorOffset = useOffset(paragraphRef, letterRef);
-  const highlightOffset = useOffset(paragraphRef, wordRef, [activeWordTyped]);
+  const highlightOffset = useOffset(paragraphRef, wordRef, [
+    textTyped[activeWord],
+  ]);
 
+  // UPDATE STATS AND SEND TO INDEX
   let handleTextTyped = (e) => {
     let w = e.target.value;
     setText(w);
@@ -32,67 +36,80 @@ export default function Cursor({
     let expected = textDatabase[activeWord];
     if (w.length > 0 && w.length > oldLength) {
       if (w.charAt(w.length - 1) == expected[w.length - 1]) {
-        updateScore(1);
+        onUpdateStats({ type: "addCorrect" });
       } else if (w.charAt(w.length - 1) != expected[w.length - 1]) {
-        updateScore(-1);
-        resetStreak();
+        onUpdateStats({ type: "addIncorrect" });
       }
     }
 
     setOldLength(w.length);
   };
 
+  // Helper function for stats
   let validateWord = (typed, expected) => {
     if (typed.join("") == expected) {
-      updateScore(1);
+      onUpdateStats({ type: "addCorrect" });
     } else {
-      updateScore(-1);
-      resetStreak();
+      onUpdateStats({ type: "addIncorrect" });
     }
   };
 
-  let resetStreak = () => {
-    onResetStreak();
-  };
-
-  let updateScore = (change) => {
-    onUpdateScore(change);
-  };
-
+  // UPDATE TEXT ON TYPE AND SEND BACK TO INDEX
   useEffect(() => {
-    onTextTyped(text);
+    onTextTyped({ value: text, visited: false });
   }, [text]);
 
-  useEffect(() => {
-    setText(activeWordTyped);
-  }, [activeWordTyped]);
+  // HANDLE SPACEBAR AND BACKSPACE FOR CHANGING WORDS
 
-  let handleSpecialChar = (e) => {
+  const handleSpecialChar = (e) => {
     let newActiveWord = activeWord;
 
     if (e.key == " " || e.key == "Spacebar") {
-      validateWord(textDatabase[activeWord], activeWordTyped);
       e.preventDefault();
-      newActiveWord += 1;
+      if (!repeat) {
+        setRepeat(true);
+        // Update stats
+        validateWord(textDatabase[activeWord], text);
+        newActiveWord += 1;
+        setOldLength(0);
+
+        // update word visited
+        onTextTyped({ value: text, visited: true }, activeWord);
+      }
     } else if (e.key == "Backspace") {
-      resetStreak();
+      onUpdateStats({ type: "resetStreak" });
       // if new value matches old and backsapce was pressed, move to previous word
-      if (text.length == 0 && text.length == activeWordTyped.length) {
+      if (text.length == 0 && text.length == text.length) {
         if (activeWord > 0) newActiveWord -= 1;
+        // update word visited
+        onTextTyped(
+          { value: textTyped[newActiveWord].value, visited: false },
+          newActiveWord
+        );
       }
     }
 
-    if (newActiveWord != activeWord) onWordChanged(newActiveWord);
+    if (newActiveWord != activeWord) {
+      setText(textTyped[newActiveWord].value);
+      onWordChanged(newActiveWord);
+    }
   };
 
-  let handleLineChange = (change) => {
-    onLineChange(change);
+  const checkIfHoldingKey = (e) => {
+    setRepeat(false);
   };
 
+  // UPDATE TEXT POSITION
+  let handleLineChange = (linePos) => {
+    onLineChange(linePos);
+  };
+
+  // FOCUS TEXT ON LOAD
   useEffect(() => {
     typingField.current.focus();
   }, []);
 
+  // FOCUS TEXT ON CLICK
   const handleClick = (e) => {
     e.target.focus();
   };
@@ -102,7 +119,7 @@ export default function Cursor({
     if (cursorOffset) {
       let pos;
       let x;
-      if (activeWordTyped.length <= textDatabase[activeWord].length) {
+      if (text.length <= textDatabase[activeWord].length) {
         pos = cursorOffset;
         x = isFirstChar ? pos.left : pos.right;
       } else {
@@ -123,9 +140,17 @@ export default function Cursor({
       highlightRef.current.style.transform = `translate(${pos.left}px, ${pos.top}px)`;
       highlightRef.current.style.width = width + "px";
       highlightRef.current.style.height = height + "px";
-      handleLineChange(highlightOffset.bottom);
+      handleLineChange(highlightOffset);
     }
   }, [highlightOffset]);
+
+  useEffect(() => {
+    if (textDatabase[activeWord].join("").substring(0, text.length) != text) {
+      setValid(false);
+    } else {
+      setValid(true);
+    }
+  }, [text]);
 
   return (
     <div>
@@ -137,6 +162,7 @@ export default function Cursor({
         value={text}
         onClick={handleClick}
         onKeyDown={handleSpecialChar}
+        onKeyUp={checkIfHoldingKey}
         onChange={handleTextTyped}
         disabled={finished}
       />
@@ -145,11 +171,12 @@ export default function Cursor({
           z-index: 99;
         }
         .cursor {
+          z-index: 99;
           position: absolute;
           display: block;
-          background-color: #0077ff;
+          background-color: var(--highlight);
           width: 3px;
-          height: 2.5em;
+          height: 3em;
           border-radius: 4px;
           transition: transform 0.25s ease;
           will-change: transform;
@@ -160,9 +187,9 @@ export default function Cursor({
 
         input {
           position: absolute;
-          z-index: 9999;
+          z-index: 99;
           max-width: 50vw;
-          font-size: 2em;
+          font-size: 2.5em;
           overflow: hidden;
           opacity: 0;
           font-family: Roboto;
@@ -179,7 +206,7 @@ export default function Cursor({
         .activeHighlight {
           top: 0;
           position: absolute;
-          background-color: #0077ff;
+          background-color: ${valid ? "var(--highlight)" : "var(--incorrect)"};
           opacity: 0.2;
           transition: all 0.25s ease;
           will-change: transform, width, height;

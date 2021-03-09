@@ -1,6 +1,7 @@
 import Head from "next/head";
 import React, { useState, useEffect, useRef, useReducer } from "react";
 import styles from "../styles/Home.module.css";
+
 import Word from "../components/word.js";
 import Cursor from "../components/cursor.js";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
@@ -8,50 +9,26 @@ import useInterval from "@use-it/interval";
 import generateWords from "../utils/generateWords.js";
 import createTextDatabase from "../utils/createTextDatabase.js";
 import { useOffset } from "../hooks/useOffset.js";
+import {
+  cursorReducer,
+  initialCursorState,
+  highlightReducer,
+  initialHighlightState,
+  statsReducer,
+  initialStatsState,
+} from "../components/reducers";
 
 let text = generateWords();
 let textData = createTextDatabase(text);
 let textHolder = textData.map((word) => {
-  return "";
+  return { value: "", visited: false };
 });
-
-let initialCursorState = {
-  letterRef: null,
-  isFirstChar: true,
-};
-
-function cursorReducer(state, action) {
-  switch (action.type) {
-    case "setLetterRef":
-      return {
-        letterRef: action.payload || state.letterRef,
-        isFirstChar: action.isFirstChar,
-      };
-
-    default:
-      throw new Error();
-  }
-}
-
-let initialHighlightState = {
-  wordRef: null,
-};
-
-function highlightReducer(state, action) {
-  switch (action.type) {
-    case "setWordRef":
-      return {
-        wordRef: action.payload || state.wordRef,
-      };
-    default:
-      throw new Error();
-  }
-}
 
 export default function Home() {
   const [activeWord, setActiveWord] = useState(0);
   const [textDatabase, setTextDatabase] = useState(textData);
   const [textTyped, setTextTyped] = useState(textHolder);
+
   const [cursorState, cursorDispatcher] = useReducer(
     cursorReducer,
     initialCursorState
@@ -61,16 +38,17 @@ export default function Home() {
     initialHighlightState
   );
   const [lineOffset, setLineOffset] = useState(0);
-  const [isFirstChar, setIsFirstChar] = useState(true);
+
+  const [statsState, statsDispatcher] = useReducer(
+    statsReducer,
+    initialStatsState
+  );
   const [wpm, setWpm] = useState(0);
-  const [correct, setCorrect] = useState(0);
-  const [incorrect, setIncorrect] = useState(0);
-  const [streak, setStreak] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const [finished, setFinished] = useState(false);
+
   const [timeTotal, setTimeTotal] = useState(30);
   const [time, setTime] = useState(timeTotal);
-  const [maxStreak, setMaxStreak] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [finished, setFinished] = useState(false);
 
   const paragraphRef = useRef(null);
   const rootRef = useRef(null);
@@ -94,16 +72,18 @@ export default function Home() {
   };
 
   // TYPING LOGIC
-  const handleTextTyped = (text) => {
-    updateTextTypedArray(activeWord, text);
+  const handleTextTyped = (value, index = activeWord) => {
+    updateTextTypedArray(index, value);
   };
 
   const handleWordChanged = (newActiveWord) => {
     setActiveWord(newActiveWord);
   };
 
-  const handleLineChange = (change) => {
-    setLineOffset(textOffset.top - change);
+  const handleLineChange = (linePos) => {
+    if (linePos.bottom > window.innerHeight / 2 - textOffset.top) {
+      setLineOffset(window.innerHeight / 2 - textOffset.top - linePos.bottom);
+    }
   };
 
   // COUNTER
@@ -125,34 +105,12 @@ export default function Home() {
   // HANDLE TEXT TYPED
   useDidUpdateEffect(() => {
     setIsRunning(true);
-  }, [textTyped[0]]);
+  }, [textTyped[0].value]);
 
-  // UPDATE STATS
-  let handleValidateWord = () => {};
-
-  let handleResetStreak = () => {
-    setStreak(0);
-  };
-
-  let handleUpdateScore = (change) => {
-    if (change > 0) {
-      setCorrect((correct) => correct + change);
-      setStreak((streak) => streak + change);
-    } else {
-      setIncorrect((incorrect) => incorrect - change);
-      handleResetStreak();
-    }
-  };
-
-  useEffect(() => {
-    if (streak > maxStreak) {
-      setMaxStreak(streak);
-    }
-  }, [streak]);
-
+  // Stats
   useDidUpdateEffect(() => {
-    setWpm(Math.floor(correct / 5 / ((timeTotal - time) / 60)));
-  }, [time]);
+    setWpm(Math.floor(statsState.correct / 5 / ((timeTotal - time) / 60)));
+  }, [time, statsState.correct]);
 
   return (
     <div ref={rootRef} className={styles.container}>
@@ -178,7 +136,9 @@ export default function Home() {
                 <span className={styles.smallScoreLabel}>%</span>
                 <span className={styles.smallScoreNumber}>
                   {(
-                    (correct / (correct + incorrect)) * 100 || 0
+                    (statsState.correct /
+                      (statsState.correct + statsState.incorrect)) *
+                      100 || 0
                   ).toLocaleString("en-US", { maximumFractionDigits: 2 })}
                 </span>
               </div>
@@ -199,16 +159,14 @@ export default function Home() {
                 letterRef={cursorState.letterRef}
                 paragraphRef={paragraphRef}
                 activeWord={activeWord}
-                activeWordTyped={textTyped[activeWord]}
+                textTyped={textTyped}
                 textDatabase={textDatabase}
                 finished={finished}
                 isFirstChar={cursorState.isFirstChar}
                 onLineChange={handleLineChange}
-                onValidateWord={handleValidateWord}
-                onResetStreak={handleResetStreak}
-                onUpdateScore={handleUpdateScore}
+                onUpdateStats={statsDispatcher}
               />
-              <div className={`${styles.textWrapper} ${styles.untyped}`}>
+              <div className={styles.textWrapper}>
                 {textDatabase.map((word, i) => {
                   return (
                     <Word
@@ -243,6 +201,7 @@ export default function Home() {
               })}
             </span>
           </div>
+          <div className={"test"}></div>
           {/* DEBUG */}
           {/* <pre>{JSON.stringify({ activeWord }, null, 4)}</pre> */}
         </div>
@@ -250,21 +209,28 @@ export default function Home() {
           <div className={styles.streakColumn}>
             <div className={styles.largeScore}>
               <span className={styles.largeScoreLabel}>Highest Streak</span>
-              <span className={styles.largeScoreNumber}>{maxStreak}</span>
+              <span className={styles.largeScoreNumber}>
+                {statsState.maxStreak}
+              </span>
             </div>
             <div className={styles.smallScoreWrapper}>
               <div className={styles.smallScore}>
                 <span className={styles.smallScoreLabel}>Good</span>
-                <span className={styles.smallScoreNumber}>{correct}</span>
+                <span className={styles.smallScoreNumber}>
+                  {statsState.correct}
+                </span>
               </div>
               <div className={styles.smallScore}>
                 <span className={styles.smallScoreLabel}>Miss</span>
-                <span className={styles.smallScoreNumber}>{incorrect}</span>
+                <span className={`${styles.smallScoreNumber} ${styles.miss}`}>
+                  {statsState.incorrect}
+                </span>
               </div>
             </div>
           </div>
         )}
       </main>
+      <style jsx>{``}</style>
     </div>
   );
 }
