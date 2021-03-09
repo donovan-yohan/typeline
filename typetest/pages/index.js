@@ -4,6 +4,7 @@ import styles from "../styles/Home.module.css";
 
 import Word from "../components/word.js";
 import Cursor from "../components/cursor.js";
+import Menu from "../components/menu.js";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useInterval from "@use-it/interval";
 import generateWords from "../utils/generateWords.js";
@@ -54,9 +55,6 @@ export default function Home() {
   const rootRef = useRef(null);
   const textPageRef = useRef(null);
   const textOffset = useOffset(rootRef, textPageRef);
-
-  const timeFraction = time / timeTotal;
-  const timeBarOffset = timeFraction - (1 / timeTotal) * (1 - timeFraction);
 
   // HELPER FUNCTIONS
   const updateTextTypedArray = (targetIndex, newValue) => {
@@ -111,6 +109,14 @@ export default function Home() {
   useDidUpdateEffect(() => {
     setWpm(Math.floor(statsState.correct / 5 / ((timeTotal - time) / 60)));
   }, [time, statsState.correct]);
+
+  // CUSTOMIZE SETTINGS
+
+  useEffect(() => {
+    if (!isRunning) {
+      setTime(timeTotal);
+    }
+  }, [time, timeTotal]);
 
   return (
     <div ref={rootRef} className={styles.container}>
@@ -184,24 +190,15 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className={styles.timeWrapper}>
-            <span className={styles.timeBar}>
-              <span
-                className={styles.timeBarProgress}
-                style={{
-                  transform: `translateX(${-1 * (1 - timeBarOffset) * 100}%)`,
-                }}
-              ></span>
-            </span>
-            <span className={styles.time}>
-              {Math.floor(time / 60)}:
-              {(time % 60).toLocaleString("en-US", {
-                minimumIntegerDigits: 2,
-                useGrouping: false,
-              })}
-            </span>
-          </div>
-          <div className={"test"}></div>
+
+          <Menu
+            className={styles.menu}
+            isFinished={finished}
+            isRunning={isRunning}
+            time={time}
+            timeTotal={timeTotal}
+            onChangeTimeTotal={setTimeTotal}
+          ></Menu>
           {/* DEBUG */}
           {/* <pre>{JSON.stringify({ activeWord }, null, 4)}</pre> */}
         </div>
