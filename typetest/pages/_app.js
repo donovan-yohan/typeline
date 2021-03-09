@@ -11,7 +11,6 @@ export default class MyApp extends App {
   componentDidMount = () => {
     // Define which query we will check
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    console.log(mediaQuery);
     // If matches, set data-theme to dark
     if (mediaQuery.matches) {
       document.documentElement.setAttribute("data-theme", "dark");
@@ -60,6 +59,7 @@ export default class MyApp extends App {
         <div
           className='fouc'
           style={{
+            zIndex: 99999,
             position: "fixed",
             width: "100%",
             height: "100%",
