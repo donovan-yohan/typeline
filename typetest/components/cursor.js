@@ -52,8 +52,8 @@ export default function Cursor({
   };
 
   // Helper function for stats
-  let validateWord = (typed, expected) => {
-    if (typed.join("") == expected) {
+  let validateWord = (expected, typed) => {
+    if (typed == expected) {
       onUpdateStats({ type: "addCorrect" });
     } else {
       onUpdateStats({ type: "addIncorrect" });
@@ -72,9 +72,12 @@ export default function Cursor({
     if (e.key == " " || e.key == "Spacebar") {
       e.preventDefault();
       if (!repeat && (activeWord != 0 || text.length > 0)) {
+        // handle holding character down
         setRepeat(true);
+
         // Update stats
-        validateWord(textDatabase[activeWord], text);
+        validateWord(textDatabase[activeWord].join(""), text);
+
         newActiveWord += 1;
         setOldLength(0);
 
@@ -82,15 +85,35 @@ export default function Cursor({
         onTextTyped({ value: text, visited: true }, activeWord);
       }
     } else if (e.key == "Backspace") {
+      // Update stats
       onUpdateStats({ type: "resetStreak" });
+
       // if new value matches old and backsapce was pressed, move to previous word
-      if (text.length == 0 && text.length == text.length) {
-        if (activeWord > 0) newActiveWord -= 1;
+      if (text.length == 0) {
+        if (activeWord > 0) {
+          newActiveWord -= 1;
+          // backspace pressed and last word is already correct, add incorrect
+          if (
+            textTyped[newActiveWord].value ==
+            textDatabase[newActiveWord].join("")
+          ) {
+            onUpdateStats({ type: "addIncorrect" });
+          }
+        }
         // update word visited
+        setOldLength(textTyped[newActiveWord].value.length);
         onTextTyped(
           { value: textTyped[newActiveWord].value, visited: false },
           newActiveWord
         );
+      } else if (
+        textTyped[newActiveWord].value.charAt(
+          textTyped[newActiveWord].value.length - 1
+        ) ==
+        textDatabase[newActiveWord][textTyped[newActiveWord].value.length - 1]
+      ) {
+        // backspace pressed when letter was correct
+        onUpdateStats({ type: "addIncorrect" });
       }
     }
 
