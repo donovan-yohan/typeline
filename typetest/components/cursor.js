@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import getDocumentCoords from "../utils/getDocumentCoords.js";
 import { useOffset } from "../hooks/useOffset.js";
+import cx from "classnames";
 
 export default function Cursor({
   letterRef,
@@ -20,6 +20,7 @@ export default function Cursor({
   const [oldLength, setOldLength] = useState(0);
   const [valid, setValid] = useState(true);
   const [repeat, setRepeat] = useState(false);
+  const [shouldAnimateCursor, setShouldAnimateCursor] = useState(true);
   const typingField = useRef(null);
   const cursorRef = useRef(null);
   const highlightRef = useRef(null);
@@ -27,6 +28,11 @@ export default function Cursor({
   const highlightOffset = useOffset(paragraphRef, wordRef, [
     textTyped[activeWord],
   ]);
+
+  const cursorClassList = cx({
+    cursor: true,
+    cursorAnimate: shouldAnimateCursor,
+  });
 
   // UPDATE STATS AND SEND TO INDEX PAGE
   let handleTextTyped = (e) => {
@@ -92,10 +98,14 @@ export default function Cursor({
       setText(textTyped[newActiveWord].value);
       onWordChanged(newActiveWord);
     }
+
+    // remove cursor animation when typing
+    setShouldAnimateCursor(false);
   };
 
   const checkIfHoldingKey = (e) => {
     setRepeat(false);
+    setShouldAnimateCursor(true);
   };
 
   // UPDATE TEXT POSITION
@@ -153,7 +163,7 @@ export default function Cursor({
 
   return (
     <div>
-      <span ref={cursorRef} className={"cursor"}></span>
+      <span ref={cursorRef} className={cursorClassList}></span>
       <span ref={highlightRef} className={"activeHighlight"}></span>
 
       <input
@@ -181,7 +191,8 @@ export default function Cursor({
           will-change: transform;
         }
         .cursorAnimate {
-          animation: blink 1s infinite;
+          animation: 0.45s cubic-bezier(0.9, 0, 0, 0.9) 1s infinite alternate
+            blink;
         }
 
         input {
@@ -212,11 +223,11 @@ export default function Cursor({
         }
 
         @keyframes blink {
-          30% {
-            opacity: 0.1;
+          0% {
+            opacity: 1;
           }
           100% {
-            opacity: 1;
+            opacity: 0;
           }
         }
       `}</style>
