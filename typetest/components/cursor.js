@@ -2,6 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { useOffset } from "../hooks/useOffset.js";
 import cx from "classnames";
 
+const BACKSPACE_CHAR_REGEX = /(?:~<)/g;
+const BACKSPACE_CHAR = "~<";
+const SPLIT_CHAR = "|";
+
 export default function Cursor({
   letterRef,
   wordRef,
@@ -52,12 +56,46 @@ export default function Cursor({
   };
 
   // Helper function for stats
-  let validateWord = (expected, typed) => {
+  let validateWord = (expected, typed, fullTyped) => {
+    let corrections = getCorrections(expected, fullTyped, typed);
     if (typed == expected) {
       onUpdateStats({ type: "addCorrect" });
     } else {
       onUpdateStats({ type: "addIncorrect" });
     }
+  };
+
+  const getCorrections = (expectedValue, fullValue, value) => {
+    // create array of substrings with backspace separated out, remove empty elements
+    let substrings = fullValue
+      .replace(
+        BACKSPACE_CHAR_REGEX,
+        `${SPLIT_CHAR}${BACKSPACE_CHAR}${SPLIT_CHAR}`
+      )
+      .split(SPLIT_CHAR)
+      .filter((c) => c);
+    let i = substrings.indexOf(BACKSPACE_CHAR);
+    let corrections = 0;
+    while (i > 0) {
+      substrings[i - 1] = substrings[i - 1].substring(
+        0,
+        substrings[i - 1].length - 1
+      );
+      substrings.splice(i, 1);
+      corrections++;
+
+      i = substrings.findIndex((s) => s == BACKSPACE_CHAR);
+    }
+
+    let incorrect = 0;
+    for (let j = 0; j < value.length; j++) {
+      if (value[j] != expectedValue[j]) incorrect++;
+    }
+    // accounts for early space press
+    if (value.length < expectedValue.length)
+      incorrect += expectedValue.length - value.length;
+
+    console.log(corrections, incorrect, corrections - incorrect);
   };
 
   // UPDATE TEXT ON TYPE AND SEND BACK TO INDEX
@@ -86,7 +124,11 @@ export default function Cursor({
         setRepeat(true);
 
         // Update stats
-        validateWord(textDatabase[activeWord].join(""), text);
+        validateWord(
+          textDatabase[activeWord].join(""),
+          text,
+          textTyped[activeWord].fullValue
+        );
 
         newActiveWord += 1;
         setOldLength(0);
@@ -141,7 +183,7 @@ export default function Cursor({
         onTextTyped(
           {
             value: textTyped[newActiveWord].value,
-            fullValue: textTyped[newActiveWord].fullValue + "~<",
+            fullValue: textTyped[newActiveWord].fullValue + BACKSPACE_CHAR,
             visited: false,
           },
           newActiveWord
