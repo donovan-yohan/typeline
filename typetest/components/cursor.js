@@ -62,7 +62,17 @@ export default function Cursor({
 
   // UPDATE TEXT ON TYPE AND SEND BACK TO INDEX
   useEffect(() => {
-    onTextTyped({ value: text, visited: false });
+    let lastVal = textTyped[activeWord].value;
+    let lastChar = "";
+    if (text.length > lastVal.length) {
+      lastChar = text.charAt(text.length - 1);
+    }
+
+    onTextTyped({
+      value: text,
+      fullValue: textTyped[activeWord].fullValue + lastChar,
+      visited: false,
+    });
   }, [text]);
 
   // HANDLE SPACEBAR AND BACKSPACE FOR CHANGING WORDS
@@ -82,7 +92,14 @@ export default function Cursor({
         setOldLength(0);
 
         // update word visited
-        onTextTyped({ value: text, visited: true }, activeWord);
+        onTextTyped(
+          {
+            value: text,
+            fullValue: textTyped[activeWord].fullValue,
+            visited: true,
+          },
+          activeWord
+        );
       }
     } else if (e.key == "Backspace") {
       // Update stats
@@ -103,7 +120,11 @@ export default function Cursor({
         // update word visited
         setOldLength(textTyped[newActiveWord].value.length);
         onTextTyped(
-          { value: textTyped[newActiveWord].value, visited: false },
+          {
+            value: textTyped[newActiveWord].value,
+            fullValue: textTyped[newActiveWord].fullValue,
+            visited: false,
+          },
           newActiveWord
         );
       } else if (
@@ -114,6 +135,17 @@ export default function Cursor({
       ) {
         // backspace pressed when letter was correct
         onUpdateStats({ type: "addIncorrect" });
+      }
+
+      if (text.length != 0) {
+        onTextTyped(
+          {
+            value: textTyped[newActiveWord].value,
+            fullValue: textTyped[newActiveWord].fullValue + "~<",
+            visited: false,
+          },
+          newActiveWord
+        );
       }
     }
 

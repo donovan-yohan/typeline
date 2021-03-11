@@ -22,7 +22,7 @@ import {
 let text = generateWords();
 let textData = createTextDatabase(text);
 let textHolder = textData.map((word) => {
-  return { value: "", visited: false };
+  return { value: "", fullValue: "", visited: false };
 });
 
 export default function Home() {

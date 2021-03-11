@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import Letter from "../components/letter.js";
-
+import cx from "classnames";
 export default React.memo(function Word({
   active,
   word,
@@ -10,6 +10,8 @@ export default React.memo(function Word({
   onWordUpdate,
   finished,
 }) {
+  const isPerfect = typed.fullValue == word.join("") && typed.visited;
+  const isCorrect = typed.value == word.join("");
   const wordRef = useRef(null);
   const overflowText =
     typed.value.length > word.length
@@ -37,6 +39,8 @@ export default React.memo(function Word({
                 key={`${id}-CHAR-${i}`}
                 onLetterUpdate={onLetterUpdate}
                 finished={finished}
+                isPerfect={isPerfect}
+                isCorrect={isCorrect}
               />
             );
           })}
