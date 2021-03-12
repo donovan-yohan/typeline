@@ -82,3 +82,18 @@ export function statsReducer(state, action) {
       throw new Error();
   }
 }
+
+export function textTypedReducer(state, action) {
+  switch (action.type) {
+    case "updateTextTyped":
+      return state.map((w, i) => {
+        if (i == action.targetIndex) {
+          return action.newValue;
+        } else {
+          return w;
+        }
+      });
+    default:
+      throw new Error();
+  }
+}

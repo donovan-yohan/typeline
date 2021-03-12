@@ -8,6 +8,7 @@ import Menu from "../components/menu.js";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useInterval from "@use-it/interval";
 import generateWords from "../utils/generateWords.js";
+import { calculateRawWPM, calculateTrueWPM } from "../utils/wpmUtils.js";
 import createTextDatabase from "../utils/createTextDatabase.js";
 import { useOffset } from "../hooks/useOffset.js";
 import {
@@ -15,20 +16,26 @@ import {
   initialCursorState,
   highlightReducer,
   initialHighlightState,
-  statsReducer,
-  initialStatsState,
+  textTypedReducer,
 } from "../components/reducers";
 
 let text = generateWords();
 let textData = createTextDatabase(text);
-let textHolder = textData.map((word) => {
-  return { value: "", fullValue: "", visited: false };
+let initialTypedState = textData.map((word) => {
+  return {
+    value: "",
+    stats: { correct: 0, incorrect: 0, corrected: 0 },
+    visited: false,
+  };
 });
 
 export default function Home() {
   const [activeWord, setActiveWord] = useState(0);
   const [textDatabase, setTextDatabase] = useState(textData);
-  const [textTyped, setTextTyped] = useState(textHolder);
+  const [textTyped, textTypedDispatcher] = useReducer(
+    textTypedReducer,
+    initialTypedState
+  );
 
   const [cursorState, cursorDispatcher] = useReducer(
     cursorReducer,
@@ -40,13 +47,21 @@ export default function Home() {
   );
   const [lineOffset, setLineOffset] = useState(0);
 
-  const [statsState, statsDispatcher] = useReducer(
-    statsReducer,
-    initialStatsState
+  const stats = textTyped.reduce(
+    (acc, word, i) => {
+      acc.correct += word.stats?.correct;
+      acc.incorrect += word.stats?.incorrect;
+      acc.corrected += word.stats?.corrected;
+      return acc;
+    },
+    {
+      correct: 0,
+      incorrect: 0,
+      corrected: 0,
+    }
   );
-  const [wpm, setWpm] = useState(0);
 
-  const [timeTotal, setTimeTotal] = useState(30);
+  const [timeTotal, setTimeTotal] = useState(3);
   const [time, setTime] = useState(timeTotal);
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
@@ -56,22 +71,21 @@ export default function Home() {
   const textPageRef = useRef(null);
   const textOffset = useOffset(rootRef, textPageRef);
 
-  // HELPER FUNCTIONS
-  const updateTextTypedArray = (targetIndex, newValue) => {
-    setTextTyped((textTyped) => {
-      return textTyped.map((w, i) => {
-        if (i == targetIndex) {
-          return newValue;
-        } else {
-          return w;
-        }
-      });
+  // TYPING LOGIC
+  const handleTextTyped = (value, index = activeWord) => {
+    textTypedDispatcher({
+      type: "updateTextTyped",
+      targetIndex: index,
+      newValue: value,
     });
   };
 
-  // TYPING LOGIC
-  const handleTextTyped = (value, index = activeWord) => {
-    updateTextTypedArray(index, value);
+  const handleUpdateStats = (stats, index = activeWord) => {
+    updateTextTypedArray(index, {
+      value: textTyped[index].value,
+      stats: stats,
+      visited: textTyped[index].visited,
+    });
   };
 
   const handleWordChanged = (newActiveWord) => {
@@ -105,13 +119,7 @@ export default function Home() {
     setIsRunning(true);
   }, [textTyped[0].value]);
 
-  // Stats
-  useDidUpdateEffect(() => {
-    setWpm(Math.floor(statsState.correct / 5 / ((timeTotal - time) / 60)));
-  }, [time]);
-
   // CUSTOMIZE SETTINGS
-
   useEffect(() => {
     if (!isRunning) {
       setTime(timeTotal);
@@ -129,23 +137,22 @@ export default function Home() {
         {finished && (
           <div className={styles.wpmColumn}>
             <div className={styles.largeScore}>
-              <span className={styles.largeScoreLabel}>WPM</span>
+              <span className={styles.largeScoreLabel}>True WPM</span>
               <span className={styles.largeScoreNumber}>
-                {wpm.toLocaleString("en-US", {
-                  maximumIntegerDigits: 3,
-                  useGrouping: false,
-                })}
+                {calculateTrueWPM(
+                  stats.correct,
+                  stats.incorrect,
+                  stats.corrected,
+                  time,
+                  timeTotal
+                )}
               </span>
             </div>
             <div className={styles.smallScoreWrapper}>
               <div className={styles.smallScore}>
-                <span className={styles.smallScoreLabel}>%</span>
+                <span className={styles.smallScoreLabel}>Raw WPM</span>
                 <span className={styles.smallScoreNumber}>
-                  {(
-                    (statsState.correct /
-                      (statsState.correct + statsState.incorrect)) *
-                      100 || 0
-                  ).toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                  {calculateRawWPM(stats.correct, time, timeTotal)}
                 </span>
               </div>
             </div>
@@ -170,7 +177,6 @@ export default function Home() {
                 finished={finished}
                 isFirstChar={cursorState.isFirstChar}
                 onLineChange={handleLineChange}
-                onUpdateStats={statsDispatcher}
               />
               <div className={styles.textWrapper}>
                 {textDatabase.map((word, i) => {
@@ -184,6 +190,7 @@ export default function Home() {
                       onLetterUpdate={cursorDispatcher}
                       onWordUpdate={highlightDispatcher}
                       finished={finished}
+                      onUpdateStats={textTypedDispatcher}
                     />
                   );
                 })}
@@ -205,22 +212,23 @@ export default function Home() {
         {finished && (
           <div className={styles.streakColumn}>
             <div className={styles.largeScore}>
-              <span className={styles.largeScoreLabel}>Highest Streak</span>
+              <span className={styles.largeScoreLabel}>Accuracy</span>
               <span className={styles.largeScoreNumber}>
-                {statsState.maxStreak}
+                {(
+                  (stats.correct / (stats.correct + stats.incorrect)) * 100 || 0
+                ).toLocaleString("en-US", { maximumFractionDigits: 1 })}
+                %
               </span>
             </div>
             <div className={styles.smallScoreWrapper}>
               <div className={styles.smallScore}>
-                <span className={styles.smallScoreLabel}>Good</span>
-                <span className={styles.smallScoreNumber}>
-                  {statsState.correct}
-                </span>
+                <span className={styles.smallScoreLabel}>Right</span>
+                <span className={styles.smallScoreNumber}>{stats.correct}</span>
               </div>
               <div className={styles.smallScore}>
-                <span className={styles.smallScoreLabel}>Miss</span>
+                <span className={styles.smallScoreLabel}>Wrong</span>
                 <span className={`${styles.smallScoreNumber} ${styles.miss}`}>
-                  {statsState.incorrect}
+                  {stats.incorrect}
                 </span>
               </div>
             </div>

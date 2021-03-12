@@ -78,6 +78,7 @@
   width: 25%;
   align-items: space-between;
   justify-content: center;
+  margin-top: 16px;
 }
 
 .smallScore {
@@ -94,9 +95,11 @@
   text-transform: uppercase;
   letter-spacing: 0.33em;
   text-align: center;
+  white-space: nowrap;
 }
 
 .smallScore .smallScoreNumber {
+  margin-top: 4px;
   font-weight: bold;
   color: var(--highlight);
 }

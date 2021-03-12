@@ -14,7 +14,6 @@ export default function Cursor({
   textDatabase,
   isFirstChar,
   onLineChange,
-  onUpdateStats,
 }) {
   const [text, setText] = useState("");
   const [oldLength, setOldLength] = useState(0);
@@ -39,25 +38,7 @@ export default function Cursor({
     let w = e.target.value;
     setText(w);
 
-    let expected = textDatabase[activeWord];
-    if (w.length > 0 && w.length > oldLength) {
-      if (w.charAt(w.length - 1) == expected[w.length - 1]) {
-        onUpdateStats({ type: "addCorrect" });
-      } else if (w.charAt(w.length - 1) != expected[w.length - 1]) {
-        onUpdateStats({ type: "addIncorrect" });
-      }
-    }
-
     setOldLength(w.length);
-  };
-
-  // Helper function for stats
-  let validateWord = (expected, typed) => {
-    if (typed == expected) {
-      onUpdateStats({ type: "addCorrect" });
-    } else {
-      onUpdateStats({ type: "addIncorrect" });
-    }
   };
 
   // UPDATE TEXT ON TYPE AND SEND BACK TO INDEX
@@ -85,9 +66,6 @@ export default function Cursor({
         // handle holding character down
         setRepeat(true);
 
-        // Update stats
-        validateWord(textDatabase[activeWord].join(""), text);
-
         newActiveWord += 1;
         setOldLength(0);
 
@@ -95,27 +73,17 @@ export default function Cursor({
         onTextTyped(
           {
             value: text,
-            fullValue: textTyped[activeWord].fullValue,
+            stats: textTyped[activeWord].stats,
             visited: true,
           },
           activeWord
         );
       }
     } else if (e.key == "Backspace") {
-      // Update stats
-      onUpdateStats({ type: "resetStreak" });
-
       // if new value matches old and backsapce was pressed, move to previous word
       if (text.length == 0) {
         if (activeWord > 0) {
           newActiveWord -= 1;
-          // backspace pressed and last word is already correct, add incorrect
-          if (
-            textTyped[newActiveWord].value ==
-            textDatabase[newActiveWord].join("")
-          ) {
-            onUpdateStats({ type: "addIncorrect" });
-          }
         }
         // update word visited
         setOldLength(textTyped[newActiveWord].value.length);
@@ -127,21 +95,13 @@ export default function Cursor({
           },
           newActiveWord
         );
-      } else if (
-        textTyped[newActiveWord].value.charAt(
-          textTyped[newActiveWord].value.length - 1
-        ) ==
-        textDatabase[newActiveWord][textTyped[newActiveWord].value.length - 1]
-      ) {
-        // backspace pressed when letter was correct
-        onUpdateStats({ type: "addIncorrect" });
       }
 
       if (text.length != 0) {
         onTextTyped(
           {
             value: textTyped[newActiveWord].value,
-            fullValue: textTyped[newActiveWord].fullValue + "~<",
+            stats: textTyped[newActiveWord].stats,
             visited: false,
           },
           newActiveWord
