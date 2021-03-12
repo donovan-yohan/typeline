@@ -206,7 +206,7 @@ export default function Cursor({
           will-change: transform;
         }
         .cursorAnimate {
-          animation: 0.45s cubic-bezier(0.9, 0, 0, 0.9) 1s infinite alternate
+          animation: 0.45s cubic-bezier(0.9, 0, 0, 0.9) 0.66s infinite alternate
             blink;
         }
 
