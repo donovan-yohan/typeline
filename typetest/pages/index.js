@@ -61,7 +61,7 @@ export default function Home() {
     }
   );
 
-  const [timeTotal, setTimeTotal] = useState(3);
+  const [timeTotal, setTimeTotal] = useState(30);
   const [time, setTime] = useState(timeTotal);
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
