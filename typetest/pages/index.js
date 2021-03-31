@@ -8,7 +8,11 @@ import Menu from "../components/menu.js";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useInterval from "@use-it/interval";
 import generateWords from "../utils/generateWords.js";
-import { calculateRawWPM, calculateTrueWPM } from "../utils/wpmUtils.js";
+import {
+  calculateRawWPM,
+  calculateTrueWPM,
+  calculateCPS,
+} from "../utils/wpmUtils.js";
 import createTextDatabase from "../utils/createTextDatabase.js";
 import { useOffset } from "../hooks/useOffset.js";
 import {
@@ -28,6 +32,8 @@ let initialTypedState = textData.map((word) => {
     visited: false,
   };
 });
+
+const INTERVAL = 10;
 
 export default function Home() {
   const [activeWord, setActiveWord] = useState(0);
@@ -61,14 +67,33 @@ export default function Home() {
     }
   );
 
-  const [timeTotal, setTimeTotal] = useState(30);
-  const [time, setTime] = useState(timeTotal);
+  const [lastStats, setLastStats] = useState({
+    stats: {
+      correct: 0,
+      incorrect: 0,
+      corrected: 0,
+    },
+    speed: 0,
+  });
+  const [timeTotal, setTimeTotal] = useState(10000);
+  const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
 
   const paragraphRef = useRef(null);
   const rootRef = useRef(null);
   const textPageRef = useRef(null);
+
+  // TODO: remove TESTING
+
+  const posGraphRef = useRef(null);
+  const velGraphRef = useRef(null);
+
+  const [posData, setPosData] = useState([{ time: 0, wpm: 0 }]);
+  const [velData, setVelData] = useState([{ time: 0, wpm: 0 }]);
+
+  // ****
+
   const textOffset = useOffset(rootRef, textPageRef);
 
   // TYPING LOGIC
@@ -77,14 +102,6 @@ export default function Home() {
       type: "updateTextTyped",
       targetIndex: index,
       newValue: value,
-    });
-  };
-
-  const handleUpdateStats = (stats, index = activeWord) => {
-    updateTextTypedArray(index, {
-      value: textTyped[index].value,
-      stats: stats,
-      visited: textTyped[index].visited,
     });
   };
 
@@ -101,13 +118,41 @@ export default function Home() {
   // COUNTER
   useInterval(
     () => {
-      setTime((time) => time - 1);
+      setTime((time) => time + INTERVAL);
+      updateGraph(time, stats);
     },
-    isRunning ? 1000 : null
+    isRunning ? INTERVAL : null
   );
 
+  //TODO: REMOVE TESTING
+
+  const getPath = (line) => {
+    return (
+      "M " +
+      line
+        .map((p) => {
+          return `${p.time} ${p.wpm}`;
+        })
+        .join(" L ")
+    );
+  };
+
+  const updateGraph = (time) => {
+    let t = (time / timeTotal) * posGraphRef.current.clientWidth;
+
+    let wpm = calculateRawWPM(stats.correct, time, timeTotal, isRunning);
+    let w = posGraphRef.current.clientHeight - wpm;
+
+    console.log(wpm);
+
+    let pos = posData;
+    pos.push({ time: t, wpm: w });
+    setPosData(pos);
+  };
+  // *******************
+
   useEffect(() => {
-    if (time <= 0) {
+    if (time >= timeTotal) {
       setIsRunning(false);
       setFinished(true);
       setTime(0);
@@ -122,7 +167,7 @@ export default function Home() {
   // CUSTOMIZE SETTINGS
   useEffect(() => {
     if (!isRunning) {
-      setTime(timeTotal);
+      setTime(0);
     }
   }, [time, timeTotal]);
 
@@ -144,7 +189,8 @@ export default function Home() {
                   stats.incorrect,
                   stats.corrected,
                   time,
-                  timeTotal
+                  timeTotal,
+                  isRunning
                 )}
               </span>
             </div>
@@ -206,6 +252,11 @@ export default function Home() {
             timeTotal={timeTotal}
             onChangeTimeTotal={setTimeTotal}
           ></Menu>
+          <div ref={posGraphRef} className={"container"}>
+            <svg className={"graphWrapper"}>
+              <path className={"path2"} d={getPath(posData)} />;
+            </svg>
+          </div>
           {/* DEBUG */}
           {/* <pre>{JSON.stringify({ activeWord }, null, 4)}</pre> */}
         </div>
@@ -235,7 +286,41 @@ export default function Home() {
           </div>
         )}
       </main>
-      <style jsx>{``}</style>
+      <style jsx>{`
+         {
+          /* TODO: REMOVE TESTING */
+        }
+        .container {
+          margin: auto;
+          width: 800px;
+          height: 300px;
+          border: 1px solid white;
+        }
+        .path,
+        .path2 {
+          width: 100%;
+          height: 100%;
+          fill: none;
+          stroke-width: 1px;
+          stroke-linejoin: round;
+          stroke-linecap: round;
+        }
+
+        .path {
+          stroke: white;
+        }
+        .path2f {
+          stroke: blue;
+        }
+
+        .graphWrapper {
+          width: 100%;
+          height: 100%;
+        }
+         {
+          /* **************** */
+        }
+      `}</style>
     </div>
   );
 }

@@ -11,7 +11,7 @@ export default function Timer({
   isRunning,
   onChangeTimeTotal,
 }) {
-  const LONGEST_TIME = 60;
+  const LONGEST_TIME = 60000;
 
   const handleTimeTotalChange = (newTime) => {
     onChangeTimeTotal(newTime);
@@ -72,7 +72,7 @@ export default function Timer({
             style={{
               margin: "16px 0",
             }}
-            value={time}
+            value={timeTotal - time}
             min={0}
             max={isEditing ? LONGEST_TIME : timeTotal}
             trackStyle={isRunning ? timerProgressStyle : timerEditProgressStyle}
@@ -83,15 +83,15 @@ export default function Timer({
             marks={
               isEditing
                 ? {
-                    10: {
+                    10000: {
                       label: "0:10",
                       style: labelStyle,
                     },
-                    30: {
+                    30000: {
                       label: "0:30",
                       style: labelStyle,
                     },
-                    60: {
+                    60000: {
                       label: "1:00",
                       style: labelStyle,
                     },
@@ -102,9 +102,10 @@ export default function Timer({
         </>
         {!isEditing && (
           <span className={"time"}>
-            {Math.floor(time / 60)}:
-            {(time % 60).toLocaleString("en-US", {
+            {Math.floor((timeTotal - time) / 1000 / 60)}:
+            {(((timeTotal - time) / 1000) % 60).toLocaleString("en-US", {
               minimumIntegerDigits: 2,
+              maximumFractionDigits: 0,
               useGrouping: false,
             })}
           </span>

@@ -107,7 +107,6 @@ export default React.memo(function Word({
 
   // SEND UPDATE BACK
   useDidUpdateEffect(() => {
-    console.log(stats);
     onUpdateStats({
       type: "updateTextTyped",
       targetIndex: id,
