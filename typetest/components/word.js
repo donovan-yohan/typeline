@@ -38,6 +38,7 @@ export default React.memo(function Word({
 
   // UPDATE STATS ON LETTER CHANGE
   useDidUpdateEffect(() => {
+    // CHECK IF CHARACTER WAS ADDED OR REMOVED
     if (typed.value.length > lastInfo.lastLength) {
       if (typed.value[typed.value.length - 1] == word[typed.value.length - 1]) {
         setStats((stats) => {
@@ -57,6 +58,7 @@ export default React.memo(function Word({
         });
       }
     } else {
+      // CHARACTER REMOVED, CHECK IF IT WAS ALREADY CORRECT
       if (lastInfo.lastChar == wordString[lastInfo.lastLength - 1]) {
         setStats((stats) => {
           return {
@@ -107,7 +109,6 @@ export default React.memo(function Word({
 
   // SEND UPDATE BACK
   useDidUpdateEffect(() => {
-    console.log(stats);
     onUpdateStats({
       type: "updateTextTyped",
       targetIndex: id,
