@@ -38,7 +38,7 @@ export default function Menu({
   return (
     <div className={"container"}>
       <Timer
-        time={time}
+        time={timeTotal - time}
         timeTotal={timeTotal}
         isEditing={isEditing}
         isRunning={isRunning}

@@ -61,10 +61,11 @@ export default function Home() {
     }
   );
 
-  const [timeTotal, setTimeTotal] = useState(30);
-  const [time, setTime] = useState(timeTotal);
+  const [timeTotal, setTimeTotal] = useState(5);
+  const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [chartStats, setChartStats] = useState([]);
 
   const paragraphRef = useRef(null);
   const rootRef = useRef(null);
@@ -98,31 +99,75 @@ export default function Home() {
     }
   };
 
+  // helper function to find change in values over time for graph
+  const newStat = (lastStat, currentTime, correct, incorrect) => {
+    return {
+      wpm: calculateTrueWPM(
+        stats.correct,
+        stats.incorrect,
+        stats.corrected,
+        0,
+        timeTotal
+      ),
+      raw: calculateRawWPM(
+        correct - lastStat.correctInInterval,
+        lastStat.time,
+        currentTime
+      ),
+      correctInInterval: correct - lastStat.correctToTime,
+      incorrectInInterval: incorrect - lastStat.incorrectToTime,
+      time: currentTime,
+      correctToTime: correct,
+      incorrectToTime: incorrect,
+    };
+  };
+
   // COUNTER
   useInterval(
     () => {
-      setTime((time) => time - 1);
+      setTime((time) => time + 1);
     },
     isRunning ? 1000 : null
   );
 
   useEffect(() => {
-    if (time <= 0) {
+    // update stats for graph/chart
+    if (time > 0) {
+      setChartStats([
+        ...chartStats,
+        newStat(chartStats[time - 1], time, stats.correct, stats.incorrect),
+      ]);
+    }
+
+    // end test
+    if (time >= timeTotal) {
       setIsRunning(false);
       setFinished(true);
-      setTime(0);
+      setTime(timeTotal);
     }
   }, [time]);
 
   // HANDLE TEXT TYPED
   useDidUpdateEffect(() => {
+    if (!isRunning)
+      setChartStats([
+        {
+          wpm: 0,
+          raw: 0,
+          correctInInterval: 0,
+          incorrectInInterval: 0,
+          time: 0,
+          correctToTime: 0,
+          incorrectToTime: 0,
+        },
+      ]);
     setIsRunning(true);
   }, [textTyped[0].value]);
 
   // CUSTOMIZE SETTINGS
   useEffect(() => {
     if (!isRunning) {
-      setTime(timeTotal);
+      setTime(0);
     }
   }, [time, timeTotal]);
 
@@ -143,7 +188,7 @@ export default function Home() {
                   stats.correct,
                   stats.incorrect,
                   stats.corrected,
-                  time,
+                  0,
                   timeTotal
                 )}
               </span>
@@ -152,7 +197,7 @@ export default function Home() {
               <div className={styles.smallScore}>
                 <span className={styles.smallScoreLabel}>Raw WPM</span>
                 <span className={styles.smallScoreNumber}>
-                  {calculateRawWPM(stats.correct, time, timeTotal)}
+                  {calculateRawWPM(stats.correct, 0, timeTotal)}
                 </span>
               </div>
             </div>
@@ -207,7 +252,7 @@ export default function Home() {
             onChangeTimeTotal={setTimeTotal}
           ></Menu>
           {/* DEBUG */}
-          {/* <pre>{JSON.stringify({ activeWord }, null, 4)}</pre> */}
+          {/* <pre>{JSON.stringify({ chartStats }, null, 4)}</pre> */}
         </div>
         {finished && (
           <div className={styles.streakColumn}>
