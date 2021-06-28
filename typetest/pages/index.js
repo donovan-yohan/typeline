@@ -208,6 +208,11 @@ export default function Home() {
           ></Menu>
           {/* DEBUG */}
           {/* <pre>{JSON.stringify({ activeWord }, null, 4)}</pre> */}
+          {/* <div className='lineWrapper'>
+            <svg className='lineContainer'>
+              <line className='line' x1='2' y1='25' x2='298' y2='25' />
+            </svg>
+          </div> */}
         </div>
         {finished && (
           <div className={styles.streakColumn}>
@@ -235,7 +240,35 @@ export default function Home() {
           </div>
         )}
       </main>
-      <style jsx>{``}</style>
+      <style jsx>{`
+        .lineWrapper {
+          position: fixed;
+        }
+        .lineContainer {
+          width: 300px;
+        }
+        .line {
+          stroke: var(--highlight);
+          stroke-width: 4px;
+          stroke-dasharray: 298;
+          stroke-dashoffset: 0;
+          stroke-linecap: round;
+          offset-path: stroke-box;
+          animation: beam 1s infinite cubic-bezier(0.68, 0.03, 0.39, 1);
+        }
+
+        @keyframes beam {
+          from {
+            stroke-dashoffset: 298;
+          }
+          50% {
+            stroke-dashoffset: 0;
+          }
+          to {
+            stroke-dashoffset: -298;
+          }
+        }
+      `}</style>
     </div>
   );
 }

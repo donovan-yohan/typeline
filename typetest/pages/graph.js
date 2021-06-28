@@ -33,12 +33,11 @@ const getPath = (line) => {
 export default function Home() {
   const [data, setData] = useState(testData);
 
-  
   return (
     <div>
       <Head>
         <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel='icon' href='/favicon.ico' />
       </Head>
 
       <div>
