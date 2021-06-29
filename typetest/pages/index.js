@@ -5,6 +5,7 @@ import styles from "../styles/Home.module.css";
 import Word from "../components/word.js";
 import Cursor from "../components/cursor.js";
 import Menu from "../components/menu.js";
+import PerformanceChart from "../components/performanceChart";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useInterval from "@use-it/interval";
 import generateWords from "../utils/generateWords.js";
@@ -61,7 +62,7 @@ export default function Home() {
     }
   );
 
-  const [timeTotal, setTimeTotal] = useState(5);
+  const [timeTotal, setTimeTotal] = useState(15);
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
@@ -106,11 +107,11 @@ export default function Home() {
         stats.correct,
         stats.incorrect,
         stats.corrected,
-        0,
+        timeTotal - time,
         timeTotal
       ),
       raw: calculateRawWPM(
-        correct - lastStat.correctInInterval,
+        correct - lastStat.correctToTime + incorrect - lastStat.incorrectToTime,
         lastStat.time,
         currentTime
       ),
@@ -132,10 +133,27 @@ export default function Home() {
 
   useEffect(() => {
     // update stats for graph/chart
-    if (time > 0) {
+    if (time == 1) {
+      setChartStats([
+        newStat(
+          {
+            wpm: 0,
+            raw: 0,
+            correctInInterval: 0,
+            incorrectInInterval: 0,
+            time: 0,
+            correctToTime: 0,
+            incorrectToTime: 0,
+          },
+          time,
+          stats.correct,
+          stats.incorrect
+        ),
+      ]);
+    } else if (time > 1) {
       setChartStats([
         ...chartStats,
-        newStat(chartStats[time - 1], time, stats.correct, stats.incorrect),
+        newStat(chartStats[time - 2], time, stats.correct, stats.incorrect),
       ]);
     }
 
@@ -149,19 +167,7 @@ export default function Home() {
 
   // HANDLE TEXT TYPED
   useDidUpdateEffect(() => {
-    if (!isRunning)
-      setChartStats([
-        {
-          wpm: 0,
-          raw: 0,
-          correctInInterval: 0,
-          incorrectInInterval: 0,
-          time: 0,
-          correctToTime: 0,
-          incorrectToTime: 0,
-        },
-      ]);
-    setIsRunning(true);
+    if (!isRunning) setIsRunning(true);
   }, [textTyped[0].value]);
 
   // CUSTOMIZE SETTINGS
@@ -196,7 +202,7 @@ export default function Home() {
             <div className={styles.smallScoreWrapper}>
               <div className={styles.smallScore}>
                 <span className={styles.smallScoreLabel}>Raw WPM</span>
-                <span className={styles.smallScoreNumber}>
+                <span className={styles.smallWPMNumber}>
                   {calculateRawWPM(stats.correct, 0, timeTotal)}
                 </span>
               </div>
@@ -204,44 +210,47 @@ export default function Home() {
           </div>
         )}
         <div className={styles.textColumn}>
-          <div ref={textPageRef} className={styles.textPage}>
-            <div
-              ref={paragraphRef}
-              className={styles.textFrame}
-              style={{ transform: `translateY(${lineOffset}px)` }}
-            >
-              <Cursor
-                onTextTyped={handleTextTyped}
-                onWordChanged={handleWordChanged}
-                wordRef={highlightState.wordRef}
-                letterRef={cursorState.letterRef}
-                paragraphRef={paragraphRef}
-                activeWord={activeWord}
-                textTyped={textTyped}
-                textDatabase={textDatabase}
-                finished={finished}
-                isFirstChar={cursorState.isFirstChar}
-                onLineChange={handleLineChange}
-              />
-              <div className={styles.textWrapper}>
-                {textDatabase.map((word, i) => {
-                  return (
-                    <Word
-                      id={i}
-                      word={word}
-                      active={activeWord == i}
-                      typed={textTyped[i]}
-                      key={`WORD-${i}`}
-                      onLetterUpdate={cursorDispatcher}
-                      onWordUpdate={highlightDispatcher}
-                      finished={finished}
-                      onUpdateStats={textTypedDispatcher}
-                    />
-                  );
-                })}
+          {!finished && (
+            <div ref={textPageRef} className={styles.textPage}>
+              <div
+                ref={paragraphRef}
+                className={styles.textFrame}
+                style={{ transform: `translateY(${lineOffset}px)` }}
+              >
+                <Cursor
+                  onTextTyped={handleTextTyped}
+                  onWordChanged={handleWordChanged}
+                  wordRef={highlightState.wordRef}
+                  letterRef={cursorState.letterRef}
+                  paragraphRef={paragraphRef}
+                  activeWord={activeWord}
+                  textTyped={textTyped}
+                  textDatabase={textDatabase}
+                  finished={finished}
+                  isFirstChar={cursorState.isFirstChar}
+                  onLineChange={handleLineChange}
+                />
+                <div className={styles.textWrapper}>
+                  {textDatabase.map((word, i) => {
+                    return (
+                      <Word
+                        id={i}
+                        word={word}
+                        active={activeWord == i}
+                        typed={textTyped[i]}
+                        key={`WORD-${i}`}
+                        onLetterUpdate={cursorDispatcher}
+                        onWordUpdate={highlightDispatcher}
+                        finished={finished}
+                        onUpdateStats={textTypedDispatcher}
+                      />
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
+          )}
+          {finished && <PerformanceChart rawStats={chartStats} />}
 
           <Menu
             className={styles.menu}

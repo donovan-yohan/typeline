@@ -6,6 +6,7 @@ import { cssRootVars, cssDarkVars } from "../styles/globalVars.js";
 export default class MyApp extends App {
   state = {
     theme: "light",
+    values: cssRootVars,
   };
 
   componentDidMount = () => {
@@ -14,13 +15,14 @@ export default class MyApp extends App {
     // If matches, set data-theme to dark
     if (mediaQuery.matches) {
       document.documentElement.setAttribute("data-theme", "dark");
-      this.setState({ theme: "dark" });
+      this.setState({ theme: "dark", values: cssDarkVars });
     }
   };
 
   toggleTheme = () => {
     let newTheme = this.state.theme;
     newTheme === "dark" ? (newTheme = "light") : (newTheme = "dark");
+    let newValues = newTheme === "dark" ? cssDarkVars : cssRootVars;
 
     let transition = document.createElement("div");
     transition.setAttribute("id", "transition");
@@ -34,7 +36,7 @@ export default class MyApp extends App {
     }, 320);
     window.setTimeout(
       function () {
-        this.setState({ theme: newTheme });
+        this.setState({ theme: newTheme, values: newValues });
       }.bind(this),
       320
     );
@@ -53,6 +55,7 @@ export default class MyApp extends App {
       <Context.Provider
         value={{
           theme: this.state.theme,
+          values: this.state.values,
           toggleTheme: this.toggleTheme,
         }}
       >

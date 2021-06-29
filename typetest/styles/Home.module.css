@@ -98,10 +98,14 @@
   white-space: nowrap;
 }
 
-.smallScore .smallScoreNumber {
+.smallScore .smallScoreNumber,
+.smallWPMNumber {
   margin-top: 4px;
   font-weight: bold;
   color: var(--highlight);
+}
+.smallWPMNumber {
+  color: var(--main);
 }
 
 .smallScore .miss {
