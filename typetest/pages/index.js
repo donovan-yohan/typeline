@@ -62,7 +62,7 @@ export default function Home() {
     }
   );
 
-  const [timeTotal, setTimeTotal] = useState(15);
+  const [timeTotal, setTimeTotal] = useState(30);
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
@@ -115,6 +115,7 @@ export default function Home() {
         lastStat.time,
         currentTime
       ),
+      rawAverage: calculateRawWPM(correct, 0, currentTime),
       correctInInterval: correct - lastStat.correctToTime,
       incorrectInInterval: incorrect - lastStat.incorrectToTime,
       time: currentTime,
@@ -139,6 +140,7 @@ export default function Home() {
           {
             wpm: 0,
             raw: 0,
+            rawAverage: 0,
             correctInInterval: 0,
             incorrectInInterval: 0,
             time: 0,
@@ -277,12 +279,14 @@ export default function Home() {
             <div className={styles.smallScoreWrapper}>
               <div className={styles.smallScore}>
                 <span className={styles.smallScoreLabel}>Right</span>
-                <span className={styles.smallScoreNumber}>{stats.correct}</span>
+                <span className={styles.smallScoreNumber}>
+                  {stats.correct || 0}
+                </span>
               </div>
               <div className={styles.smallScore}>
                 <span className={styles.smallScoreLabel}>Wrong</span>
                 <span className={`${styles.smallScoreNumber} ${styles.miss}`}>
-                  {stats.incorrect}
+                  {stats.incorrect || 0}
                 </span>
               </div>
             </div>

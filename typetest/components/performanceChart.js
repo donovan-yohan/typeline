@@ -2,12 +2,27 @@ import React, { useContext } from "react";
 import Context from "../components/context";
 import { Line } from "react-chartjs-2";
 
+const CONSISTENCY = "Consistency";
+
 export default function PerformanceChart({ rawStats }) {
   const theme = useContext(Context);
 
   const data = {
     labels: rawStats.map((s) => s.time),
     datasets: [
+      {
+        label: "Errors",
+        data: rawStats.map((s) =>
+          s.incorrectInInterval > 0 ? s.incorrectInInterval : undefined
+        ),
+        fill: false,
+        backgroundColor: theme.values.incorrect,
+        borderColor: theme.values.incorrect,
+        showLine: false,
+        pointStyle: "crossRot",
+        yAxisID: "errorAxis",
+        pointRadius: 5,
+      },
       {
         label: "WPM",
         data: rawStats.map((s) => s.wpm),
@@ -25,21 +40,8 @@ export default function PerformanceChart({ rawStats }) {
         backgroundColor: theme.values.main,
         borderColor: theme.values.main,
         spanGaps: true,
-        tension: 0.25,
+        tension: 0.33,
         yAxisID: "wpmAxis",
-      },
-      {
-        label: "Errors",
-        data: rawStats.map((s) =>
-          s.incorrectInInterval > 0 ? s.incorrectInInterval : undefined
-        ),
-        fill: false,
-        backgroundColor: theme.values.incorrect,
-        borderColor: theme.values.incorrect,
-        showLine: false,
-        pointStyle: "crossRot",
-        yAxisID: "errorAxis",
-        pointRadius: 5,
       },
     ],
   };
@@ -50,7 +52,8 @@ export default function PerformanceChart({ rawStats }) {
         type: "linear",
         display: true,
         position: "left",
-        min: 0,
+        suggstedMin: 0,
+        grace: "10%",
         title: {
           display: true,
           text: "WPM",
@@ -65,6 +68,9 @@ export default function PerformanceChart({ rawStats }) {
         },
         ticks: {
           beginAtZero: true,
+          callback: (tick) => {
+            if (tick % 1 === 0) return tick;
+          },
         },
         min: 0,
         title: {
@@ -81,7 +87,7 @@ export default function PerformanceChart({ rawStats }) {
     },
     plugins: {
       legend: {
-        display: false,
+        display: true,
       },
     },
   };

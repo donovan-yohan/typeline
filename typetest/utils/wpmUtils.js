@@ -1,12 +1,16 @@
 export const calculateRawWPM = (correct, startTime, endTime) => {
-  console.log(correct, startTime, endTime);
-  return Math.floor(correct / 5 / ((endTime - startTime) / 60)).toLocaleString(
-    "en-US",
-    {
-      maximumIntegerDigits: 3,
-      useGrouping: false,
-    }
-  );
+  let wpm = Math.floor(correct / 5 / ((endTime - startTime) / 60));
+
+  // console.log(
+  //   `calculateRawWPM: correct: ${correct}, startTime: ${startTime}, endTime: ${endTime}, wpm: ${wpm}`
+  // );
+  // deny negative wpm
+  wpm > 0 ? wpm : (wpm = 0);
+
+  return wpm.toLocaleString("en-US", {
+    maximumIntegerDigits: 3,
+    useGrouping: false,
+  });
 };
 
 export const calculateTrueWPM = (
@@ -16,9 +20,16 @@ export const calculateTrueWPM = (
   startTime,
   endTime
 ) => {
-  return Math.floor(
+  let wpm = Math.floor(
     (correct - incorrect + corrected) / 5 / ((endTime - startTime) / 60)
-  ).toLocaleString("en-US", {
+  );
+
+  // console.log(
+  //   `calculateTrueWPM: correct: ${correct}, incorrect: ${incorrect},  corrected: ${corrected}, startTime: ${startTime}, endTime: ${endTime}, wpm: ${wpm}`
+  // );
+  // deny negative wpm
+  wpm > 0 ? wpm : (wpm = 0);
+  return wpm.toLocaleString("en-US", {
     maximumIntegerDigits: 3,
     useGrouping: false,
   });
