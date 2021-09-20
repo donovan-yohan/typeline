@@ -1,46 +1,16 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import Context from "../components/context";
 import { Line, defaults } from "react-chartjs-2";
 
 const AVERAGING_FACTOR = 3;
-export default function PerformanceChart({ rawStats }) {
-  const theme = useContext(Context);
 
-  defaults.font.family = "Roboto";
-  defaults.font.size = 14;
-  defaults.font.lineHeight = 1.5;
-  defaults.font.weight = 700;
-
-  const [stats, setStats] = useState(
-    rawStats.map((stat, i) => {
-      let raw = parseInt(stat.raw);
-      console.log(i, raw);
-      let adj = 1;
-      for (let k = 1; k <= AVERAGING_FACTOR; k++) {
-        if (i - k >= 0) {
-          raw += parseInt(rawStats[i - k].raw);
-          adj += 1;
-        }
-      }
-      raw /= adj;
-      return {
-        wpm: stat.wpm,
-        raw: raw,
-        correctInInterval: stat.correctInInterval,
-        incorrectInInterval: stat.incorrectInInterval,
-        time: stat.time,
-        correctToTime: stat.correctToTime,
-        incorrectToTime: stat.incorrectToTime,
-      };
-    })
-  );
-
-  rawStats.map((stat, i) => {
-    let raw = stat.raw;
+const parseStats = (rawStats) => {
+  return rawStats.map((stat, i) => {
+    let raw = parseInt(stat.raw);
     let adj = 1;
     for (let k = 1; k <= AVERAGING_FACTOR; k++) {
-      if (i - k > 0) {
-        raw += rawStats[i - k].raw;
+      if (i - k >= 0) {
+        raw += parseInt(rawStats[i - k].raw);
         adj += 1;
       }
     }
@@ -55,6 +25,20 @@ export default function PerformanceChart({ rawStats }) {
       incorrectToTime: stat.incorrectToTime,
     };
   });
+};
+
+export default function PerformanceChart({ rawStats }) {
+  const theme = useContext(Context);
+
+  defaults.font.family = "Roboto";
+  defaults.font.size = 14;
+  defaults.font.lineHeight = 1.5;
+  defaults.font.weight = 700;
+
+  const [stats, setStats] = useState(parseStats(rawStats));
+  useEffect(() => {
+    setStats(parseStats(rawStats));
+  }, [rawStats]);
 
   const data = {
     labels: stats.map((s) => s.time),

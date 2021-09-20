@@ -279,13 +279,13 @@ export default function Home() {
             </div>
             <div className={styles.smallScoreWrapper}>
               <div className={styles.smallScore}>
-                <span className={styles.smallScoreLabel}>Right</span>
+                <span className={styles.smallScoreLabel}>Correct</span>
                 <span className={styles.smallScoreNumber}>
                   {stats.correct || 0}
                 </span>
               </div>
               <div className={styles.smallScore}>
-                <span className={styles.smallScoreLabel}>Wrong</span>
+                <span className={styles.smallScoreLabel}>Errors</span>
                 <span className={`${styles.smallScoreNumber} ${styles.miss}`}>
                   {stats.incorrect || 0}
                 </span>
