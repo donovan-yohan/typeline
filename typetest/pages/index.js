@@ -22,6 +22,12 @@ import {
 import cleanSeed from "../utils/cleanSeed";
 
 export default function Home() {
+  const [timeTotal, setTimeTotal] = useState(30);
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [chartStats, setChartStats] = useState([]);
+
   // initial start up logic
   // {seed: String, time: int}
   const [seed, setSeed] = useState();
@@ -29,9 +35,14 @@ export default function Home() {
   // assign hash on first load
   useEffect(() => {
     let clean = cleanSeed(window.location.hash);
-    if (clean.seed === "") clean.seed = (Math.random() + 1).toString(36).substring(2).replace(/[0-9]+/g, "")
+    if (clean.seed === "")
+      clean.seed = (Math.random() + 1)
+        .toString(36)
+        .substring(2)
+        .replace(/[0-9]+/g, "");
     window.location.hash = "/" + clean.seed + "/" + clean.time;
     setSeed(clean);
+    setTimeTotal(clean.time)
   }, []);
 
   // generate new words when hash changes
@@ -79,12 +90,6 @@ export default function Home() {
       corrected: 0,
     }
   );
-
-  const [timeTotal, setTimeTotal] = useState(30);
-  const [time, setTime] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const [finished, setFinished] = useState(false);
-  const [chartStats, setChartStats] = useState([]);
 
   const paragraphRef = useRef(null);
   const rootRef = useRef(null);
@@ -199,6 +204,11 @@ export default function Home() {
       setTime(0);
     }
   }, [time, timeTotal]);
+
+  useEffect(() => {
+    setIsRunning(false);
+    setTime(0);
+  }, [timeTotal]);
 
   return (
     <div ref={rootRef} className={styles.container}>
