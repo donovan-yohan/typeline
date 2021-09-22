@@ -2,7 +2,10 @@ import pseudorandom from "seed-random";
 import shortWords from "../../assets/short.js";
 import mediumWords from "../../assets/medium.js";
 import longWords from "../../assets/long.js";
-import cleanSeed from "../../utils/cleanSeed.js";
+import cleanSeed, {
+  PUNCTUATION_TABLE,
+  SYMBOL_TABLE,
+} from "../../utils/cleanSeed.js";
 
 const NUMBER_CHANCE = 0.15;
 const NEW_DATE_CHANCE = 0.4;
@@ -16,24 +19,6 @@ const MAX_PUNCTUATION_SPACE = 15;
 const MAX_SYMBOL_SPACE = 15;
 
 const LONG_WORD_BREAKPOINT = 10;
-
-const PUNCTUATION_TABLE = [
-  { char: ".", probability: 0.392 },
-  { char: ",", probability: 0.369 },
-  { char: ";", probability: 0.019 },
-  { char: ":", probability: 0.02 },
-  { char: "!", probability: 0.021 },
-  { char: "?", probability: 0.036 },
-  { char: '"', probability: 0.161 },
-];
-
-const SYMBOL_TABLE = [
-  { char: "()", probability: 0.2 },
-  { char: "/", probability: 0.2 },
-  { char: "$", probability: 0.2 },
-  { char: "%", probability: 0.2 },
-  { char: "&", probability: 0.2 },
-];
 
 const containsUpperCase = (string) => /^\S*[A-Z]+\S*$/.test(string);
 const containsNumber = (string) => /^\S*[0-9]+\S*$/.test(string);
@@ -52,11 +37,19 @@ function getRandom(random, min, max) {
 }
 
 function generateFlags(seed) {
+  let punctuationTriggers = PUNCTUATION_TABLE.reduce((acc, p) => {
+    return acc + p.char;
+  }, "");
+
+  let symbolTriggers = SYMBOL_TABLE.reduce((acc, s) => {
+    return acc + s.char;
+  }, "");
+
   return [
     containsUpperCase(seed), // hasUppercase
     containsNumber(seed), // hasNumbers
-    containsCharacter(seed, "-"), // hasPunctuation
-    containsCharacter(seed, "~"), // hasSymbols
+    containsCharacter(seed, punctuationTriggers), // hasPunctuation
+    containsCharacter(seed, symbolTriggers), // hasSymbols
     seed.length > LONG_WORD_BREAKPOINT, // hasLongWords
   ];
 }
@@ -124,7 +117,7 @@ function generateWords(
         }
       });
 
-      if (symbol === "/") {
+      if (symbol === "/" || symbol === "-") {
         word =
           shortWords[
             Math.floor(
