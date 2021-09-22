@@ -54,7 +54,9 @@ export default function PerformanceChart({ rawStats }) {
         showLine: false,
         pointStyle: "crossRot",
         yAxisID: "errorAxis",
-        pointRadius: 5,
+        pointRadius: 6,
+        pointBorderColor: theme.values.incorrect,
+        pointBorderWidth: 2,
       },
       {
         label: "WPM",
@@ -85,6 +87,9 @@ export default function PerformanceChart({ rawStats }) {
         type: "linear",
         display: true,
         position: "left",
+        grid: {
+          display: false,
+        },
         suggstedMin: 0,
         grace: "10%",
         title: {
@@ -94,10 +99,10 @@ export default function PerformanceChart({ rawStats }) {
       },
       errorAxis: {
         type: "linear",
-        display: true,
+        display: false,
         position: "right",
-        gridLines: {
-          drawOnArea: false,
+        grid: {
+          display: false,
         },
         ticks: {
           beginAtZero: true,
@@ -115,6 +120,9 @@ export default function PerformanceChart({ rawStats }) {
         title: {
           display: true,
           text: "Time",
+        },
+        grid: {
+          display: false,
         },
       },
     },

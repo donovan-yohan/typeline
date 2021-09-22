@@ -1,3 +1,9 @@
+export const EMPTY_TYPED_DATA = {
+  value: "",
+  stats: { correct: 0, incorrect: 0, corrected: 0 },
+  visited: false,
+};
+
 export let initialCursorState = {
   letterRef: null,
   isFirstChar: true,
@@ -92,6 +98,10 @@ export function textTypedReducer(state, action) {
         } else {
           return w;
         }
+      });
+    case "setTextTyped":
+      return action.textData.map((word) => {
+        return EMPTY_TYPED_DATA;
       });
     default:
       throw new Error();

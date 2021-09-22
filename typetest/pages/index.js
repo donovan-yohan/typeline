@@ -8,7 +8,6 @@ import Menu from "../components/menu.js";
 import PerformanceChart from "../components/performanceChart";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useInterval from "@use-it/interval";
-import generateWords from "../utils/generateWords.js";
 import { calculateRawWPM, calculateTrueWPM } from "../utils/wpmUtils.js";
 import createTextDatabase from "../utils/createTextDatabase.js";
 import { useOffset } from "../hooks/useOffset.js";
@@ -18,25 +17,43 @@ import {
   highlightReducer,
   initialHighlightState,
   textTypedReducer,
+  EMPTY_TYPED_DATA,
 } from "../components/reducers";
-
-let text = generateWords();
-let textData = createTextDatabase(text);
-let initialTypedState = textData.map((word) => {
-  return {
-    value: "",
-    stats: { correct: 0, incorrect: 0, corrected: 0 },
-    visited: false,
-  };
-});
+import cleanSeed from "../utils/cleanSeed";
 
 export default function Home() {
+  // initial start up logic
+  // {seed: String, time: int}
+  const [seed, setSeed] = useState();
+
+  // assign hash on first load
+  useEffect(() => {
+    let clean = cleanSeed(window.location.hash);
+    if (clean.seed === "") clean.seed = (Math.random() + 1).toString(36).substring(2).replace(/[0-9]+/g, "")
+    window.location.hash = "/" + clean.seed + "/" + clean.time;
+    setSeed(clean);
+  }, []);
+
+  // generate new words when hash changes
+  useEffect(() => {
+    (async () => {
+      const res = await fetch("/api/words", {
+        method: "POST",
+        body: JSON.stringify({ ...seed }),
+      });
+      const json = await res.json();
+
+      let newTextDatabase = createTextDatabase(json.words);
+      setTextDatabase(newTextDatabase);
+      textTypedDispatcher({ type: "setTextTyped", textData: newTextDatabase });
+    })();
+  }, [seed]);
+
   const [activeWord, setActiveWord] = useState(0);
-  const [textDatabase, setTextDatabase] = useState(textData);
-  const [textTyped, textTypedDispatcher] = useReducer(
-    textTypedReducer,
-    initialTypedState
-  );
+  const [textDatabase, setTextDatabase] = useState([[]]);
+  const [textTyped, textTypedDispatcher] = useReducer(textTypedReducer, [
+    EMPTY_TYPED_DATA,
+  ]);
 
   const [cursorState, cursorDispatcher] = useReducer(
     cursorReducer,
@@ -46,7 +63,7 @@ export default function Home() {
     highlightReducer,
     initialHighlightState
   );
-  const [lineOffset, setLineOffset] = useState(0);
+  const [lineOffset, setLineOffset] = useState();
 
   const stats = textTyped.reduce(
     (acc, word, i) => {
@@ -96,8 +113,11 @@ export default function Home() {
   };
 
   const handleLineChange = (linePos) => {
-    if (linePos.bottom > window.innerHeight / 2 - textOffset.top) {
-      setLineOffset(window.innerHeight / 2 - textOffset.top - linePos.bottom);
+    // TODO: Figure out where this small amount of displacement comes from?
+    if (linePos.bottom > window.innerHeight / 2 - textOffset.top + 6.5) {
+      setLineOffset(
+        window.innerHeight / 2 - textOffset.top - linePos.bottom + 6.5
+      );
     }
   };
 
@@ -214,7 +234,11 @@ export default function Home() {
         )}
         <div className={styles.textColumn}>
           {!finished && (
-            <div ref={textPageRef} className={styles.textPage}>
+            <div
+              ref={textPageRef}
+              className={styles.textPage}
+              key={textDatabase.toLocaleString()}
+            >
               <div
                 ref={paragraphRef}
                 className={styles.textFrame}
@@ -240,7 +264,7 @@ export default function Home() {
                         id={i}
                         word={word}
                         active={activeWord == i}
-                        typed={textTyped[i]}
+                        typed={textTyped[i] || EMPTY_TYPED_DATA}
                         key={`WORD-${i}`}
                         onLetterUpdate={cursorDispatcher}
                         onWordUpdate={highlightDispatcher}
