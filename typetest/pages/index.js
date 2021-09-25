@@ -94,7 +94,7 @@ export default function Home() {
   const paragraphRef = useRef(null);
   const rootRef = useRef(null);
   const textPageRef = useRef(null);
-  const textOffset = useOffset(rootRef, textPageRef);
+  const textOffset = useOffset(rootRef, textPageRef, [textDatabase]);
 
   // TYPING LOGIC
   const handleTextTyped = (value, index = activeWord) => {
@@ -118,10 +118,10 @@ export default function Home() {
   };
 
   const handleLineChange = (linePos) => {
-    // TODO: Figure out where this small amount of displacement comes from?
-    if (linePos.bottom > window.innerHeight / 2 - textOffset.top + 6.5) {
+    console.log(linePos, textOffset, window.innerHeight / 2);
+    if (linePos.bottom > window.innerHeight / 2 - textOffset.top) {
       setLineOffset(
-        window.innerHeight / 2 - textOffset.top - linePos.bottom + 6.5
+        window.innerHeight / 2 - textOffset.top - linePos.bottom
       );
     }
   };
