@@ -98,8 +98,6 @@ function formatWord(word, symbol, placement) {
   }
 }
 
-// TODO: abstract logic for wrapping words with symbols into its own helper function ("", ()), etc.
-// can do the same for / maybe
 function generateWords(
   random,
   hasUppercase,
