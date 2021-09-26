@@ -118,10 +118,9 @@ export default function Home() {
   };
 
   const handleLineChange = (linePos) => {
-    console.log(linePos, textOffset, window.innerHeight / 2);
-    if (linePos.bottom > window.innerHeight / 2 - textOffset.top) {
+    if (linePos.bottom > window.innerHeight / 2 - textOffset.top + 6.5) {
       setLineOffset(
-        window.innerHeight / 2 - textOffset.top - linePos.bottom
+        window.innerHeight / 2 - textOffset.top - linePos.bottom + 6.5
       );
     }
   };

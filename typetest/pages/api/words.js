@@ -3,7 +3,9 @@ import shortWords from "../../assets/short.js";
 import mediumWords from "../../assets/medium.js";
 import longWords from "../../assets/long.js";
 import cleanSeed, {
+  punctuationTriggers,
   PUNCTUATION_TABLE,
+  symbolTriggers,
   SYMBOL_TABLE,
 } from "../../utils/cleanSeed.js";
 
@@ -37,14 +39,6 @@ function getRandom(random, min, max) {
 }
 
 function generateFlags(seed) {
-  let punctuationTriggers = PUNCTUATION_TABLE.reduce((acc, p) => {
-    return acc + p.char;
-  }, "");
-
-  let symbolTriggers = SYMBOL_TABLE.reduce((acc, s) => {
-    return acc + s.char === "/" ? "" : s.char;
-  }, "");
-
   return [
     containsUpperCase(seed), // hasUppercase
     containsNumber(seed), // hasNumbers
@@ -77,6 +71,9 @@ function generateDate(r, random) {
   }
 }
 
+
+// TODO: abstract logic for wrapping words with symbols into its own helper function ("", ()), etc.
+// can do the same for / maybe
 function generateWords(
   random,
   hasUppercase,
