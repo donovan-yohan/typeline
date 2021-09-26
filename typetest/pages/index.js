@@ -137,7 +137,7 @@ export default function Home() {
         timeTotal
       ),
       raw: calculateRawWPM(
-        correct - lastStat.correctToTime + incorrect - lastStat.incorrectToTime,
+        correct - lastStat.correctToTime,
         lastStat.time,
         currentTime
       ),
