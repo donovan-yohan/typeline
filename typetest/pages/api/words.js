@@ -3,6 +3,7 @@ import shortWords from "../../assets/short.js";
 import mediumWords from "../../assets/medium.js";
 import longWords from "../../assets/long.js";
 import cleanSeed, {
+  CHARACTER_PLACEMENT,
   punctuationTriggers,
   PUNCTUATION_TABLE,
   symbolTriggers,
@@ -14,6 +15,8 @@ const NEW_DATE_CHANCE = 0.4;
 const OLD_DATE_CHANCE = 0.1;
 const SYMBOL_CHANCE = 0.05;
 const PUNCTUATION_CHANCE = 0.2;
+const MEDIUM_WORD_CHANCE = 0.15;
+const LONG_WORD_CHANCE = 0.1;
 
 const MIN_PUNCTUATION_SPACE = 7;
 const MAX_PUNCTUATION_SPACE = 15;
@@ -34,6 +37,7 @@ function getRandomWithBias(random, min, max, bias, influence) {
   let mix = random() * influence;
   return num * (1 - mix) + bias * mix;
 }
+
 function getRandom(random, min, max) {
   return random() * (max - min) + min;
 }
@@ -71,6 +75,28 @@ function generateDate(r, random) {
   }
 }
 
+function getRandomWord(wordList, random) {
+  return wordList[
+    Math.floor(getRandomWithBias(random, 0, shortWords.length - 1, 0, 1))
+  ];
+}
+
+function formatWord(word, symbol, placement) {
+  if (placement === CHARACTER_PLACEMENT.BEFORE) {
+    return symbol + word;
+  } else if (placement === CHARACTER_PLACEMENT.AFTER) {
+    return word + symbol;
+  } else if (placement === CHARACTER_PLACEMENT.WRAP) {
+    if (symbol.length == 2) {
+      return symbol.charAt(0) + word + symbol.charAt(1);
+    } else {
+      warn(
+        `Wrapping word, ${word}, but did not receive explicit pair of symbols. (Received: ${symbol})`
+      );
+      return symbol + word + symbol;
+    }
+  }
+}
 
 // TODO: abstract logic for wrapping words with symbols into its own helper function ("", ()), etc.
 // can do the same for / maybe
@@ -96,75 +122,59 @@ function generateWords(
       r = random();
       word = generateDate(r, random);
     } else if (
-      hasSymbols && ((
-      r >= NUMBER_CHANCE &&
-      r < SYMBOL_CHANCE + NUMBER_CHANCE) || symbolCounter > MAX_SYMBOL_SPACE)
+      hasSymbols &&
+      ((r >= NUMBER_CHANCE && r < SYMBOL_CHANCE + NUMBER_CHANCE) ||
+        symbolCounter > MAX_SYMBOL_SPACE)
     ) {
       // SYMBOLS
       symbolCounter = 0;
       r = random();
       let probability = 0;
-      let symbol = "&";
+      let symbol = SYMBOL_TABLE[0];
 
       SYMBOL_TABLE.some((s) => {
         probability += s.probability;
         if (r <= probability) {
-          symbol = s.char;
+          symbol = s;
           return true;
         }
       });
 
-      if (symbol === "/" || symbol === "-" || symbol === "_") {
+      if (symbol.placement === CHARACTER_PLACEMENT.MIDDLE) {
         word =
-          shortWords[
-            Math.floor(
-              getRandomWithBias(random, 0, shortWords.length - 1, 0, 1)
-            )
-          ] +
-          symbol +
-          shortWords[
-            Math.floor(
-              getRandomWithBias(random, 0, shortWords.length - 1, 0, 1)
-            )
-          ];
-      } else if (symbol === "$") {
-        word = symbol + getRandom(random, 0, 100).toFixed(2);
-      } else if (symbol === "%") {
-        word = Math.floor(getRandom(random, 0, 100)) + symbol;
-      } else if (symbol === "()") {
-        word =
-          "(" +
-          shortWords[
-            Math.floor(
-              getRandomWithBias(random, 0, shortWords.length - 1, 0, 1)
-            )
-          ] +
-          ")";
+          getRandomWord(shortWords, random) +
+          symbol.char +
+          getRandomWord(shortWords, random);
+      } else if (symbol.char === "$") {
+        word = formatWord(
+          getRandom(random, 0, 100).toFixed(2),
+          symbol.char,
+          symbol.placement
+        );
+      } else if (symbol.char === "%") {
+        word = formatWord(
+          Math.floor(getRandom(random, 0, 100)),
+          symbol.char,
+          symbol.placement
+        );
+      } else if (symbol.placement === CHARACTER_PLACEMENT.WRAP) {
+        word = formatWord(
+          getRandomWord(shortWords, random),
+          symbol.char,
+          symbol.placement
+        );
       } else {
-        word = symbol;
+        word = symbol.char;
       }
     } else {
       symbolCounter += 1;
       r = random();
-      if (r > 0.8 && r <= 0.95) {
-        word =
-          mediumWords[
-            Math.floor(
-              getRandomWithBias(random, 0, mediumWords.length - 1, 0, 1)
-            )
-          ];
-      } else if (hasLongWords && r > 0.95) {
-        word =
-          longWords[
-            Math.floor(getRandomWithBias(random, 0, longWords.length - 1, 0, 1))
-          ];
+      if (r < MEDIUM_WORD_CHANCE) {
+        word = getRandomWord(mediumWords, random);
+      } else if (hasLongWords && r < MEDIUM_WORD_CHANCE + LONG_WORD_CHANCE) {
+        word = getRandomWord(longWords, random);
       } else {
-        word =
-          shortWords[
-            Math.floor(
-              getRandomWithBias(random, 0, shortWords.length - 1, 0, 1)
-            )
-          ];
+        word = getRandomWord(shortWords, random);
       }
       if (hasPunctuation && puncCounter > MIN_PUNCTUATION_SPACE) {
         r = random();
@@ -182,7 +192,8 @@ function generateWords(
             }
           });
 
-          if (punctuation === '"') word = '"' + word + '"';
+          if (punctuation.placement === CHARACTER_PLACEMENT.WRAP)
+            word = formatWord(word, punctuation);
           else word += punctuation;
         } else {
           puncCounter += 1;

@@ -1,23 +1,31 @@
 export const MAX_TIME = 120;
 export const MAX_LENGTH = 100;
 
+export const CHARACTER_PLACEMENT = {
+  BEFORE: "BEFORE",
+  AFTER: "AFTER",
+  MIDDLE: "MIDDLE",
+  WRAP: "WRAP",
+  ALONE: "ALONE"
+}
+
 export const PUNCTUATION_TABLE = [
-  { char: ".", probability: 0.392 },
-  { char: ",", probability: 0.369 },
-  { char: ";", probability: 0.019 },
-  { char: ":", probability: 0.02 },
-  { char: "!", probability: 0.021 },
-  { char: "?", probability: 0.036 },
-  { char: '"', probability: 0.161 },
+  { char: ".", probability: 0.392, placement: CHARACTER_PLACEMENT.AFTER },
+  { char: ",", probability: 0.369, placement: CHARACTER_PLACEMENT.AFTER },
+  { char: ";", probability: 0.019, placement: CHARACTER_PLACEMENT.AFTER },
+  { char: ":", probability: 0.02, placement: CHARACTER_PLACEMENT.AFTER },
+  { char: "!", probability: 0.021, placement: CHARACTER_PLACEMENT.AFTER },
+  { char: "?", probability: 0.036, placement: CHARACTER_PLACEMENT.AFTER },
+  { char: '""', probability: 0.161, placement: CHARACTER_PLACEMENT.WRAP },
 ];
 
 export const SYMBOL_TABLE = [
-  { char: "()", probability: 0.166 },
-  { char: "$", probability: 0.166 },
-  { char: "%", probability: 0.166 },
-  { char: "&", probability: 0.166 },
-  { char: "-", proability: 0.166 },
-  { char: "_", probability: 0.166 }
+  { char: "&", probability: 0.166, placement: CHARACTER_PLACEMENT.ALONE },
+  { char: "()", probability: 0.166, placement: CHARACTER_PLACEMENT.WRAP },
+  { char: "$", probability: 0.166, placement: CHARACTER_PLACEMENT.BEFORE },
+  { char: "%", probability: 0.166, placement: CHARACTER_PLACEMENT.AFTER },
+  { char: "-", proability: 0.166, placement: CHARACTER_PLACEMENT.MIDDLE },
+  { char: "_", probability: 0.166, placement: CHARACTER_PLACEMENT.MIDDLE }
 ];
 
 export const punctuationTriggers = PUNCTUATION_TABLE.reduce((acc, p) => {
