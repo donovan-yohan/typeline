@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import Letter from "../components/letter.js";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect";
-import cx from "classnames";
 import { getCorrections, BACKSPACE_CHAR } from "../utils/getCorrections";
 
 export default React.memo(function Word({
@@ -112,7 +111,12 @@ export default React.memo(function Word({
     onUpdateStats({
       type: "updateTextTyped",
       targetIndex: id,
-      newValue: { value: typed.value, stats: stats, visited: typed.visited },
+      newValue: {
+        value: typed.value,
+        fullValue: fullTyped,
+        stats: stats,
+        visited: typed.visited,
+      },
     });
   }, [stats]);
 

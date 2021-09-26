@@ -16,7 +16,6 @@ export default function Cursor({
   onLineChange,
 }) {
   const [text, setText] = useState("");
-  const [oldLength, setOldLength] = useState(0);
   const [valid, setValid] = useState(true);
   const [repeat, setRepeat] = useState(false);
   const [shouldAnimateCursor, setShouldAnimateCursor] = useState(true);
@@ -37,8 +36,6 @@ export default function Cursor({
   let handleTextTyped = (e) => {
     let w = e.target.value;
     setText(w);
-
-    setOldLength(w.length);
   };
 
   // UPDATE TEXT ON TYPE AND SEND BACK TO INDEX
@@ -52,6 +49,7 @@ export default function Cursor({
     onTextTyped({
       value: text,
       fullValue: textTyped[activeWord].fullValue + lastChar,
+      stats: textTyped[activeWord].stats,
       visited: false,
     });
   }, [text]);
@@ -67,12 +65,12 @@ export default function Cursor({
         setRepeat(true);
 
         newActiveWord += 1;
-        setOldLength(0);
 
         // update word visited
         onTextTyped(
           {
             value: text,
+            fullValue: textTyped[newActiveWord].fullValue,
             stats: textTyped[activeWord].stats,
             visited: true,
           },
@@ -80,17 +78,18 @@ export default function Cursor({
         );
       }
     } else if (e.key == "Backspace") {
+      e.preventDefault();
       // if new value matches old and backsapce was pressed, move to previous word
       if (text.length == 0) {
         if (activeWord > 0) {
           newActiveWord -= 1;
         }
         // update word visited
-        setOldLength(textTyped[newActiveWord].value.length);
         onTextTyped(
           {
             value: textTyped[newActiveWord].value,
             fullValue: textTyped[newActiveWord].fullValue,
+            stats: textTyped[newActiveWord].stats,
             visited: false,
           },
           newActiveWord
@@ -98,14 +97,7 @@ export default function Cursor({
       }
 
       if (text.length != 0) {
-        onTextTyped(
-          {
-            value: textTyped[newActiveWord].value,
-            stats: textTyped[newActiveWord].stats,
-            visited: false,
-          },
-          newActiveWord
-        );
+        setText(text.substring(0, text.length - 1));
       }
     }
 

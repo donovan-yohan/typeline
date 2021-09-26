@@ -42,7 +42,7 @@ export default function Home() {
         .replace(/[0-9]+/g, "");
     window.location.hash = "/" + clean.seed + "/" + clean.time;
     setSeed(clean);
-    setTimeTotal(clean.time)
+    setTimeTotal(clean.time);
   }, []);
 
   // generate new words when hash changes
@@ -76,20 +76,30 @@ export default function Home() {
   );
   const [lineOffset, setLineOffset] = useState();
 
-  const stats = textTyped.reduce(
-    (acc, word, i) => {
-      if (!word.stats) return acc;
-      acc.correct += word.stats?.correct;
-      acc.incorrect += word.stats?.incorrect;
-      acc.corrected += word.stats?.corrected;
-      return acc;
-    },
-    {
-      correct: 0,
-      incorrect: 0,
-      corrected: 0,
-    }
-  );
+  const [stats, setStats] = useState({
+    correct: 0,
+    incorrect: 0,
+    corrected: 0,
+  });
+
+  useEffect(() => {
+    setStats(
+      textTyped.reduce(
+        (acc, word, i) => {
+          if (!word.stats) return acc;
+          acc.correct += word.stats?.correct;
+          acc.incorrect += word.stats?.incorrect;
+          acc.corrected += word.stats?.corrected;
+          return acc;
+        },
+        {
+          correct: 0,
+          incorrect: 0,
+          corrected: 0,
+        }
+      )
+    );
+  }, [textTyped]);
 
   const paragraphRef = useRef(null);
   const rootRef = useRef(null);
@@ -102,14 +112,6 @@ export default function Home() {
       type: "updateTextTyped",
       targetIndex: index,
       newValue: value,
-    });
-  };
-
-  const handleUpdateStats = (stats, index = activeWord) => {
-    updateTextTypedArray(index, {
-      value: textTyped[index].value,
-      stats: stats,
-      visited: textTyped[index].visited,
     });
   };
 
@@ -213,7 +215,7 @@ export default function Home() {
     <div ref={rootRef} className={styles.container}>
       <Head>
         <title>Create Next App</title>
-        <link rel='icon' href='/favicon.ico' />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className={styles.main}>
