@@ -46,7 +46,7 @@ export default function Home() {
   }, []);
 
   // generate new words when hash changes
-  useEffect(() => {
+  useDidUpdateEffect(() => {
     (async () => {
       const res = await fetch("/api/words", {
         method: "POST",

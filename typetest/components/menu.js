@@ -8,10 +8,10 @@ export default function Menu({
   time,
   timeTotal,
   onChangeTimeTotal,
+  options,
 }) {
-  const LONGEST_TIME = 60;
   const [settings, setSettings] = useState({
-    hasCapitals: true,
+    hasCapitals: false,
     hasPunctuation: false,
     hasNumbers: false,
     hasSymbols: false,
@@ -35,22 +35,37 @@ export default function Menu({
       setIsEditing((isEditing) => !isEditing);
     }
   };
+
+  const flipSetting = (setting) => {
+    if (settings[setting] === undefined) {
+      throw new Error("unknown setting parameter flipped");
+    }
+    setSettings((s) => ({
+      ...s,
+      [setting]: !s[setting],
+    }));
+  };
+
   return (
     <div className={"container"}>
-      <Timer
-        time={timeTotal - time}
-        timeTotal={timeTotal}
-        isEditing={isEditing}
-        isRunning={isRunning}
-        onChangeTimeTotal={onChangeTimeTotal}
-      />
+      {!isFinished && (
+        <Timer
+          time={timeTotal - time}
+          timeTotal={timeTotal}
+          isEditing={isEditing}
+          isRunning={isRunning}
+          onChangeTimeTotal={onChangeTimeTotal}
+        />
+      )}
+      {isFinished && <div>{/* add stuff for share/screenshot */}</div>}
       {isEditing && (
         <div className={"wordSettingsWrapper"}>
           <label>
             <input
-              type='checkbox'
-              name='hasCapitals'
+              type="checkbox"
+              name="hasCapitals"
               checked={settings.hasCapitals}
+              onClick={() => flipSetting("hasCapitals")}
             />
             <span className={"checkmark"} />
             Capitals
@@ -58,9 +73,10 @@ export default function Menu({
 
           <label>
             <input
-              type='checkbox'
-              name='hasPunctuation'
+              type="checkbox"
+              name="hasPunctuation"
               checked={settings.hasPunctuation}
+              onClick={() => flipSetting("hasPunctuation")}
             />
             <span className={"checkmark"} />
             Punctuation
@@ -68,18 +84,20 @@ export default function Menu({
 
           <label>
             <input
-              type='checkbox'
-              name='hasNumbers'
+              type="checkbox"
+              name="hasNumbers"
               checked={settings.hasNumbers}
+              onClick={() => flipSetting("hasNumbers")}
             />
             <span className={"checkmark"} />
             Numbers
           </label>
           <label>
             <input
-              type='checkbox'
-              name='hasSymbols'
+              type="checkbox"
+              name="hasSymbols"
               checked={settings.hasSymbols}
+              onClick={() => flipSetting("hasSymbols")}
             />
             <span className={"checkmark"} />
             Symbols
@@ -92,10 +110,7 @@ export default function Menu({
       >
         Refresh
       </button>
-      {/* <button
-        onClick={handleMenuClick}
-        className={menuButtonClassList}
-      >
+      {/* <button onClick={handleMenuClick} className={menuButtonClassList}>
         {menuButtonText}
       </button> */}
       <style jsx>{`
