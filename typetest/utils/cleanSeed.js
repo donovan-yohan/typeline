@@ -12,12 +12,13 @@ export const PUNCTUATION_TABLE = [
 ];
 
 export const SYMBOL_TABLE = [
-  { char: "()", probability: 0.166 },
+  { char: "()", probability: 0.100 },
   { char: "/", probability: 0.166 },
   { char: "$", probability: 0.166 },
   { char: "%", probability: 0.166 },
   { char: "&", probability: 0.166 },
   { char: "-", proability: 0.166 },
+  { char: "_", probability: 0.066 }
 ];
 
 const punctuationTriggers = PUNCTUATION_TABLE.reduce((acc, p) => {
@@ -43,8 +44,10 @@ export default function cleanSeed(seed) {
       time: parseInt(info[2]),
     };
   } else {
+    console.log(seed);
+    seed = seed.replace("/", "");
     return {
-      seed: seed.replace(regex, ""),
+      seed: seed.replace(regex, "").substring(0, MAX_LENGTH),
       time: 30,
     };
   }

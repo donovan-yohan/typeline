@@ -42,7 +42,7 @@ function generateFlags(seed) {
   }, "");
 
   let symbolTriggers = SYMBOL_TABLE.reduce((acc, s) => {
-    return acc + s.char;
+    return acc + s.char === "/" ? "" : s.char;
   }, "");
 
   return [
@@ -99,9 +99,9 @@ function generateWords(
       r = random();
       word = generateDate(r, random);
     } else if (
-      hasSymbols &&
+      hasSymbols && ((
       r >= NUMBER_CHANCE &&
-      r < SYMBOL_CHANCE + NUMBER_CHANCE
+      r < SYMBOL_CHANCE + NUMBER_CHANCE) || symbolCounter > MAX_SYMBOL_SPACE)
     ) {
       // SYMBOLS
       symbolCounter = 0;
@@ -117,7 +117,7 @@ function generateWords(
         }
       });
 
-      if (symbol === "/" || symbol === "-") {
+      if (symbol === "/" || symbol === "-" || symbol === "_") {
         word =
           shortWords[
             Math.floor(
@@ -147,6 +147,8 @@ function generateWords(
         word = symbol;
       }
     } else {
+      symbolCounter += 1;
+      r = random();
       if (r > 0.8 && r <= 0.95) {
         word =
           mediumWords[
