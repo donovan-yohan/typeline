@@ -1,6 +1,6 @@
 export const BACKSPACE_CHAR = "~<";
 
-export const getCorrections = (expected, typedFull) => {
+export const getCorrections = (expected, typedFull, reference = expected) => {
   let i = typedFull.indexOf(BACKSPACE_CHAR);
   let isBackspaceChar = true;
   let backspaces = 0;
@@ -26,9 +26,12 @@ export const getCorrections = (expected, typedFull) => {
     let replaceIndex = i + backspaces * BACKSPACE_CHAR.length;
 
     for (let j = 0; j < backspaces; j++) {
+      // check if there was an error, that it was fixed correctly
+      // OR if the backspace was for an overflow character
       if (
-        typedFull[replaceIndex + j] != typedFull[originalIndex + j] &&
-        typedFull[replaceIndex + j] == expected[originalIndex + j]
+        (typedFull[replaceIndex + j] != typedFull[originalIndex + j] &&
+          typedFull[replaceIndex + j] == expected[originalIndex + j]) ||
+        originalIndex + j > reference.length - 1
       ) {
         corrections++;
         typedFull = stringReplaceAt(

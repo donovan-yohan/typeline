@@ -7,6 +7,7 @@ export const cssRootVars = {
   incorrect: "rgb(210,0,0)",
   gray: "#757575",
   fade: "0.5",
+  toolTipType: "dark",
 };
 
 export const cssDarkVars = {
@@ -19,4 +20,5 @@ export const cssDarkVars = {
   gray: "#757575",
   fade: "0.5",
   grayOpacity: "0.7",
+  toolTipType: "light",
 };

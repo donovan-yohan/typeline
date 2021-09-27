@@ -1,5 +1,12 @@
 import Head from "next/head";
-import React, { useState, useEffect, useRef, useReducer } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useReducer,
+  useContext,
+} from "react";
+import ReactTooltip from "react-tooltip";
 import styles from "../styles/Home.module.css";
 
 import Word from "../components/word.js";
@@ -20,8 +27,11 @@ import {
   EMPTY_TYPED_DATA,
 } from "../components/reducers";
 import cleanSeed from "../utils/cleanSeed";
+import Context from "../components/context";
 
 export default function Home() {
+  const theme = useContext(Context);
+
   const [timeTotal, setTimeTotal] = useState(30);
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -215,14 +225,38 @@ export default function Home() {
     <div ref={rootRef} className={styles.container}>
       <Head>
         <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel='icon' href='/favicon.ico' />
       </Head>
 
       <main className={styles.main}>
         {finished && (
           <div className={styles.wpmColumn}>
             <div className={styles.largeScore}>
-              <span className={styles.largeScoreLabel}>True WPM</span>
+              <span className={styles.largeScoreLabel}>
+                <span>True WPM</span>
+                <span
+                  className={styles.toolTipIcon}
+                  data-tip
+                  data-for='trueWpmTip'
+                >
+                  ?
+                </span>
+              </span>
+              <ReactTooltip
+                className={styles.toolTipWrapper}
+                id='trueWpmTip'
+                place={"right"}
+                type={theme.values.toolTipType}
+                effect={"solid"}
+              >
+                <p>
+                  This is your average word per minute, but reduced for
+                  uncorrected errors in the test.
+                </p>
+                <p>
+                  <code>[correct - (errors - corrected)] / test time</code>
+                </p>
+              </ReactTooltip>
               <span className={styles.largeScoreNumber}>
                 {calculateTrueWPM(
                   stats.correct,
@@ -235,7 +269,31 @@ export default function Home() {
             </div>
             <div className={styles.smallScoreWrapper}>
               <div className={styles.smallScore}>
-                <span className={styles.smallScoreLabel}>Raw WPM</span>
+                <span className={styles.smallScoreLabel}>
+                  Raw WPM
+                  <span
+                    className={styles.toolTipIcon}
+                    data-tip
+                    data-for='rawWpmTip'
+                  >
+                    ?
+                  </span>
+                </span>
+                <ReactTooltip
+                  className={styles.toolTipWrapper}
+                  id='rawWpmTip'
+                  place={"right"}
+                  type={theme.values.toolTipType}
+                  effect={"solid"}
+                >
+                  <p>
+                    This is your raw average word per minute, calculated using
+                    only correct keystrokes.
+                  </p>
+                  <p>
+                    <code>correct / test time</code>
+                  </p>
+                </ReactTooltip>
                 <span className={styles.smallWPMNumber}>
                   {calculateRawWPM(stats.correct, 0, timeTotal)}
                 </span>

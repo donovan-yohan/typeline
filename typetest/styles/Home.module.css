@@ -66,6 +66,7 @@
   text-transform: uppercase;
   letter-spacing: 0.33em;
   text-align: center;
+  z-index: 1;
 }
 
 .largeScore .largeScoreNumber {
@@ -110,6 +111,30 @@
 
 .smallScore .miss {
   color: var(--incorrect);
+}
+
+.toolTipIcon {
+  color: var(--gray);
+  min-width: 48px;
+  height: 100%;
+  border: 2px solid var(--gray);
+  border-radius: 50%;
+  letter-spacing: 0.36em;
+  padding-left: 0.33em;
+  margin-left: 0.33em;
+  transition: 0.25s ease-in-out;
+  cursor: default;
+  user-select: none;
+}
+
+.toolTipIcon:hover {
+  color: var(--highlight);
+  border: 2px solid var(--highlight);
+}
+
+.toolTipWrapper {
+  max-width: 20vw !important;
+  transition: opacity 0.25s ease-in-out, visibility 0.25s ease-in-out !important;
 }
 
 @keyframes fade {

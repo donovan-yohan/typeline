@@ -40,6 +40,16 @@ export default React.memo(function Word({
     // CHECK IF CHARACTER WAS ADDED OR REMOVED
     if (typed.value.length > lastInfo.lastLength) {
       if (typed.value[typed.value.length - 1] == word[typed.value.length - 1]) {
+        let corrections = getCorrections(
+          wordString.substring(0, typed.value.length),
+          fullTyped,
+          wordString
+        );
+        console.log(
+          wordString.substring(0, typed.value.length),
+          fullTyped,
+          corrections
+        );
         setStats((stats) => {
           return {
             correct: stats.correct + 1,
@@ -72,7 +82,7 @@ export default React.memo(function Word({
       lastChar: typed.value[typed.value.length - 1],
       lastLength: typed.value.length,
     });
-  }, [typed.value]);
+  }, [fullTyped]);
 
   // UPDATE STATS AND CORRECTIONS ON WORD CHANGE
   useDidUpdateEffect(() => {

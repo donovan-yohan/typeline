@@ -59,7 +59,7 @@ export default function PerformanceChart({ rawStats }) {
         pointBorderWidth: 2,
       },
       {
-        label: "WPM",
+        label: "Average WPM",
         data: stats.map((s) => s.wpm),
         fill: false,
         backgroundColor: theme.values.highlight,
@@ -69,7 +69,7 @@ export default function PerformanceChart({ rawStats }) {
         yAxisID: "wpmAxis",
       },
       {
-        label: "Raw",
+        label: "Raw WPM at Time",
         data: stats.map((s) => s.raw),
         fill: false,
         backgroundColor: theme.values.main,
@@ -94,7 +94,7 @@ export default function PerformanceChart({ rawStats }) {
         grace: "10%",
         title: {
           display: true,
-          text: "WPM",
+          text: "Words Per Minute",
         },
       },
       errorAxis: {
@@ -137,6 +137,22 @@ export default function PerformanceChart({ rawStats }) {
       tooltip: {
         usePointStyle: true,
         boxWidth: 10,
+        padding: 12,
+        bodyFont: {
+          weight: "400",
+        },
+        bodySpacing: 4,
+        callbacks: {
+          title: (context) => {
+            return "Time: " + context[0].parsed.x;
+          },
+          label: (context) => {
+            return `  ${context.parsed.y} - ${context.dataset.label.replace(
+              " WPM",
+              ""
+            )}`;
+          },
+        },
       },
     },
   };
