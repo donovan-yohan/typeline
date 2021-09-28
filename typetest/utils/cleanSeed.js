@@ -59,3 +59,11 @@ export default function cleanSeed(seed) {
     };
   }
 }
+
+// TODO: add flags to generate specific seed based on options
+export function generateSeed() {
+  return (Math.random() + 1)
+    .toString(36)
+    .substring(2)
+    .replace(/[0-9]+/g, "");
+}

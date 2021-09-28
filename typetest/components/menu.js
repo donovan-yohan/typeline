@@ -10,7 +10,9 @@ export default function Menu({
   onChangeTimeTotal,
   options,
   isEditing,
-  onUpdateEditingState
+  onUpdateEditingState,
+  newTest,
+  seed,
 }) {
   const [settings, setSettings] = useState({
     hasCapitals: false,
@@ -19,12 +21,13 @@ export default function Menu({
     hasSymbols: false,
   });
 
-
   const menuButtonText = isRunning
     ? "Refresh"
     : isEditing
     ? "Save"
     : "Customize";
+
+  const noEditMenuButtonText = isRunning ? "Restart" : "New Test";
   const menuButtonClassList = cx({
     labelStyle: true,
     refreshButton: isRunning,
@@ -64,8 +67,8 @@ export default function Menu({
         <div className={"wordSettingsWrapper"}>
           <label>
             <input
-              type="checkbox"
-              name="hasCapitals"
+              type='checkbox'
+              name='hasCapitals'
               checked={settings.hasCapitals}
               onClick={() => flipSetting("hasCapitals")}
             />
@@ -75,8 +78,8 @@ export default function Menu({
 
           <label>
             <input
-              type="checkbox"
-              name="hasPunctuation"
+              type='checkbox'
+              name='hasPunctuation'
               checked={settings.hasPunctuation}
               onClick={() => flipSetting("hasPunctuation")}
             />
@@ -86,8 +89,8 @@ export default function Menu({
 
           <label>
             <input
-              type="checkbox"
-              name="hasNumbers"
+              type='checkbox'
+              name='hasNumbers'
               checked={settings.hasNumbers}
               onClick={() => flipSetting("hasNumbers")}
             />
@@ -96,8 +99,8 @@ export default function Menu({
           </label>
           <label>
             <input
-              type="checkbox"
-              name="hasSymbols"
+              type='checkbox'
+              name='hasSymbols'
               checked={settings.hasSymbols}
               onClick={() => flipSetting("hasSymbols")}
             />
@@ -106,12 +109,30 @@ export default function Menu({
           </label>
         </div>
       )}
-      <button
-        onClick={() => window.location.reload()}
-        className={menuButtonClassList}
-      >
-        Refresh
-      </button>
+      <div className={"buttonWrapper"}>
+        <button
+          onClick={() => {
+            if (isRunning) {
+              newTest(seed.seed, seed.time);
+            } else {
+              newTest();
+            }
+          }}
+          className={menuButtonClassList}
+        >
+          {noEditMenuButtonText}
+        </button>
+        {isFinished && (
+          <button
+            onClick={() => {
+              newTest(seed.seed, seed.time);
+            }}
+            className={menuButtonClassList}
+          >
+            Retry
+          </button>
+        )}
+      </div>
       {/* <button onClick={handleMenuClick} className={menuButtonClassList}>
         {menuButtonText}
       </button> */}
@@ -122,13 +143,19 @@ export default function Menu({
           flex-direction: column;
         }
 
+        .buttonWrapper {
+          display: flex;
+          justify-content: center;
+        }
+
         button {
           font-size: 1em;
           outline: none;
           background: none;
           border: none;
-          margin-top: 32px;
+          margin: 32px 32px 0;
           transition: all 0.5s ease;
+          cursor: pointer;
         }
         button:active {
           opacity: 0.75;

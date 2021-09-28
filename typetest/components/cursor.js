@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useOffset } from "../hooks/useOffset.js";
 import cx from "classnames";
+import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 
 export default function Cursor({
   letterRef,
@@ -8,13 +9,14 @@ export default function Cursor({
   paragraphRef,
   onTextTyped,
   onWordChanged,
-  finished,
+  isFinished,
+  isEditing,
+  isRunning,
   activeWord,
   textTyped,
   textDatabase,
   isFirstChar,
   onLineChange,
-  isEditing,
 }) {
   const [text, setText] = useState("");
   const [valid, setValid] = useState(true);
@@ -36,8 +38,13 @@ export default function Cursor({
 
   const inputClassList = cx({
     focusBanner: true,
-    lostFocus: !hasFocus && !isEditing,
+    lostFocus: !hasFocus && isRunning,
   });
+
+  // Reset when textDatabase is changed
+  useDidUpdateEffect(() => {
+    setText("");
+  }, [textDatabase]);
 
   // UPDATE STATS AND SEND TO INDEX PAGE
   let handleTextTyped = (e) => {
@@ -193,7 +200,7 @@ export default function Cursor({
         onBlur={() => {
           setHasFocus(false);
         }}
-        disabled={finished}
+        disabled={isFinished}
       />
       <style jsx>{`
         div {

@@ -26,18 +26,27 @@ import {
   textTypedReducer,
   EMPTY_TYPED_DATA,
 } from "../components/reducers";
-import cleanSeed from "../utils/cleanSeed";
+import cleanSeed, { generateSeed } from "../utils/cleanSeed";
 import Context from "../components/context";
+
+const DEFAULT_TIME = 30;
 
 export default function Home() {
   const theme = useContext(Context);
 
-  const [timeTotal, setTimeTotal] = useState(30);
+  const [timeTotal, setTimeTotal] = useState(DEFAULT_TIME);
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
   const [chartStats, setChartStats] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+
+  const [activeWord, setActiveWord] = useState(0);
+  const [textDatabase, setTextDatabase] = useState([[]]);
+  const [textTyped, textTypedDispatcher] = useReducer(textTypedReducer, [
+    EMPTY_TYPED_DATA,
+  ]);
 
   // initial start up logic
   // {seed: String, time: int}
@@ -46,18 +55,21 @@ export default function Home() {
   // assign hash on first load
   useEffect(() => {
     let clean = cleanSeed(window.location.hash);
-    if (clean.seed === "")
-      clean.seed = (Math.random() + 1)
-        .toString(36)
-        .substring(2)
-        .replace(/[0-9]+/g, "");
-    window.location.hash = "/" + clean.seed + "/" + clean.time;
+    if (clean.seed === "") clean.seed = generateSeed();
     setSeed(clean);
-    setTimeTotal(clean.time);
   }, []);
 
   // generate new words when hash changes
   useDidUpdateEffect(() => {
+    setActiveWord(0);
+    setIsRunning(false);
+    setFinished(false);
+    setTime(0);
+    setTimeTotal(seed.time);
+    setTextDatabase([[]]);
+
+    window.location.hash = "/" + seed.seed + "/" + seed.time;
+
     (async () => {
       const res = await fetch("/api/words", {
         method: "POST",
@@ -69,13 +81,17 @@ export default function Home() {
       setTextDatabase(newTextDatabase);
       textTypedDispatcher({ type: "setTextTyped", textData: newTextDatabase });
     })();
+
+    setIsResetting(false);
   }, [seed]);
 
-  const [activeWord, setActiveWord] = useState(0);
-  const [textDatabase, setTextDatabase] = useState([[]]);
-  const [textTyped, textTypedDispatcher] = useReducer(textTypedReducer, [
-    EMPTY_TYPED_DATA,
-  ]);
+  // when textDatabase changes, reset to original state
+  useDidUpdateEffect(() => {}, [textDatabase]);
+
+  const newTest = (seed = generateSeed(), time = DEFAULT_TIME) => {
+    setIsResetting(true);
+    setSeed({ seed, time });
+  };
 
   const [cursorState, cursorDispatcher] = useReducer(
     cursorReducer,
@@ -205,9 +221,9 @@ export default function Home() {
     }
   }, [time]);
 
-  // HANDLE TEXT TYPED
+  // HANDLE INITIAL TEXT TYPED
   useDidUpdateEffect(() => {
-    if (!isRunning) setIsRunning(true);
+    if (!isRunning && textTyped[0].value != "") setIsRunning(true);
   }, [textTyped[0].value]);
 
   // CUSTOMIZE SETTINGS
@@ -336,10 +352,11 @@ export default function Home() {
                   activeWord={activeWord}
                   textTyped={textTyped}
                   textDatabase={textDatabase}
-                  finished={finished}
+                  isFinished={finished}
+                  isEditing={isEditing}
+                  isRunning={isRunning}
                   isFirstChar={cursorState.isFirstChar}
                   onLineChange={handleLineChange}
-                  isEditing={isEditing}
                 />
                 <div className={styles.textWrapper}>
                   {textDatabase.map((word, i) => {
@@ -372,6 +389,8 @@ export default function Home() {
             timeTotal={timeTotal}
             onChangeTimeTotal={setTimeTotal}
             onUpdateEditingState={setIsEditing}
+            newTest={newTest}
+            seed={seed}
           ></Menu>
           {/* DEBUG */}
           {/* <pre>{JSON.stringify({ chartStats }, null, 4)}</pre> */}
