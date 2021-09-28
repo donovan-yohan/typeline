@@ -3,6 +3,7 @@ import Slider, { Range } from "rc-slider";
 import "rc-slider/assets/index.css";
 
 import cx from "classnames";
+import { formatTime } from "../utils/formatTime";
 
 export default function Timer({
   time,
@@ -100,15 +101,7 @@ export default function Timer({
             }
           />
         </>
-        {!isEditing && (
-          <span className={"time"}>
-            {Math.floor(time / 60)}:
-            {(time % 60).toLocaleString("en-US", {
-              minimumIntegerDigits: 2,
-              useGrouping: false,
-            })}
-          </span>
-        )}
+        {!isEditing && <span className={"time"}>{formatTime(time)}</span>}
       </div>
       <style jsx>{`
         .container {

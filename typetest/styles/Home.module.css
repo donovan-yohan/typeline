@@ -69,10 +69,13 @@
   z-index: 1;
 }
 
+.highlightLabel {
+  color: var(--highlight);
+}
+
 .largeScore .largeScoreNumber {
   font-size: 100px;
   line-height: 1em;
-  color: var(--highlight);
 }
 .smallScoreWrapper {
   display: flex;
@@ -99,14 +102,9 @@
   white-space: nowrap;
 }
 
-.smallScore .smallScoreNumber,
-.smallWPMNumber {
+.smallScore .smallScoreNumber {
   margin-top: 4px;
   font-weight: bold;
-  color: var(--highlight);
-}
-.smallWPMNumber {
-  color: var(--main);
 }
 
 .smallScore .miss {
@@ -114,10 +112,9 @@
 }
 
 .toolTipIcon {
-  color: var(--gray);
   min-width: 48px;
   height: 100%;
-  border: 2px solid var(--gray);
+  border: 2px solid;
   border-radius: 50%;
   letter-spacing: 0.36em;
   padding-left: 0.33em;
@@ -125,11 +122,11 @@
   transition: 0.25s ease-in-out;
   cursor: default;
   user-select: none;
+  opacity: var(--fade);
 }
 
 .toolTipIcon:hover {
-  color: var(--highlight);
-  border: 2px solid var(--highlight);
+  opacity: 1;
 }
 
 .toolTipWrapper {

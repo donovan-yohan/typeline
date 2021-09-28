@@ -45,16 +45,11 @@ export default React.memo(function Word({
           fullTyped,
           wordString
         );
-        console.log(
-          wordString.substring(0, typed.value.length),
-          fullTyped,
-          corrections
-        );
         setStats((stats) => {
           return {
             correct: stats.correct + 1,
             incorrect: stats.incorrect,
-            corrected: stats.corrected,
+            corrected: corrections || stats.corrected,
           };
         });
       } else {

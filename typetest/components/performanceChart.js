@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 import Context from "../components/context";
 import { Line, defaults } from "react-chartjs-2";
+import { formatTime } from "../utils/formatTime";
 
 const AVERAGING_FACTOR = 3;
 
@@ -25,6 +26,23 @@ const parseStats = (rawStats) => {
       incorrectToTime: stat.incorrectToTime,
     };
   });
+};
+
+const getLabelString = (context) => {
+  let value = ` ${context.parsed.y}`;
+  if (context.dataset.label.includes("WPM")) {
+    return (
+      value + `wpm ${context.dataset.label.replace(" WPM", "").toLowerCase()}`
+    );
+  } else if (context.dataset.label.includes("Error")) {
+    if (context.parsed.y == 1) {
+      return value + ` error`;
+    } else {
+      return value + ` errors`;
+    }
+  } else {
+    return value + ` ${context.dataset.label.toLowerCase()}`;
+  }
 };
 
 export default function PerformanceChart({ rawStats }) {
@@ -57,6 +75,12 @@ export default function PerformanceChart({ rawStats }) {
         pointRadius: 6,
         pointBorderColor: theme.values.incorrect,
         pointBorderWidth: 2,
+        pointHitRadius: 12,
+        onHover: (e) => {
+          console.log("help");
+        },
+        pointHoverRadius: 9,
+        pointHoverBorderWidth: 3,
       },
       {
         label: "Average WPM",
@@ -67,6 +91,8 @@ export default function PerformanceChart({ rawStats }) {
         spanGaps: true,
         tension: 0.4,
         yAxisID: "wpmAxis",
+        pointHitRadius: 12,
+        pointHoverRadius: 6,
       },
       {
         label: "Raw WPM at Time",
@@ -77,6 +103,8 @@ export default function PerformanceChart({ rawStats }) {
         spanGaps: true,
         tension: 0.4,
         yAxisID: "wpmAxis",
+        pointHitRadius: 12,
+        pointHoverRadius: 6,
       },
     ],
   };
@@ -89,31 +117,38 @@ export default function PerformanceChart({ rawStats }) {
         position: "left",
         grid: {
           display: false,
+          drawBorder: false,
         },
+        // stop WPM axis from going negative for very low WPM
+        min: stats[stats.length - 1].wpm < 10 ? 0 : null,
         suggstedMin: 0,
         grace: "10%",
         title: {
           display: true,
-          text: "Words Per Minute",
+          text: "Words per Minute (WPM)",
         },
       },
       errorAxis: {
         type: "linear",
-        display: false,
+        display: true,
         position: "right",
         grid: {
           display: false,
+          drawBorder: false,
         },
         ticks: {
+          color: theme.values.background,
           beginAtZero: true,
           callback: (tick) => {
             if (tick % 1 === 0) return tick;
           },
         },
         min: 0,
+        grace: "10%",
         title: {
           display: true,
           text: "Errors",
+          color: theme.values.background,
         },
       },
       x: {
@@ -123,6 +158,7 @@ export default function PerformanceChart({ rawStats }) {
         },
         grid: {
           display: false,
+          drawBorder: false,
         },
       },
     },
@@ -130,27 +166,49 @@ export default function PerformanceChart({ rawStats }) {
       legend: {
         display: true,
         labels: {
+          generateLabels: (chart) => {
+            let data = chart.data.datasets;
+            return data.map((l, i) => {
+              return {
+                text: l.label,
+                fontColor: l.backgroundColor,
+                fillStyle: "fill",
+                strokeStyle: "none",
+                pointStyle: l.pointStyle,
+                fillColor: l.backgroundColor,
+                color: l.backgroundColor,
+                hidden: false,
+                lineCap: "",
+                lineDash: [0],
+                lineDashOffset: 0,
+                lineJoin: "",
+                lineWidth: 2,
+                rotation: 0,
+              };
+            });
+          },
           usePointStyle: true,
-          boxWidth: 7,
+          boxWidth: 8,
+        },
+        onClick: function (e, legendItem, legend) {
+          // do nothing
         },
       },
       tooltip: {
         usePointStyle: true,
         boxWidth: 10,
         padding: 12,
-        bodyFont: {
-          weight: "400",
-        },
         bodySpacing: 4,
+        titleAlign: "center",
         callbacks: {
           title: (context) => {
-            return "Time: " + context[0].parsed.x;
+            return formatTime(context[0].parsed.x + 1);
           },
           label: (context) => {
-            return `  ${context.parsed.y} - ${context.dataset.label.replace(
-              " WPM",
-              ""
-            )}`;
+            return getLabelString(context);
+          },
+          labelTextColor: (context) => {
+            return context.backgroundColor;
           },
         },
       },
@@ -163,7 +221,6 @@ export default function PerformanceChart({ rawStats }) {
         .container {
           display: flex;
           width: 100%;
-          flex-direction: column;
         }
       `}</style>
     </div>

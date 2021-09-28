@@ -232,7 +232,9 @@ export default function Home() {
         {finished && (
           <div className={styles.wpmColumn}>
             <div className={styles.largeScore}>
-              <span className={styles.largeScoreLabel}>
+              <span
+                className={`${styles.largeScoreLabel} ${styles.highlightLabel}`}
+              >
                 <span>True WPM</span>
                 <span
                   className={styles.toolTipIcon}
@@ -250,14 +252,16 @@ export default function Home() {
                 effect={"solid"}
               >
                 <p>
-                  This is your average word per minute, but reduced for
-                  uncorrected errors in the test.
+                  This is your average words per minute, but lowered for every
+                  error left uncorrected.
                 </p>
                 <p>
                   <code>[correct - (errors - corrected)] / test time</code>
                 </p>
               </ReactTooltip>
-              <span className={styles.largeScoreNumber}>
+              <span
+                className={`${styles.largeScoreNumber} ${styles.highlightLabel}`}
+              >
                 {calculateTrueWPM(
                   stats.correct,
                   stats.incorrect,
@@ -287,14 +291,14 @@ export default function Home() {
                   effect={"solid"}
                 >
                   <p>
-                    This is your raw average word per minute, calculated using
+                    This is your raw average words per minute, calculated using
                     only correct keystrokes.
                   </p>
                   <p>
                     <code>correct / test time</code>
                   </p>
                 </ReactTooltip>
-                <span className={styles.smallWPMNumber}>
+                <span className={styles.smallScoreNumber}>
                   {calculateRawWPM(stats.correct, 0, timeTotal)}
                 </span>
               </div>
@@ -362,8 +366,14 @@ export default function Home() {
         {finished && (
           <div className={styles.streakColumn}>
             <div className={styles.largeScore}>
-              <span className={styles.largeScoreLabel}>Accuracy</span>
-              <span className={styles.largeScoreNumber}>
+              <span
+                className={`${styles.largeScoreLabel} ${styles.highlightLabel}`}
+              >
+                Accuracy
+              </span>
+              <span
+                className={`${styles.largeScoreNumber} ${styles.highlightLabel}`}
+              >
                 {(
                   (stats.correct / (stats.correct + stats.incorrect)) * 100 || 0
                 ).toLocaleString("en-US", { maximumFractionDigits: 1 })}
@@ -372,13 +382,15 @@ export default function Home() {
             </div>
             <div className={styles.smallScoreWrapper}>
               <div className={styles.smallScore}>
-                <span className={styles.smallScoreLabel}>Correct</span>
-                <span className={styles.smallScoreNumber}>
+                <span className={`${styles.smallScoreLabel}`}>Correct</span>
+                <span className={`${styles.smallScoreNumber}`}>
                   {stats.correct || 0}
                 </span>
               </div>
               <div className={styles.smallScore}>
-                <span className={styles.smallScoreLabel}>Errors</span>
+                <span className={`${styles.smallScoreLabel} ${styles.miss}`}>
+                  Errors
+                </span>
                 <span className={`${styles.smallScoreNumber} ${styles.miss}`}>
                   {stats.incorrect || 0}
                 </span>
