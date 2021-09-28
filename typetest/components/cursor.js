@@ -44,6 +44,7 @@ export default function Cursor({
   // Reset when textDatabase is changed
   useDidUpdateEffect(() => {
     setText("");
+    setHasFocus(true);
   }, [textDatabase]);
 
   // UPDATE STATS AND SEND TO INDEX PAGE
@@ -138,6 +139,10 @@ export default function Cursor({
   useEffect(() => {
     typingField.current.focus();
   }, []);
+
+  useDidUpdateEffect(() => {
+    if (hasFocus) typingField.current.focus();
+  }, [hasFocus]);
 
   // FOCUS TEXT ON CLICK
   const handleClick = (e) => {

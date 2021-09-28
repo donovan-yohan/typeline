@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import Timer from "./timer.js";
 import cx from "classnames";
+import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
+import copyTextToClipboard from "../utils/copyToClipboard.js";
+import ReactTooltip from "react-tooltip";
+import Context from "./context.js";
 
 export default function Menu({
   isFinished,
@@ -14,12 +18,19 @@ export default function Menu({
   newTest,
   seed,
 }) {
+  const theme = useContext(Context);
+  const urlRef = useRef(null);
   const [settings, setSettings] = useState({
     hasCapitals: false,
     hasPunctuation: false,
     hasNumbers: false,
     hasSymbols: false,
   });
+  const [url, setUrl] = useState("");
+
+  useDidUpdateEffect(() => {
+    setUrl(window.location.href);
+  }, [seed]);
 
   const menuButtonText = isRunning
     ? "Refresh"
@@ -30,8 +41,8 @@ export default function Menu({
   const noEditMenuButtonText = isRunning ? "Restart" : "New Test";
   const menuButtonClassList = cx({
     labelStyle: true,
-    refreshButton: isRunning,
-    customizeButton: !isRunning,
+    fadedButton: isRunning,
+    activeButton: !isRunning,
   });
 
   const handleMenuClick = (e) => {
@@ -132,6 +143,47 @@ export default function Menu({
             Retry
           </button>
         )}
+        {isFinished && (
+          <div className='copyUrlWrapper'>
+            <button
+              onClick={() => {
+                urlRef.current.select();
+                copyTextToClipboard(url);
+              }}
+              className={`${menuButtonClassList} copyLinkButton`}
+            >
+              Copy Link
+            </button>
+            <span className={"urlWrapper"}>
+              <input
+                ref={urlRef}
+                value={url}
+                className={"url"}
+                onClick={(e) => {
+                  e.target.select();
+                }}
+              />
+            </span>
+            <span className={"toolTipIcon"} data-tip data-for='urlTip'>
+              ?
+            </span>
+            <ReactTooltip
+              className={"toolTipWrapper"}
+              id='urlTip'
+              place={"top"}
+              effect={"solid"}
+              backgroundColor={theme.values.tooltipColour}
+              textColor={theme.values.main}
+            >
+              <p>Every unique url will generate the same test every time.</p>
+              <p> Share it with your friends and see who can do it better!</p>
+              <p>
+                Try your own code and see how the test changes. UI for
+                customizing coming soon!
+              </p>
+            </ReactTooltip>
+          </div>
+        )}
       </div>
       {/* <button onClick={handleMenuClick} className={menuButtonClassList}>
         {menuButtonText}
@@ -149,22 +201,70 @@ export default function Menu({
         }
 
         button {
+          z-index: 1;
+          position: relative;
           font-size: 1em;
           outline: none;
           background: none;
           border: none;
           margin: 32px 32px 0;
-          transition: all 0.5s ease;
+          padding: 4px;
+          transition: 0.3s cubic-bezier(0.27, 0.01, 0, 0.99);
           cursor: pointer;
         }
+        button:before {
+          z-index: -1;
+          transition: 0.3s cubic-bezier(0.27, 0.01, 0, 0.99);
+          display: inline-block;
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          content: "";
+          width: 0px;
+          height: 100%;
+        }
+        button:hover:before {
+          width: 98%;
+        }
+        button:after {
+          transition: 0.3s cubic-bezier(0.27, 0.01, 0, 0.99);
+          display: inline-block;
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          content: "";
+          width: 0px;
+          height: 100%;
+          background-color: var(--background);
+        }
+        button:hover:after {
+          width: 3px;
+          left: 92%;
+          animation: 0.45s cubic-bezier(0.9, 0, 0, 0.9) 0.45s infinite alternate
+            blink;
+        }
+
         button:active {
           opacity: 0.75;
         }
-        .refreshButton {
+        .fadedButton {
           color: var(--gray);
         }
-        .customizeButton {
+        .fadedButton:before {
+          background-color: var(--gray);
+        }
+        .fadedButton:hover {
+          color: var(--background);
+        }
+
+        .activeButton {
           color: var(--highlight);
+        }
+        .activeButton:before {
+          background-color: var(--highlight);
+        }
+        .activeButton:hover {
+          color: var(--background);
         }
 
         .wordSettingsWrapper {
@@ -172,7 +272,38 @@ export default function Menu({
           margin-top: 64px;
         }
 
-        label {
+        .urlWrapper {
+          transition: 0.3s cubic-bezier(0.27, 0.01, 0, 0.99);
+          margin-left: -16px;
+          margin-right: 4px;
+          border: solid 1px var(--gray);
+          padding: 8px 16px;
+          border-radius: 4px;
+          background-color: var(--tooltipColour);
+          line-height: 1;
+        }
+
+        .url {
+          transition: 0.3s cubic-bezier(0.27, 0.01, 0, 0.99);
+          display: inline-block;
+          color: var(--gray);
+          background-color: transparent;
+          border: none;
+          outline: none;
+          font-size: 16px;
+          font-weight: 400;
+          font-family: "Roboto";
+        }
+
+        .urlWrapper:hover,
+        .urlWrapper:hover .url,
+        .copyLinkButton:hover ~ .urlWrapper,
+        .copyLinkButton:hover ~ .urlWrapper .url {
+          color: var(--main);
+          border-color: var(--main);
+        }
+
+        .copyLinkButton ~ .urlWrapper label {
           display: flex;
           align-items: center;
           position: relative;
@@ -209,6 +340,15 @@ export default function Menu({
         /* When the checkbox is checked, add a blue background */
         label input:checked ~ .checkmark {
           background-color: var(--highlight);
+        }
+
+        @keyframes blink {
+          0% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+          }
         }
       `}</style>
     </div>

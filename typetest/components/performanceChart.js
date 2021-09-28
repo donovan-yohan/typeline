@@ -76,9 +76,6 @@ export default function PerformanceChart({ rawStats }) {
         pointBorderColor: theme.values.incorrect,
         pointBorderWidth: 2,
         pointHitRadius: 12,
-        onHover: (e) => {
-          console.log("help");
-        },
         pointHoverRadius: 9,
         pointHoverBorderWidth: 3,
       },
@@ -219,7 +216,6 @@ export default function PerformanceChart({ rawStats }) {
             return context.backgroundColor;
           },
           labelColor: (context) => {
-            console.log(context);
             return {
               bodyColor: context.dataset.backgroundColor,
               borderColor: context.dataset.backgroundColor,

@@ -253,16 +253,12 @@ export default function Home() {
                 className={`${styles.largeScoreLabel} ${styles.highlightLabel}`}
               >
                 <span>True WPM</span>
-                <span
-                  className={styles.toolTipIcon}
-                  data-tip
-                  data-for='trueWpmTip'
-                >
+                <span className={"toolTipIcon"} data-tip data-for='trueWpmTip'>
                   ?
                 </span>
               </span>
               <ReactTooltip
-                className={styles.toolTipWrapper}
+                className={"toolTipWrapper"}
                 id='trueWpmTip'
                 place={"right"}
                 effect={"solid"}
@@ -300,16 +296,12 @@ export default function Home() {
               <div className={styles.smallScore}>
                 <span className={styles.smallScoreLabel}>
                   Raw WPM
-                  <span
-                    className={styles.toolTipIcon}
-                    data-tip
-                    data-for='rawWpmTip'
-                  >
+                  <span className={"toolTipIcon"} data-tip data-for='rawWpmTip'>
                     ?
                   </span>
                 </span>
                 <ReactTooltip
-                  className={styles.toolTipWrapper}
+                  className={"toolTipWrapper"}
                   id='rawWpmTip'
                   place={"right"}
                   effect={"solid"}
