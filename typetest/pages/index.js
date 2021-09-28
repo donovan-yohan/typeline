@@ -248,12 +248,20 @@ export default function Home() {
                 className={styles.toolTipWrapper}
                 id='trueWpmTip'
                 place={"right"}
-                type={theme.values.toolTipType}
                 effect={"solid"}
+                backgroundColor={theme.values.tooltipColour}
+                textColor={theme.values.main}
               >
                 <p>
-                  This is your average words per minute, but lowered for every
-                  error left uncorrected.
+                  This is your{" "}
+                  <span className={styles.highlightLabel}>
+                    <b>average words per minute</b>
+                  </span>
+                  , but lowered for every{" "}
+                  <span className={styles.miss}>
+                    <b>error</b>
+                  </span>{" "}
+                  left uncorrected.
                 </p>
                 <p>
                   <code>[correct - (errors - corrected)] / test time</code>
@@ -287,12 +295,13 @@ export default function Home() {
                   className={styles.toolTipWrapper}
                   id='rawWpmTip'
                   place={"right"}
-                  type={theme.values.toolTipType}
                   effect={"solid"}
+                  backgroundColor={theme.values.tooltipColour}
+                  textColor={theme.values.main}
                 >
                   <p>
-                    This is your raw average words per minute, calculated using
-                    only correct keystrokes.
+                    This is your <b>raw average words per minute</b>, calculated
+                    using only <b>correct</b> keystrokes.
                   </p>
                   <p>
                     <code>correct / test time</code>

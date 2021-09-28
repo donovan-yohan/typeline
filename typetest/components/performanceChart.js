@@ -196,10 +196,18 @@ export default function PerformanceChart({ rawStats }) {
       },
       tooltip: {
         usePointStyle: true,
-        boxWidth: 10,
+        backgroundColor: theme.values.tooltipColourFade,
+        boxWidth: 12,
         padding: 12,
         bodySpacing: 4,
+        bodyFont: {
+          weight: "normal",
+        },
         titleAlign: "center",
+        cornerRadius: 2,
+        caretSize: 6,
+        caretPadding: 4,
+        multiKeyBackground: "rgba(0,0,0,0)",
         callbacks: {
           title: (context) => {
             return formatTime(context[0].parsed.x + 1);
@@ -209,6 +217,17 @@ export default function PerformanceChart({ rawStats }) {
           },
           labelTextColor: (context) => {
             return context.backgroundColor;
+          },
+          labelColor: (context) => {
+            console.log(context);
+            return {
+              bodyColor: context.dataset.backgroundColor,
+              borderColor: context.dataset.backgroundColor,
+              backgroundColor: context.dataset.backgroundColor,
+              borderWidth: 0,
+              borderDash: [],
+              borderRadius: 0,
+            };
           },
         },
       },
