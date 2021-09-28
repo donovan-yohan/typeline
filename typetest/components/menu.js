@@ -9,6 +9,8 @@ export default function Menu({
   timeTotal,
   onChangeTimeTotal,
   options,
+  isEditing,
+  onUpdateEditingState
 }) {
   const [settings, setSettings] = useState({
     hasCapitals: false,
@@ -16,7 +18,7 @@ export default function Menu({
     hasNumbers: false,
     hasSymbols: false,
   });
-  const [isEditing, setIsEditing] = useState(false);
+
 
   const menuButtonText = isRunning
     ? "Refresh"
@@ -32,7 +34,7 @@ export default function Menu({
   const handleMenuClick = (e) => {
     if (!isRunning) {
       // toggle customize menu
-      setIsEditing((isEditing) => !isEditing);
+      onUpdateEditingState((isEditing) => !isEditing);
     }
   };
 

@@ -79,6 +79,9 @@ export default React.memo(function Letter({
           animation: springWiggle-2 0.2s running cubic-bezier(0, 0.95, 0.25, 1);
         }
 
+         {
+          /* JSX does not support animations/keyframes, each component that needs it must have its own copy... */
+        }
         @keyframes wordBounce {
           0% {
             transform: translateY(0);
@@ -88,6 +91,7 @@ export default React.memo(function Letter({
           }
         }
 
+        {/* also used in cursor.js for wiggle */}
         @keyframes springWiggle {
           0% {
             transform: translateX(-0.1em);

@@ -37,6 +37,7 @@ export default function Home() {
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
   const [chartStats, setChartStats] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
 
   // initial start up logic
   // {seed: String, time: int}
@@ -338,6 +339,7 @@ export default function Home() {
                   finished={finished}
                   isFirstChar={cursorState.isFirstChar}
                   onLineChange={handleLineChange}
+                  isEditing={isEditing}
                 />
                 <div className={styles.textWrapper}>
                   {textDatabase.map((word, i) => {
@@ -365,9 +367,11 @@ export default function Home() {
             className={styles.menu}
             isFinished={finished}
             isRunning={isRunning}
+            isEditing={isEditing}
             time={time}
             timeTotal={timeTotal}
             onChangeTimeTotal={setTimeTotal}
+            onUpdateEditingState={setIsEditing}
           ></Menu>
           {/* DEBUG */}
           {/* <pre>{JSON.stringify({ chartStats }, null, 4)}</pre> */}

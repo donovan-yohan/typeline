@@ -14,10 +14,12 @@ export default function Cursor({
   textDatabase,
   isFirstChar,
   onLineChange,
+  isEditing,
 }) {
   const [text, setText] = useState("");
   const [valid, setValid] = useState(true);
   const [repeat, setRepeat] = useState(false);
+  const [hasFocus, setHasFocus] = useState(true);
   const [shouldAnimateCursor, setShouldAnimateCursor] = useState(true);
   const typingField = useRef(null);
   const cursorRef = useRef(null);
@@ -30,6 +32,11 @@ export default function Cursor({
   const cursorClassList = cx({
     cursor: true,
     cursorAnimate: shouldAnimateCursor,
+  });
+
+  const inputClassList = cx({
+    focusBanner: true,
+    lostFocus: !hasFocus && !isEditing,
   });
 
   // UPDATE STATS AND SEND TO INDEX PAGE
@@ -127,6 +134,7 @@ export default function Cursor({
 
   // FOCUS TEXT ON CLICK
   const handleClick = (e) => {
+    setHasFocus(true);
     e.target.focus();
   };
 
@@ -172,7 +180,9 @@ export default function Cursor({
     <div>
       <span ref={cursorRef} className={cursorClassList}></span>
       <span ref={highlightRef} className={"activeHighlight"}></span>
-
+      <span className={inputClassList}>
+        <span>Click to focus</span>
+      </span>
       <input
         ref={typingField}
         value={text}
@@ -180,6 +190,9 @@ export default function Cursor({
         onKeyDown={handleSpecialChar}
         onKeyUp={checkIfHoldingKey}
         onChange={handleTextTyped}
+        onBlur={() => {
+          setHasFocus(false);
+        }}
         disabled={finished}
       />
       <style jsx>{`
@@ -187,7 +200,7 @@ export default function Cursor({
           z-index: 99;
         }
         .cursor {
-          z-index: 99;
+          z-index: 97;
           position: absolute;
           display: block;
           background-color: var(--highlight);
@@ -215,9 +228,36 @@ export default function Cursor({
           margin: 0;
           user-select: none;
           width: 50vw;
-          height: 25vh;
+          height: 30vh;
           outline: none;
           background-color: transparent;
+          border-radius: 4px;
+        }
+
+        .focusBanner {
+          z-index: 98;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: absolute;
+          height: 30vh;
+          width: 100%;
+          color: var(--main);
+          background-color: var(--tooltipColourFade);
+          transition: opacity 0.2s ease-in-out;
+          opacity: 0;
+          border-radius: 8px;
+          user-select: none;
+
+          font-size: 32px;
+          font-weight: bold;
+          text-transform: uppercase;
+          letter-spacing: 0.33em;
+        }
+
+        .lostFocus {
+          opacity: 1;
+          animation: springWiggle 0.45s cubic-bezier(0, 0.95, 0.25, 1);
         }
 
         .activeHighlight {
@@ -235,6 +275,30 @@ export default function Cursor({
           }
           100% {
             opacity: 0;
+          }
+        }
+
+        @keyframes springWiggle {
+          0% {
+            transform: translateX(0.6em);
+          }
+          17% {
+            transform: translateX(-0.25em);
+          }
+          34% {
+            transform: translateX(0.18em);
+          }
+          51% {
+            transform: translateX(-0.12em);
+          }
+          68% {
+            transform: translateX(0.08em);
+          }
+          85% {
+            transform: translateX(-0.03em);
+          }
+          100% {
+            transform: translateX(0);
           }
         }
       `}</style>
