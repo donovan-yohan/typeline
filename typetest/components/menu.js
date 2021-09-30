@@ -292,7 +292,7 @@ export default function Menu({
           outline: none;
           font-size: 16px;
           font-weight: 400;
-          font-family: "Roboto";
+          font-family: "Nunito";
         }
 
         .urlWrapper:hover,
@@ -301,17 +301,6 @@ export default function Menu({
         .copyLinkButton:hover ~ .urlWrapper .url {
           color: var(--main);
           border-color: var(--main);
-        }
-
-        .copyLinkButton ~ .urlWrapper label {
-          display: flex;
-          align-items: center;
-          position: relative;
-          padding-left: 32px;
-          margin-right: 32px;
-          cursor: pointer;
-          font-size: 18px;
-          user-select: none;
         }
 
         input[type="checkbox"] {

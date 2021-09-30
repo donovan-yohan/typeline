@@ -25,6 +25,8 @@ const MAX_SYMBOL_SPACE = 15;
 
 const LONG_WORD_BREAKPOINT = 10;
 
+const MIN_WORDS = 50;
+
 const containsUpperCase = (string) => /^\S*[A-Z]+\S*$/.test(string);
 const containsNumber = (string) => /^\S*[0-9]+\S*$/.test(string);
 const containsCharacter = (string, character) => {
@@ -111,7 +113,10 @@ function generateWords(
   let symbolCounter = 0;
   let puncCounter = 0;
 
-  while (words.length < (time / 60) * 400) {
+  let totalWords = (time / 60) * 400;
+  if (totalWords < MIN_WORDS) totalWords = MIN_WORDS;
+
+  while (words.length < totalWords) {
     let r = random();
 
     let word;

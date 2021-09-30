@@ -42,17 +42,17 @@ export default function Timer({
 
   const timerBackgroundStyle = {
     backgroundColor: "var(--gray)",
-    height: "1px",
+    height: "2px",
   };
 
   const timerProgressStyle = {
     backgroundColor: "var(--main)",
-    height: "1px",
+    height: "2px",
     transition: "width 1s linear",
   };
   const timerEditProgressStyle = {
     backgroundColor: "var(--main)",
-    height: "1px",
+    height: "2px",
     transition: "width 0.75s ease",
   };
 

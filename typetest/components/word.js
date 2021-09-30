@@ -177,14 +177,10 @@ export default React.memo(function Word({
       </span>
 
       <style jsx>{`
-        .word,
-        input {
-          font-size: 2.5em;
-          letter-spacing: 0.02em;
-          line-height: 2.25;
-        }
-
         .word {
+          font-size: 2.65em;
+          letter-spacing: 0.02em;
+          line-height: 2.1;
           white-space: pre;
           user-select: none;
           position: relative;

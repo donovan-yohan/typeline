@@ -3,7 +3,7 @@ import Context from "../components/context";
 import { Line, defaults } from "react-chartjs-2";
 import { formatTime } from "../utils/formatTime";
 
-const AVERAGING_FACTOR = 3;
+const AVERAGING_FACTOR = 2;
 
 const parseStats = (rawStats) => {
   return rawStats.map((stat, i) => {
@@ -48,7 +48,7 @@ const getLabelString = (context) => {
 export default function PerformanceChart({ rawStats }) {
   const theme = useContext(Context);
 
-  defaults.font.family = "Roboto";
+  defaults.font.family = "Nunito";
   defaults.font.size = 14;
   defaults.font.lineHeight = 1.5;
   defaults.font.weight = 700;
@@ -119,10 +119,18 @@ export default function PerformanceChart({ rawStats }) {
         // stop WPM axis from going negative for very low WPM
         min: stats[stats.length - 1].wpm < 10 ? 0 : null,
         suggstedMin: 0,
-        grace: "10%",
+        grace: "5%",
         title: {
           display: true,
           text: "Words per Minute (WPM)",
+        },
+        ticks: {
+          font: {
+            weight: 400,
+          },
+          callback: function (val, index) {
+            return val;
+          },
         },
       },
       errorAxis: {
@@ -141,7 +149,7 @@ export default function PerformanceChart({ rawStats }) {
           },
         },
         min: 0,
-        grace: "10%",
+        grace: "5%",
         title: {
           display: true,
           text: "Errors",
@@ -156,6 +164,11 @@ export default function PerformanceChart({ rawStats }) {
         grid: {
           display: false,
           drawBorder: false,
+        },
+        ticks: {
+          font: {
+            weight: 400,
+          },
         },
       },
     },
@@ -195,12 +208,11 @@ export default function PerformanceChart({ rawStats }) {
         usePointStyle: true,
         backgroundColor: theme.values.tooltipColourFade,
         boxWidth: 12,
-        padding: 12,
+        padding: 16,
         bodySpacing: 4,
         bodyFont: {
           weight: "normal",
         },
-        titleAlign: "center",
         cornerRadius: 2,
         caretSize: 6,
         caretPadding: 4,

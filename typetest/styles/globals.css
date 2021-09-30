@@ -1,17 +1,18 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Comfortaa:wght@500&display=swap");
 
 html,
 body {
   padding: 0;
   margin: 0;
-  font-family: Roboto, sans-serif;
+  font-family: Nunito, sans-serif;
 }
 
 .labelStyle {
-  font-family: Roboto;
+  font-family: Nunito;
   font-weight: bold;
   text-transform: uppercase;
-  letter-spacing: 0.33em;
+  letter-spacing: 0.25em;
   text-align: center;
 }
 
@@ -25,13 +26,15 @@ a {
 }
 
 .toolTipIcon {
+  font-size: 0.85em;
   min-width: 48px;
   height: 100%;
   border: 2px solid;
   border-radius: 50%;
-  letter-spacing: 0.36em;
-  padding-left: 0.33em;
+  letter-spacing: 0.45em;
+  padding-left: 0.45em;
   margin-left: 0.33em;
+  margin-right: -0.1em;
   transition: 0.25s ease-in-out;
   cursor: default;
   user-select: none;

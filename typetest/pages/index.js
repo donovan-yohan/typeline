@@ -247,78 +247,90 @@ export default function Home() {
 
       <main className={styles.main}>
         {finished && (
-          <div className={styles.wpmColumn}>
-            <div className={styles.largeScore}>
-              <span
-                className={`${styles.largeScoreLabel} ${styles.highlightLabel}`}
-              >
-                <span>True WPM</span>
-                <span className={"toolTipIcon"} data-tip data-for='trueWpmTip'>
-                  ?
-                </span>
-              </span>
-              <ReactTooltip
-                className={"toolTipWrapper"}
-                id='trueWpmTip'
-                place={"right"}
-                effect={"solid"}
-                backgroundColor={theme.values.tooltipColour}
-                textColor={theme.values.main}
-              >
-                <p>
-                  This is your{" "}
-                  <span className={styles.highlightLabel}>
-                    <b>average words per minute</b>
-                  </span>
-                  , but lowered for every{" "}
-                  <span className={styles.miss}>
-                    <b>error</b>
-                  </span>{" "}
-                  left uncorrected.
-                </p>
-                <p>
-                  <code>[correct - (errors - corrected)] / test time</code>
-                </p>
-              </ReactTooltip>
-              <span
-                className={`${styles.largeScoreNumber} ${styles.highlightLabel}`}
-              >
-                {calculateTrueWPM(
-                  stats.correct,
-                  stats.incorrect,
-                  stats.corrected,
-                  0,
-                  timeTotal
-                )}
-              </span>
-            </div>
-            <div className={styles.smallScoreWrapper}>
-              <div className={styles.smallScore}>
-                <span className={styles.smallScoreLabel}>
-                  Raw WPM
-                  <span className={"toolTipIcon"} data-tip data-for='rawWpmTip'>
+          <div className={styles.wpmWrapper}>
+            <div className={styles.wpmColumn}>
+              <div className={styles.largeScore}>
+                <span
+                  className={`${styles.largeScoreLabel} ${styles.highlightLabel}`}
+                >
+                  <span>WPM</span>
+                  <span
+                    className={"toolTipIcon"}
+                    data-tip
+                    data-for='trueWpmTip'
+                  >
                     ?
                   </span>
                 </span>
                 <ReactTooltip
                   className={"toolTipWrapper"}
-                  id='rawWpmTip'
+                  id='trueWpmTip'
                   place={"right"}
                   effect={"solid"}
                   backgroundColor={theme.values.tooltipColour}
                   textColor={theme.values.main}
                 >
                   <p>
-                    This is your <b>raw average words per minute</b>, calculated
-                    using only <b>correct</b> keystrokes.
+                    This is your{" "}
+                    <span className={styles.highlightLabel}>
+                      <b>average words per minute</b>
+                    </span>
+                    , but lowered for every{" "}
+                    <span className={styles.miss}>
+                      <b>error</b>
+                    </span>{" "}
+                    left uncorrected.
                   </p>
                   <p>
-                    <code>correct / test time</code>
+                    <code>[correct - (errors - corrected)] / test time</code>
                   </p>
                 </ReactTooltip>
-                <span className={styles.smallScoreNumber}>
-                  {calculateRawWPM(stats.correct, 0, timeTotal)}
+                <span
+                  className={`${styles.largeScoreNumber} ${styles.highlightLabel} ${styles.number}`}
+                >
+                  {calculateTrueWPM(
+                    stats.correct,
+                    stats.incorrect,
+                    stats.corrected,
+                    0,
+                    timeTotal
+                  )}
                 </span>
+              </div>
+              <div className={styles.smallScoreWrapper}>
+                <div className={styles.smallScore}>
+                  <span className={styles.smallScoreLabel}>
+                    Raw WPM
+                    <span
+                      className={"toolTipIcon"}
+                      data-tip
+                      data-for='rawWpmTip'
+                    >
+                      ?
+                    </span>
+                  </span>
+                  <ReactTooltip
+                    className={"toolTipWrapper"}
+                    id='rawWpmTip'
+                    place={"right"}
+                    effect={"solid"}
+                    backgroundColor={theme.values.tooltipColour}
+                    textColor={theme.values.main}
+                  >
+                    <p>
+                      This is your <b>raw average words per minute</b>,
+                      calculated using only <b>correct</b> keystrokes.
+                    </p>
+                    <p>
+                      <code>correct / test time</code>
+                    </p>
+                  </ReactTooltip>
+                  <span
+                    className={`${styles.smallScoreNumber} ${styles.number}`}
+                  >
+                    {calculateRawWPM(stats.correct, 0, timeTotal)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -388,36 +400,43 @@ export default function Home() {
           {/* <pre>{JSON.stringify({ chartStats }, null, 4)}</pre> */}
         </div>
         {finished && (
-          <div className={styles.streakColumn}>
-            <div className={styles.largeScore}>
-              <span
-                className={`${styles.largeScoreLabel} ${styles.highlightLabel}`}
-              >
-                Accuracy
-              </span>
-              <span
-                className={`${styles.largeScoreNumber} ${styles.highlightLabel}`}
-              >
-                {(
-                  (stats.correct / (stats.correct + stats.incorrect)) * 100 || 0
-                ).toLocaleString("en-US", { maximumFractionDigits: 1 })}
-                %
-              </span>
-            </div>
-            <div className={styles.smallScoreWrapper}>
-              <div className={styles.smallScore}>
-                <span className={`${styles.smallScoreLabel}`}>Correct</span>
-                <span className={`${styles.smallScoreNumber}`}>
-                  {stats.correct || 0}
+          <div className={styles.streakWrapper}>
+            <div className={styles.streakColumn}>
+              <div className={styles.largeScore}>
+                <span
+                  className={`${styles.largeScoreLabel} ${styles.highlightLabel}`}
+                >
+                  Accuracy
+                </span>
+                <span
+                  className={`${styles.largeScoreNumber} ${styles.highlightLabel} ${styles.number}`}
+                >
+                  {(
+                    (stats.correct / (stats.correct + stats.incorrect)) * 100 ||
+                    0
+                  ).toLocaleString("en-US", { maximumFractionDigits: 1 })}
+                  %
                 </span>
               </div>
-              <div className={styles.smallScore}>
-                <span className={`${styles.smallScoreLabel} ${styles.miss}`}>
-                  Errors
-                </span>
-                <span className={`${styles.smallScoreNumber} ${styles.miss}`}>
-                  {stats.incorrect || 0}
-                </span>
+              <div className={styles.smallScoreWrapper}>
+                <div className={styles.smallScore}>
+                  <span className={`${styles.smallScoreLabel}`}>Correct</span>
+                  <span
+                    className={`${styles.smallScoreNumber} ${styles.number}`}
+                  >
+                    {stats.correct || 0}
+                  </span>
+                </div>
+                <div className={styles.smallScore}>
+                  <span className={`${styles.smallScoreLabel} ${styles.miss}`}>
+                    Errors
+                  </span>
+                  <span
+                    className={`${styles.smallScoreNumber} ${styles.miss} ${styles.number}`}
+                  >
+                    {stats.incorrect || 0}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

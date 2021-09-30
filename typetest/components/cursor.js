@@ -215,10 +215,10 @@ export default function Cursor({
           z-index: 97;
           position: absolute;
           display: block;
-          background-color: var(--highlight);
+          background-color: ${valid ? "var(--highlight)" : "var(--incorrect)"};
           width: 3px;
-          height: 3em;
-          border-radius: 4px;
+          height: 3.5em;
+          border-radius: 2px;
           transition: all 0.13s ease;
           will-change: transform;
         }
@@ -278,6 +278,7 @@ export default function Cursor({
           background-color: ${valid ? "var(--highlight)" : "var(--incorrect)"};
           opacity: 0.2;
           transition: all 0.25s cubic-bezier(0.33, 0, 0, 1);
+          border-radius: 4px;
           will-change: transform, width, height;
         }
 

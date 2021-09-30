@@ -37,11 +37,23 @@
   flex-wrap: wrap;
 }
 
-.streakColumn,
-.wpmColumn {
+.streakWrapper,
+.wpmWrapper {
   width: 25vw;
   height: 100vh;
   max-width: 25vw;
+  display: flex;
+  align-items: center;
+}
+.streakWrapper {
+  justify-content: flex-start;
+}
+.wpmWrapper {
+  justify-content: flex-end;
+}
+
+.streakColumn,
+.wpmColumn {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -53,6 +65,7 @@
 }
 .wpmColumn {
   left: 0;
+  margin-right: 48px;
 }
 .largeScore {
   display: flex;
@@ -67,6 +80,7 @@
   letter-spacing: 0.33em;
   text-align: center;
   z-index: 1;
+  margin-bottom: 4px;
 }
 
 .highlightLabel {
@@ -75,7 +89,8 @@
 
 .largeScore .largeScoreNumber {
   font-size: 100px;
-  line-height: 1em;
+  letter-spacing: -0.03em;
+  line-height: 1;
 }
 .smallScoreWrapper {
   display: flex;
@@ -100,11 +115,16 @@
   letter-spacing: 0.33em;
   text-align: center;
   white-space: nowrap;
+  margin-bottom: 4px;
 }
 
 .smallScore .smallScoreNumber {
   margin-top: 4px;
   font-weight: bold;
+}
+
+.number {
+  font-family: "Comfortaa";
 }
 
 .miss {
