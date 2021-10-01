@@ -37,6 +37,7 @@ export default function Cursor({
   const cursorClassList = cx({
     cursor: true,
     cursorAnimate: shouldAnimateCursor,
+    hideCursor: !hasFocus && isRunning,
   });
 
   const inputClassList = cx({
@@ -160,7 +161,7 @@ export default function Cursor({
   useEventListener("keydown", keyTypedHandler);
 
   useEffect(() => {
-    if (!hasFocus && !isRunning && !isFinished) {
+    if (key.key && !hasFocus && !isRunning && !isFinished) {
       if (
         !KEYBOARD_INPUTS.some((input) => key.key === input) &&
         key.key.length === 1
@@ -246,6 +247,10 @@ export default function Cursor({
         .cursorAnimate {
           animation: 0.45s cubic-bezier(0.9, 0, 0, 0.9) 0.66s infinite alternate
             blink;
+        }
+        .hideCursor {
+          opacity: 0;
+          animation: none;
         }
 
         input {
