@@ -5,6 +5,7 @@ import React, {
   useRef,
   useReducer,
   useContext,
+  useCallback,
 } from "react";
 import ReactTooltip from "react-tooltip";
 import styles from "../styles/Home.module.css";
@@ -28,6 +29,7 @@ import {
 } from "../components/reducers";
 import cleanSeed, { generateSeed } from "../utils/cleanSeed";
 import Context from "../components/context";
+import useEventListener from "../hooks/useEventListener";
 
 const DEFAULT_TIME = 30;
 
@@ -58,6 +60,14 @@ export default function Home() {
     if (clean.seed === "") clean.seed = generateSeed();
     setSeed(clean);
   }, []);
+
+  // listen for hash change
+  const hashChangeHandler = useCallback(() => {
+    let clean = cleanSeed(window.location.hash);
+    if (clean.seed === "") clean.seed = generateSeed();
+    setSeed(clean);
+  }, [setSeed]);
+  useEventListener("hashchange", hashChangeHandler);
 
   // generate new words when hash changes
   useDidUpdateEffect(() => {
