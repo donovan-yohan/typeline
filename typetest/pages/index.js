@@ -138,10 +138,47 @@ export default function Home() {
     );
   }, [textTyped]);
 
+  // Dynamic text height on zoom
+  const [textPageHeight, setTextPageHeight] = useState("30vh");
+  const [currentLineHeight, setCurrentLineHeight] = useState(89);
+  const [pixelRatio, setPixelRatio] = useState(1);
+  useDidUpdateEffect(() => {
+    if (!finished) {
+      if (
+        highlightState.wordRef &&
+        highlightState.wordRef.current.parentNode.clientHeight !=
+          currentLineHeight
+      ) {
+        setCurrentLineHeight(
+          highlightState.wordRef.current.parentNode.clientHeight
+        );
+      }
+    }
+  }, [highlightState]);
+  useEffect(() => {
+    setPixelRatio(window.devicePixelRatio);
+    if (window.devicePixelRatio != 1) {
+      zoomChangeHandler();
+    }
+  }, []);
+  const zoomChangeHandler = useCallback(() => {
+    if (
+      !finished &&
+      (window.devicePixelRatio != pixelRatio || window.devicePixelRatio != 1)
+    ) {
+      setPixelRatio(window.devicePixelRatio);
+      setTextPageHeight(currentLineHeight * 3 + "px");
+    }
+  }, [setSeed]);
+  useEventListener("resize", zoomChangeHandler);
+
   const paragraphRef = useRef(null);
   const rootRef = useRef(null);
   const textPageRef = useRef(null);
-  const textOffset = useOffset(rootRef, textPageRef, [textDatabase]);
+  const textOffset = useOffset(rootRef, textPageRef, [
+    textDatabase,
+    pixelRatio,
+  ]);
 
   // TYPING LOGIC
   const handleTextTyped = (value, index = activeWord) => {
@@ -157,10 +194,12 @@ export default function Home() {
   };
 
   const handleLineChange = (linePos) => {
-    if (linePos.bottom > window.innerHeight / 2 - textOffset.top + 6.5) {
-      setLineOffset(
-        window.innerHeight / 2 - textOffset.top - linePos.bottom + 6.5
-      );
+    // magic value that compensates for highlight being different height from the whole line...
+    // works assuming the highlight is centered in a word
+    let relativeLineHeight = linePos.bottom + currentLineHeight / 2;
+    let lineNum = Math.floor(relativeLineHeight / currentLineHeight) - 2;
+    if (isRunning && lineNum > 0) {
+      setLineOffset(-lineNum * currentLineHeight);
     }
   };
 
@@ -261,6 +300,7 @@ export default function Home() {
             <div
               ref={textPageRef}
               className={styles.textPage}
+              style={{ maxHeight: `${textPageHeight}` }}
               key={textDatabase.toLocaleString()}
             >
               <div
@@ -282,6 +322,7 @@ export default function Home() {
                   isRunning={isRunning}
                   isFirstChar={cursorState.isFirstChar}
                   onLineChange={handleLineChange}
+                  textPageHeight={textPageHeight}
                 />
                 <div className={styles.textWrapper}>
                   {textDatabase.map((word, i) => {

@@ -16,6 +16,7 @@
   margin-top: 32px;
   width: 55vw;
   max-width: 55vw;
+  min-width: 800px;
 }
 
 .textPage {

@@ -19,7 +19,7 @@ const parseStats = (rawStats) => {
     raw /= adj;
     return {
       wpm: stat.wpm,
-      raw: raw,
+      raw: Math.floor(raw),
       correctInInterval: stat.correctInInterval,
       incorrectInInterval: stat.incorrectInInterval,
       time: stat.time,
@@ -96,8 +96,8 @@ export default function PerformanceChart({ rawStats }) {
         label: "Raw WPM at Time",
         data: stats.map((s) => s.raw),
         fill: false,
-        backgroundColor: theme.values.main,
-        borderColor: theme.values.main,
+        backgroundColor: theme.values.gray,
+        borderColor: theme.values.gray,
         spanGaps: true,
         tension: 0.4,
         yAxisID: "wpmAxis",
@@ -120,7 +120,7 @@ export default function PerformanceChart({ rawStats }) {
           drawBorder: false,
         },
         // stop WPM axis from going negative for very low WPM
-        min: stats[stats.length - 1].wpm < 10 ? 0 : null,
+        min: stats[stats.length - 1].wpm < 10 ? -1 : null,
         suggstedMin: 0,
         grace: "5%",
         ticks: {
@@ -128,7 +128,7 @@ export default function PerformanceChart({ rawStats }) {
             weight: 400,
           },
           callback: function (val, index) {
-            return val;
+            return val >= 0 ? val : null;
           },
         },
       },

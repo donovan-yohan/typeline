@@ -20,6 +20,7 @@ export default function Cursor({
   textDatabase,
   isFirstChar,
   onLineChange,
+  textPageHeight,
 }) {
   const [text, setText] = useState("");
   const [valid, setValid] = useState(true);
@@ -211,7 +212,7 @@ export default function Cursor({
   }, [text]);
 
   return (
-    <div>
+    <div className={"container"}>
       <span ref={cursorRef} className={cursorClassList}></span>
       <span ref={highlightRef} className={"activeHighlight"}></span>
       <span className={inputClassList}>
@@ -230,7 +231,10 @@ export default function Cursor({
         disabled={isFinished}
       />
       <style jsx>{`
-        div {
+        .container {
+          position: absolute;
+          width: 100%;
+          height: ${textPageHeight};
           z-index: 99;
         }
         .cursor {
@@ -254,9 +258,10 @@ export default function Cursor({
         }
 
         input {
-          position: absolute;
+          width: 55vw;
+          height: ${textPageHeight};
+          position: fixed;
           z-index: 99;
-          max-width: 50vw;
           font-size: 2.5em;
           overflow: hidden;
           opacity: 0;
@@ -265,8 +270,7 @@ export default function Cursor({
           border: none;
           margin: 0;
           user-select: none;
-          width: 50vw;
-          height: 30vh;
+
           outline: none;
           background-color: transparent;
           border-radius: 4px;
@@ -278,8 +282,8 @@ export default function Cursor({
           justify-content: center;
           align-items: center;
           position: absolute;
-          height: 30vh;
           width: 100%;
+          height: ${textPageHeight};
           color: var(--main);
           background-color: var(--tooltipColourFade);
           transition: opacity 0.2s ease-in-out;
