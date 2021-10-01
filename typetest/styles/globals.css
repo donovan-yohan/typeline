@@ -26,14 +26,14 @@ a {
 }
 
 .toolTipIcon {
-  font-size: 0.85em;
-  min-width: 48px;
+  font-size: 0.75em;
+  font-weight: bold;
   height: 100%;
   border: 2px solid;
   border-radius: 50%;
   letter-spacing: 0.45em;
   padding-left: 0.45em;
-  margin-left: 0.33em;
+  margin-left: 0.5em;
   margin-right: -0.1em;
   transition: 0.25s ease-in-out;
   cursor: default;
@@ -49,4 +49,10 @@ a {
   font-size: 14px !important;
   max-width: 20vw !important;
   transition: opacity 0.25s ease-in-out, visibility 0.25s ease-in-out !important;
+}
+
+.label {
+  font-size: 20px;
+  font-weight: bold;
+  text-transform: lowercase;
 }

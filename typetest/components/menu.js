@@ -5,6 +5,7 @@ import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import copyTextToClipboard from "../utils/copyToClipboard.js";
 import ReactTooltip from "react-tooltip";
 import Context from "./context.js";
+import useHover from "../hooks/useHover.js";
 
 export default function Menu({
   isFinished,
@@ -27,6 +28,7 @@ export default function Menu({
     hasSymbols: false,
   });
   const [url, setUrl] = useState("");
+  const [hoverCopyLink, isHoverCopyLink] = useHover([isFinished]);
 
   useDidUpdateEffect(() => {
     setUrl(window.location.href);
@@ -43,6 +45,10 @@ export default function Menu({
     labelStyle: true,
     fadedButton: isRunning,
     activeButton: !isRunning,
+  });
+
+  const urlClassList = cx({
+    urlHover: isHoverCopyLink,
   });
 
   const handleMenuClick = (e) => {
@@ -73,7 +79,7 @@ export default function Menu({
           onChangeTimeTotal={onChangeTimeTotal}
         />
       )}
-      {isFinished && <div>{/* add stuff for share/screenshot */}</div>}
+
       {isEditing && (
         <div className={"wordSettingsWrapper"}>
           <label>
@@ -120,50 +126,54 @@ export default function Menu({
           </label>
         </div>
       )}
+      {isFinished && (
+        <div className={`urlWrapper label`}>
+          <span className={`urlRoot ${urlClassList}`}>
+            {window.location.host}/
+          </span>
+          <span className={`urlHash ${urlClassList}`}>
+            {window.location.hash}
+          </span>
+        </div>
+      )}
       <div className={"buttonWrapper"}>
-        <button
-          onClick={() => {
-            if (isRunning) {
-              newTest(seed.seed, seed.time);
-            } else {
-              newTest();
-            }
-          }}
-          className={menuButtonClassList}
-        >
-          {noEditMenuButtonText}
-        </button>
-        {isFinished && (
+        <div className='buttonContainer'>
           <button
             onClick={() => {
-              newTest(seed.seed, seed.time);
+              if (isRunning) {
+                newTest(seed.seed, seed.time);
+              } else {
+                newTest();
+              }
             }}
             className={menuButtonClassList}
           >
-            Retry
+            {noEditMenuButtonText}
           </button>
+        </div>
+        {isFinished && (
+          <div className='buttonContainer'>
+            <button
+              onClick={() => {
+                newTest(seed.seed, seed.time);
+              }}
+              className={menuButtonClassList}
+            >
+              Retry
+            </button>
+          </div>
         )}
         {isFinished && (
-          <div className='copyUrlWrapper'>
+          <div ref={hoverCopyLink} className='buttonContainer'>
             <button
               onClick={() => {
                 urlRef.current.select();
                 copyTextToClipboard(url);
               }}
-              className={`${menuButtonClassList} copyLinkButton`}
+              className={`${menuButtonClassList}`}
             >
               Copy Link
             </button>
-            <span className={"urlWrapper"}>
-              <input
-                ref={urlRef}
-                value={url}
-                className={"url"}
-                onClick={(e) => {
-                  e.target.select();
-                }}
-              />
-            </span>
             <span className={"toolTipIcon"} data-tip data-for='urlTip'>
               ?
             </span>
@@ -197,9 +207,11 @@ export default function Menu({
 
         .buttonWrapper {
           display: flex;
-          justify-content: center;
         }
-
+        .buttonContainer {
+          margin: 64px 64px 0 0;
+          color: var(--highlight);
+        }
         button {
           z-index: 1;
           position: relative;
@@ -207,10 +219,10 @@ export default function Menu({
           outline: none;
           background: none;
           border: none;
-          margin: 32px 32px 0;
-          padding: 4px;
+          padding: 4px 2px;
           transition: 0.3s cubic-bezier(0.27, 0.01, 0, 0.99);
           cursor: pointer;
+          white-space: nowrap;
         }
         button:before {
           z-index: -1;
@@ -238,8 +250,8 @@ export default function Menu({
           background-color: var(--background);
         }
         button:hover:after {
-          width: 3px;
-          left: 92%;
+          width: 2px;
+          left: 94%;
           animation: 0.45s cubic-bezier(0.9, 0, 0, 0.9) 0.45s infinite alternate
             blink;
         }
@@ -272,35 +284,38 @@ export default function Menu({
           margin-top: 64px;
         }
 
-        .urlWrapper {
-          transition: 0.3s cubic-bezier(0.27, 0.01, 0, 0.99);
-          margin-left: -16px;
-          margin-right: 4px;
-          border: solid 1px var(--gray);
-          padding: 8px 16px;
-          border-radius: 4px;
-          background-color: var(--tooltipColour);
-          line-height: 1;
-        }
-
-        .url {
-          transition: 0.3s cubic-bezier(0.27, 0.01, 0, 0.99);
-          display: inline-block;
-          color: var(--gray);
-          background-color: transparent;
-          border: none;
-          outline: none;
-          font-size: 16px;
-          font-weight: 400;
-          font-family: "Nunito";
-        }
-
         .urlWrapper:hover,
         .urlWrapper:hover .url,
-        .copyLinkButton:hover ~ .urlWrapper,
-        .copyLinkButton:hover ~ .urlWrapper .url {
+        .copyLinkButton:hover + .urlRoot,
+        .copyLinkButton:hover > .urlRoot {
+          color: var(--highlight);
+        }
+
+        .urlWrapper {
+          align-self: flex-end;
+          display: flex;
+        }
+
+        .urlHash,
+        .urlRoot {
+          display: inline-block;
+          transition: color 0.3s cubic-bezier(0.27, 0.01, 0, 0.99);
+        }
+        .urlHash {
+          display: inline-block;
           color: var(--main);
-          border-color: var(--main);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 33vw;
+        }
+
+        .urlRoot {
+          color: var(--mainFaded);
+        }
+
+        .urlHover {
+          color: var(--highlight);
         }
 
         input[type="checkbox"] {

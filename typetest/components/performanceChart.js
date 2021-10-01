@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import Context from "../components/context";
 import { Line, defaults } from "react-chartjs-2";
 import { formatTime } from "../utils/formatTime";
+import CustomLine from "./customLine";
 
 const AVERAGING_FACTOR = 2;
 
@@ -107,6 +108,8 @@ export default function PerformanceChart({ rawStats }) {
   };
 
   const options = {
+    responsive: true,
+    maintainAspectRatio: false,
     scales: {
       wpmAxis: {
         type: "linear",
@@ -120,10 +123,6 @@ export default function PerformanceChart({ rawStats }) {
         min: stats[stats.length - 1].wpm < 10 ? 0 : null,
         suggstedMin: 0,
         grace: "5%",
-        title: {
-          display: true,
-          text: "Words per Minute (WPM)",
-        },
         ticks: {
           font: {
             weight: 400,
@@ -150,17 +149,8 @@ export default function PerformanceChart({ rawStats }) {
         },
         min: 0,
         grace: "5%",
-        title: {
-          display: true,
-          text: "Errors",
-          color: theme.values.background,
-        },
       },
       x: {
-        title: {
-          display: true,
-          text: "Time",
-        },
         grid: {
           display: false,
           drawBorder: false,
@@ -174,31 +164,22 @@ export default function PerformanceChart({ rawStats }) {
     },
     plugins: {
       legend: {
-        display: true,
+        display: false,
         labels: {
           generateLabels: (chart) => {
             let data = chart.data.datasets;
             return data.map((l, i) => {
               return {
-                text: l.label,
+                text: l.label.toLowerCase(),
                 fontColor: l.backgroundColor,
                 fillStyle: "fill",
                 strokeStyle: "none",
                 pointStyle: l.pointStyle,
                 fillColor: l.backgroundColor,
                 color: l.backgroundColor,
-                hidden: false,
-                lineCap: "",
-                lineDash: [0],
-                lineDashOffset: 0,
-                lineJoin: "",
-                lineWidth: 2,
-                rotation: 0,
               };
             });
           },
-          usePointStyle: true,
-          boxWidth: 8,
         },
         onClick: function (e, legendItem, legend) {
           // do nothing
@@ -243,11 +224,12 @@ export default function PerformanceChart({ rawStats }) {
   };
   return (
     <div className={"container"}>
-      <Line data={data} options={options} />
+      <CustomLine data={data} options={options} />
       <style jsx>{`
         .container {
-          display: flex;
+          position: relative;
           width: 100%;
+          overflow: hidden;
         }
       `}</style>
     </div>
