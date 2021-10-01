@@ -1,7 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useOffset } from "../hooks/useOffset.js";
 import cx from "classnames";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
+import useEventListener from "../hooks/useEventListener.js";
+
+const KEYBOARD_INPUTS = ["Escape", " "];
 
 export default function Cursor({
   letterRef,
@@ -54,7 +57,7 @@ export default function Cursor({
   };
 
   // UPDATE TEXT ON TYPE AND SEND BACK TO INDEX
-  useEffect(() => {
+  useDidUpdateEffect(() => {
     let lastVal = textTyped[activeWord].value;
     let lastChar = "";
     if (text.length > lastVal.length) {
@@ -135,12 +138,8 @@ export default function Cursor({
     onLineChange(linePos);
   };
 
-  // FOCUS TEXT ON LOAD
+  // Focus text on load and when focus is assigned
   useEffect(() => {
-    typingField.current.focus();
-  }, []);
-
-  useDidUpdateEffect(() => {
     if (hasFocus) typingField.current.focus();
   }, [hasFocus]);
 
@@ -149,6 +148,28 @@ export default function Cursor({
     setHasFocus(true);
     e.target.focus();
   };
+
+  // Focus text on first character press
+  const [key, setKey] = useState({ key: null });
+  const keyTypedHandler = useCallback(
+    ({ key }) => {
+      setKey({ key });
+    },
+    [setKey]
+  );
+  useEventListener("keydown", keyTypedHandler);
+
+  useEffect(() => {
+    if (!hasFocus && !isRunning && !isFinished) {
+      if (
+        !KEYBOARD_INPUTS.some((input) => key.key === input) &&
+        key.key.length === 1
+      ) {
+        setHasFocus(true);
+        setText(key.key);
+      }
+    }
+  }, [key]);
 
   // UPDATE CURSOR
   useEffect(() => {

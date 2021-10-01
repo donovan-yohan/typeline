@@ -27,7 +27,6 @@ export default function CustomLine({ data, options }) {
     const chart = chartRef.current;
     if (chart) {
       setLegend(chart.legend.legendItems);
-      console.log(chart.legend.legendItems);
       chart.data = data;
       chart.options = options;
       chart.update();
