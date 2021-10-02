@@ -1,5 +1,5 @@
 import App from "next/app";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Context from "../components/context";
 import "../styles/globals.css";
 import { cssRootVars, cssDarkVars } from "../styles/globalVars.js";
@@ -10,10 +10,14 @@ export default class MyApp extends App {
   };
 
   componentDidMount = () => {
+    const storedTheme = localStorage.getItem("theme");
+
     // Define which query we will check
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     // If matches, set data-theme to dark
-    if (mediaQuery.matches) {
+    if (storedTheme === "light") {
+      // do nothing
+    } else if (mediaQuery.matches || storedTheme === "dark") {
       document.documentElement.setAttribute("data-theme", "dark");
       this.setState({ theme: "dark", values: cssDarkVars });
     }
@@ -23,6 +27,8 @@ export default class MyApp extends App {
     let newTheme = this.state.theme;
     newTheme === "dark" ? (newTheme = "light") : (newTheme = "dark");
     let newValues = newTheme === "dark" ? cssDarkVars : cssRootVars;
+
+    localStorage.setItem("theme", newTheme);
 
     let transition = document.createElement("div");
     transition.setAttribute("id", "transition");
@@ -45,7 +51,7 @@ export default class MyApp extends App {
       document
         .getElementById("transition")
         .parentNode.removeChild(document.getElementById("transition"));
-    }, 1000);
+    }, 750);
   };
 
   render() {
@@ -78,6 +84,30 @@ export default class MyApp extends App {
           {`
             .fouc {
               display: none;
+            }
+
+            #transition {
+              position: fixed;
+              left: 0;
+              top: 0;
+              width: 100%;
+              height: 100%;
+              z-index: 99999;
+              animation: fade 0.75s ease-in-out;
+            }
+            @keyframes fade {
+              0% {
+                opacity: 0;
+              }
+              35% {
+                opacity: 1;
+              }
+              65% {
+                opacity: 1;
+              }
+              100% {
+                opacity: 0;
+              }
             }
 
             html {

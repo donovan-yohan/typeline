@@ -143,7 +143,7 @@ export default function Menu({
               if (isRunning) {
                 newTest(seed.seed, seed.time);
               } else {
-                newTest();
+                newTest(undefined, seed.time);
               }
             }}
             className={menuButtonClassList}
@@ -166,6 +166,8 @@ export default function Menu({
         {isFinished && (
           <div ref={hoverCopyLink} className='buttonContainer'>
             <button
+              data-tip
+              data-for='copyTip'
               onClick={() => {
                 copyTextToClipboard(url);
               }}
@@ -173,6 +175,18 @@ export default function Menu({
             >
               Copy Link
             </button>
+            <ReactTooltip
+              className={"toolTipWrapper"}
+              id='copyTip'
+              place={"top"}
+              effect={"solid"}
+              backgroundColor={theme.values.tooltipColour}
+              textColor={theme.values.main}
+              event={"click"}
+              eventOff={"mouseleave"}
+            >
+              <p>Link copied!</p>
+            </ReactTooltip>
             <span className={"toolTipIcon"} data-tip data-for='urlTip'>
               ?
             </span>
@@ -236,6 +250,9 @@ export default function Menu({
         }
         button:hover:before {
           width: 98%;
+        }
+         {
+          /* TODO: refactor animation into global use cause im dumb and copied it into the Logo.js too zzz */
         }
         button:after {
           transition: 0.3s cubic-bezier(0.27, 0.01, 0, 0.99);

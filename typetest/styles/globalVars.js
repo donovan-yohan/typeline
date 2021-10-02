@@ -10,6 +10,8 @@ export const cssRootVars = {
   grayOpacity: "0.7",
   tooltipColour: "rgb(234,234,234)",
   tooltipColourFade: "rgba(234,234,234,0.9)",
+  hoverFilter:
+    "invert(30%) sepia(70%) saturate(3777%) hue-rotate(203deg) brightness(104%) contrast(104%);",
 };
 
 export const cssDarkVars = {
@@ -24,4 +26,6 @@ export const cssDarkVars = {
   grayOpacity: "0.7",
   tooltipColour: "rgb(11,11,11)",
   tooltipColourFade: "rgba(11,11,11,0.9)",
+  hoverFilter:
+    "invert(44%) sepia(94%) saturate(822%) hue-rotate(150deg) brightness(94%) contrast(101%);",
 };

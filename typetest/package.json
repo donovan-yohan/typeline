@@ -11,12 +11,14 @@
     "@use-it/interval": "^1.0.0",
     "chart.js": "^3.4.0",
     "classnames": "^2.2.6",
+    "lottie-react-web": "^2.2.2",
     "next": "10.0.7",
     "rc-slider": "^9.7.1",
     "react": "17.0.1",
     "react-chartjs-2": "^3.0.3",
     "react-dom": "17.0.1",
     "react-tooltip": "^4.2.21",
+    "react-transition-group": "^4.4.2",
     "seed-random": "^2.2.0"
   }
 }

@@ -8,8 +8,10 @@ import React, {
   useCallback,
 } from "react";
 import ReactTooltip from "react-tooltip";
+import { Transition } from "react-transition-group";
+import Lottie from "lottie-react-web";
+import themeAnimation from "../public/img/animations/darkmode.json";
 import styles from "../styles/Home.module.css";
-
 import Word from "../components/word.js";
 import Cursor from "../components/cursor.js";
 import Menu from "../components/menu.js";
@@ -18,7 +20,6 @@ import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useInterval from "@use-it/interval";
 import { calculateRawWPM, calculateTrueWPM } from "../utils/wpmUtils.js";
 import createTextDatabase from "../utils/createTextDatabase.js";
-import { useOffset } from "../hooks/useOffset.js";
 import {
   cursorReducer,
   initialCursorState,
@@ -30,6 +31,8 @@ import {
 import cleanSeed, { generateSeed } from "../utils/cleanSeed";
 import Context from "../components/context";
 import useEventListener from "../hooks/useEventListener";
+import Logo from "../components/logo";
+import useHover from "../hooks/useHover";
 
 const DEFAULT_TIME = 30;
 
@@ -141,7 +144,6 @@ export default function Home() {
   // Dynamic text height on zoom
   const [textPageHeight, setTextPageHeight] = useState("30vh");
   const [currentLineHeight, setCurrentLineHeight] = useState(89);
-  const [pixelRatio, setPixelRatio] = useState(1);
   useDidUpdateEffect(() => {
     if (!finished) {
       if (
@@ -156,29 +158,12 @@ export default function Home() {
     }
   }, [highlightState]);
   useEffect(() => {
-    setPixelRatio(window.devicePixelRatio);
-    if (window.devicePixelRatio != 1) {
-      zoomChangeHandler();
-    }
-  }, []);
-  const zoomChangeHandler = useCallback(() => {
-    if (
-      !finished &&
-      (window.devicePixelRatio != pixelRatio || window.devicePixelRatio != 1)
-    ) {
-      setPixelRatio(window.devicePixelRatio);
-      setTextPageHeight(currentLineHeight * 3 + "px");
-    }
-  }, [setSeed]);
-  useEventListener("resize", zoomChangeHandler);
+    setTextPageHeight(currentLineHeight * 3 + "px");
+  }, [currentLineHeight]);
 
   const paragraphRef = useRef(null);
   const rootRef = useRef(null);
   const textPageRef = useRef(null);
-  const textOffset = useOffset(rootRef, textPageRef, [
-    textDatabase,
-    pixelRatio,
-  ]);
 
   // TYPING LOGIC
   const handleTextTyped = (value, index = activeWord) => {
@@ -287,20 +272,80 @@ export default function Home() {
     setTime(0);
   }, [timeTotal]);
 
+  // for theme toggle
+  const [darkmodeRef, isDarkmodeHovered] = useHover();
+  const themeMultiplier = theme.theme == "light" ? 1 : -1;
+
   return (
     <div ref={rootRef} className={styles.container}>
       <Head>
-        <title>Create Next App</title>
+        <title>typeline Typing Test</title>
         <link rel='icon' href='/favicon.ico' />
+        <link
+          rel='apple-touch-icon'
+          sizes='180x180'
+          href='/apple-touch-icon.png'
+        />
+        <link
+          rel='icon'
+          type='image/png'
+          sizes='32x32'
+          href='/favicon-32x32.png'
+        />
+        <link
+          rel='icon'
+          type='image/png'
+          sizes='16x16'
+          href='/favicon-16x16.png'
+        />
+        <link rel='manifest' href='/site.webmanifest' />
       </Head>
 
       <main className={styles.main}>
+        <Transition in={!isRunning}>
+          {(state) => (
+            <div className={`${styles.header} header-${state}`}>
+              <Logo
+                colour={theme.values.gray}
+                hoverColour={theme.values.highlight}
+              />
+              <div
+                className={styles.themeToggle}
+                ref={darkmodeRef}
+                onClick={() => {
+                  theme.toggleTheme();
+                }}
+              >
+                <Lottie
+                  options={{
+                    animationData: themeAnimation,
+                    autoplay: false,
+                    loop: false,
+                  }}
+                  height={30}
+                  width={30}
+                  direction={
+                    isDarkmodeHovered
+                      ? 1 * themeMultiplier
+                      : -1 * themeMultiplier
+                  }
+                  style={{
+                    filter: `${theme.theme == "dark" ? "invert(97%)" : ""}`,
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </Transition>
         <div className={styles.textColumn}>
           {!finished && (
             <div
               ref={textPageRef}
               className={styles.textPage}
-              style={{ maxHeight: `${textPageHeight}` }}
+              style={{
+                maxHeight: `${textPageHeight}`,
+                minHeight: `${textPageHeight}`,
+              }}
               key={textDatabase.toLocaleString()}
             >
               <div
@@ -491,8 +536,39 @@ export default function Home() {
           {/* DEBUG */}
           {/* <pre>{JSON.stringify({ chartStats }, null, 4)}</pre> */}
         </div>
+        <Transition in={!isRunning}>
+          {(state) => (
+            <div className={`${styles.footer} footer-${state}`}>
+              <span className={styles.footerItem}>
+                Made with love by{" "}
+                <a
+                  className={styles.footerLink}
+                  href='https://donovanyohan.com/'
+                  target='_blank'
+                >
+                  Donovan Yohan
+                </a>
+              </span>
+              <span className={styles.footerItem}>
+                View source code on{" "}
+                <a
+                  className={styles.footerLink}
+                  href='https://github.com/donovan-yohan/typetest'
+                  target='_blank'
+                >
+                  GitHub
+                </a>
+              </span>
+            </div>
+          )}
+        </Transition>
       </main>
-      <style jsx>{``}</style>
+      <style jsx>{`
+        .header-exited,
+        .footer-exited {
+          opacity: 0;
+        }
+      `}</style>
     </div>
   );
 }
