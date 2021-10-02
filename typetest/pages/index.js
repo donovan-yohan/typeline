@@ -301,6 +301,14 @@ export default function Home() {
           href='/favicon-16x16.png'
         />
         <link rel='manifest' href='/site.webmanifest' />
+        <meta property='og:title' content='typeline Typing Test' />
+        <meta
+          property='og:description'
+          content='A simple animated type test focused on encouraging and improving consistency and accuracy.'
+        />
+        <meta property='og:type' content='website' />
+        <meta property='og:url' content='https://typeline.donovanyohan.com/' />
+        <meta property='og:image' content='/images/og/ogimage.png' />
       </Head>
 
       <main className={styles.main}>
