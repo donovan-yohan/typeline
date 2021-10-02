@@ -201,8 +201,8 @@ export default function Menu({
               <p>Every unique url will generate the same test every time.</p>
               <p> Share it with your friends and see who can do it better!</p>
               <p>
-                Try your own code and see how the test changes. UI for
-                customizing coming soon!
+                Try changing the seed after the # in the url and see how it
+                affects the test. UI for customizing coming soon!
               </p>
             </ReactTooltip>
           </div>
