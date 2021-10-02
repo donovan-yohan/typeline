@@ -185,6 +185,8 @@ export default function Home() {
     let lineNum = Math.floor(relativeLineHeight / currentLineHeight) - 2;
     if (isRunning && lineNum > 0) {
       setLineOffset(-lineNum * currentLineHeight);
+    } else {
+      setLineOffset(0);
     }
   };
 
@@ -302,7 +304,7 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <Transition in={!isRunning}>
+        <Transition in={!isRunning} timeout={0}>
           {(state) => (
             <div className={`${styles.header} header-${state}`}>
               <Logo
@@ -329,9 +331,6 @@ export default function Home() {
                       ? 1 * themeMultiplier
                       : -1 * themeMultiplier
                   }
-                  style={{
-                    filter: `${theme.theme == "dark" ? "invert(97%)" : ""}`,
-                  }}
                 />
               </div>
             </div>
@@ -536,7 +535,7 @@ export default function Home() {
           {/* DEBUG */}
           {/* <pre>{JSON.stringify({ chartStats }, null, 4)}</pre> */}
         </div>
-        <Transition in={!isRunning}>
+        <Transition in={!isRunning} timeout={0}>
           {(state) => (
             <div className={`${styles.footer} footer-${state}`}>
               <span className={styles.footerItem}>
