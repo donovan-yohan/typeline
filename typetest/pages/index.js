@@ -35,6 +35,7 @@ import Logo from "../components/logo";
 import useHover from "../hooks/useHover";
 
 const DEFAULT_TIME = 30;
+const FADE_DURATION = 150; // in ms
 
 export default function Home() {
   const theme = useContext(Context);
@@ -74,6 +75,7 @@ export default function Home() {
 
   // generate new words when hash changes
   useDidUpdateEffect(() => {
+    // reset to original state
     setActiveWord(0);
     setIsRunning(false);
     setFinished(false);
@@ -89,21 +91,18 @@ export default function Home() {
         body: JSON.stringify({ ...seed }),
       });
       const json = await res.json();
-
+      setIsResetting(false);
       let newTextDatabase = createTextDatabase(json.words);
       setTextDatabase(newTextDatabase);
       textTypedDispatcher({ type: "setTextTyped", textData: newTextDatabase });
     })();
-
-    setIsResetting(false);
   }, [seed]);
-
-  // when textDatabase changes, reset to original state
-  useDidUpdateEffect(() => {}, [textDatabase]);
 
   const newTest = (seed = generateSeed(), time = DEFAULT_TIME) => {
     setIsResetting(true);
-    setSeed({ seed, time });
+    setTimeout(() => {
+      setSeed({ seed, time });
+    }, FADE_DURATION);
   };
 
   const [cursorState, cursorDispatcher] = useReducer(
@@ -345,57 +344,61 @@ export default function Home() {
           )}
         </Transition>
         <div className={styles.textColumn}>
-          {!finished && (
-            <div
-              ref={textPageRef}
-              className={styles.textPage}
-              style={{
-                maxHeight: `${textPageHeight}`,
-                minHeight: `${textPageHeight}`,
-              }}
-              key={textDatabase.toLocaleString()}
-            >
+          <Transition in={!finished && !isResetting} timeout={0}>
+            {(state) => (
               <div
-                ref={paragraphRef}
-                className={styles.textFrame}
-                style={{ transform: `translateY(${lineOffset}px)` }}
+                ref={textPageRef}
+                className={`textPage textTransition-${state} ${
+                  finished ? "textTransition-removed" : ""
+                }`}
+                style={{
+                  maxHeight: `${textPageHeight}`,
+                  minHeight: `${textPageHeight}`,
+                }}
+                key={textDatabase.toLocaleString()}
               >
-                <Cursor
-                  onTextTyped={handleTextTyped}
-                  onWordChanged={handleWordChanged}
-                  wordRef={highlightState.wordRef}
-                  letterRef={cursorState.letterRef}
-                  paragraphRef={paragraphRef}
-                  activeWord={activeWord}
-                  textTyped={textTyped}
-                  textDatabase={textDatabase}
-                  isFinished={finished}
-                  isEditing={isEditing}
-                  isRunning={isRunning}
-                  isFirstChar={cursorState.isFirstChar}
-                  onLineChange={handleLineChange}
-                  textPageHeight={textPageHeight}
-                />
-                <div className={styles.textWrapper}>
-                  {textDatabase.map((word, i) => {
-                    return (
-                      <Word
-                        id={i}
-                        word={word}
-                        active={activeWord == i}
-                        typed={textTyped[i] || EMPTY_TYPED_DATA}
-                        key={`WORD-${i}`}
-                        onLetterUpdate={cursorDispatcher}
-                        onWordUpdate={highlightDispatcher}
-                        finished={finished}
-                        onUpdateStats={textTypedDispatcher}
-                      />
-                    );
-                  })}
+                <div
+                  ref={paragraphRef}
+                  className={styles.textFrame}
+                  style={{ transform: `translateY(${lineOffset}px)` }}
+                >
+                  <Cursor
+                    onTextTyped={handleTextTyped}
+                    onWordChanged={handleWordChanged}
+                    wordRef={highlightState.wordRef}
+                    letterRef={cursorState.letterRef}
+                    paragraphRef={paragraphRef}
+                    activeWord={activeWord}
+                    textTyped={textTyped}
+                    textDatabase={textDatabase}
+                    isFinished={finished}
+                    isEditing={isEditing}
+                    isRunning={isRunning}
+                    isFirstChar={cursorState.isFirstChar}
+                    onLineChange={handleLineChange}
+                    textPageHeight={textPageHeight}
+                  />
+                  <div className={styles.textWrapper}>
+                    {textDatabase.map((word, i) => {
+                      return (
+                        <Word
+                          id={i}
+                          word={word}
+                          active={activeWord == i}
+                          typed={textTyped[i] || EMPTY_TYPED_DATA}
+                          key={`WORD-${i}`}
+                          onLetterUpdate={cursorDispatcher}
+                          onWordUpdate={highlightDispatcher}
+                          finished={finished}
+                          onUpdateStats={textTypedDispatcher}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </Transition>
           {finished && (
             <div className={styles.results}>
               <div className={styles.resultsWrapper}>
@@ -574,6 +577,24 @@ export default function Home() {
         .header-exited,
         .footer-exited {
           opacity: 0;
+        }
+        .textPage {
+          margin-top: 32px;
+          position: relative;
+          max-height: 30vh;
+          overflow: hidden;
+          opacity: 0;
+          transition: opacity ${FADE_DURATION}ms ease-in-out;
+        }
+        .textTransition-exiting,
+        .textTransition-exited {
+          opacity: 0;
+        }
+        .textTransition-entered {
+          opacity: 1;
+        }
+        .textTransition-removed {
+          display: none;
         }
       `}</style>
     </div>

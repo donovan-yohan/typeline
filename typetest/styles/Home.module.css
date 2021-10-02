@@ -61,13 +61,6 @@
   margin-top: 32px;
 }
 
-.textPage {
-  margin-top: 32px;
-  position: relative;
-  max-height: 30vh;
-  overflow: hidden;
-}
-
 .textFrame {
   position: relative;
   transition: transform 1s ease;

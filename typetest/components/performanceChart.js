@@ -46,7 +46,7 @@ const getLabelString = (context) => {
   }
 };
 
-export default function PerformanceChart({ rawStats }) {
+function PerformanceChartComponent({ rawStats }) {
   const theme = useContext(Context);
 
   defaults.font.family = "Nunito";
@@ -222,6 +222,7 @@ export default function PerformanceChart({ rawStats }) {
       },
     },
   };
+
   return (
     <div className={"container"}>
       <CustomLine data={data} options={options} />
@@ -235,3 +236,5 @@ export default function PerformanceChart({ rawStats }) {
     </div>
   );
 }
+
+export default React.memo(PerformanceChartComponent);
