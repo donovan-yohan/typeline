@@ -21,12 +21,15 @@ export default function Menu({
 }) {
   const theme = useContext(Context);
   const urlRef = useRef(null);
-  const [settings, setSettings] = useState({
-    hasCapitals: false,
-    hasPunctuation: false,
-    hasNumbers: false,
-    hasSymbols: false,
-  });
+  const [settings, setSettings] = useState([
+    { name: "Capitals" },
+    {
+      hasCapitals: false,
+      hasPunctuation: false,
+      hasNumbers: false,
+      hasSymbols: false,
+    },
+  ]);
   const [url, setUrl] = useState("");
   const [hoverCopyLink, isHoverCopyLink] = useHover([isFinished]);
 
@@ -34,11 +37,7 @@ export default function Menu({
     setUrl(window.location.href);
   }, [seed]);
 
-  const menuButtonText = isRunning
-    ? "Refresh"
-    : isEditing
-    ? "Save"
-    : "Customize";
+  const customizeText = isEditing ? "Save" : "Customize";
 
   const noEditMenuButtonText = isRunning ? "Restart" : "New Test";
   const menuButtonClassList = cx({
@@ -51,10 +50,13 @@ export default function Menu({
     urlHover: isHoverCopyLink,
   });
 
-  const handleMenuClick = (e) => {
+  const handleCustomizeClick = (e) => {
     if (!isRunning) {
-      // toggle customize menu
-      onUpdateEditingState((isEditing) => !isEditing);
+      if (isEditing) {
+        onUpdateEditingState(false);
+      } else {
+        onUpdateEditingState(true);
+      }
     }
   };
 
@@ -79,9 +81,30 @@ export default function Menu({
           onChangeTimeTotal={onChangeTimeTotal}
         />
       )}
-
+      {isFinished && (
+        <div className={`urlWrapper label`}>
+          <span className={`urlRoot ${urlClassList}`}>
+            {window.location.host}/
+          </span>
+          <span className={`urlHash ${urlClassList}`}>
+            {window.location.hash}
+          </span>
+        </div>
+      )}
       {isEditing && (
         <div className={"wordSettingsWrapper"}>
+          {settings.map((setting) => {
+            <label>
+              <input
+                type='checkbox'
+                name={settings}
+                checked={settings.hasCapitals}
+                onClick={() => flipSetting("hasCapitals")}
+              />
+              <span className={"checkmark"} />
+              Capitals
+            </label>;
+          })}
           <label>
             <input
               type='checkbox'
@@ -94,13 +117,13 @@ export default function Menu({
           </label>
 
           <label>
+            <span className={"checkmark"} />
             <input
               type='checkbox'
               name='hasPunctuation'
               checked={settings.hasPunctuation}
               onClick={() => flipSetting("hasPunctuation")}
             />
-            <span className={"checkmark"} />
             Punctuation
           </label>
 
@@ -126,17 +149,19 @@ export default function Menu({
           </label>
         </div>
       )}
-      {isFinished && (
-        <div className={`urlWrapper label`}>
-          <span className={`urlRoot ${urlClassList}`}>
-            {window.location.host}/
-          </span>
-          <span className={`urlHash ${urlClassList}`}>
-            {window.location.hash}
-          </span>
-        </div>
-      )}
       <div className={"buttonWrapper"}>
+        {/* {!isRunning && !isFinished && (
+          <div className='buttonContainer'>
+            <button
+              onClick={() => {
+                handleCustomizeClick();
+              }}
+              className={menuButtonClassList}
+            >
+              {customizeText}
+            </button>
+          </div>
+        )} */}
         <div className='buttonContainer'>
           <button
             onClick={() => {
@@ -295,11 +320,6 @@ export default function Menu({
           color: var(--background);
         }
 
-        .wordSettingsWrapper {
-          display: flex;
-          margin-top: 64px;
-        }
-
         .urlWrapper:hover,
         .urlWrapper:hover .url,
         .copyLinkButton:hover + .urlRoot,
@@ -334,6 +354,17 @@ export default function Menu({
           color: var(--highlight);
         }
 
+        .wordSettingsWrapper {
+          display: flex;
+          margin-top: 64px;
+        }
+
+        .wordSettingsWrapper label {
+          display: flex;
+          margin-right: 64px;
+          position: relative;
+        }
+
         input[type="checkbox"] {
           position: absolute;
           opacity: 0;
@@ -344,8 +375,6 @@ export default function Menu({
 
         /* Create a custom checkbox */
         .checkmark {
-          position: absolute;
-          left: 0;
           height: 15px;
           width: 15px;
           background-color: var(--gray);
