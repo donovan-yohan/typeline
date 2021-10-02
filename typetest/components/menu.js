@@ -167,7 +167,6 @@ export default function Menu({
           <div ref={hoverCopyLink} className='buttonContainer'>
             <button
               onClick={() => {
-                urlRef.current.select();
                 copyTextToClipboard(url);
               }}
               className={`${menuButtonClassList}`}
