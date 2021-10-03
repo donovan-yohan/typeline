@@ -212,9 +212,11 @@ export default function Menu({
             >
               <p>Link copied!</p>
             </ReactTooltip>
-            <span className={"toolTipIcon"} data-tip data-for='urlTip'>
-              ?
-            </span>
+            <div className={"buttonTooltip"} >
+              <span className={"toolTipIcon"} data-tip data-for='urlTip'>
+                ?
+              </span>
+            </div>
             <ReactTooltip
               className={"toolTipWrapper"}
               id='urlTip'
@@ -243,8 +245,12 @@ export default function Menu({
           display: flex;
         }
         .buttonContainer {
+          display: flex;
           margin: 64px 64px 0 0;
           color: var(--highlight);
+        }
+        .buttonTooltip {
+          padding: 3px 3px 3px 0;
         }
         button {
           z-index: 1;

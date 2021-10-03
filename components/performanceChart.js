@@ -120,7 +120,8 @@ function PerformanceChartComponent({ rawStats }) {
           drawBorder: false,
         },
         // stop WPM axis from going negative for very low WPM
-        min: stats[stats.length - 1].wpm < 10 ? -1 : null,
+        min: stats[stats.length - 1].wpm < 10 ? -0.5 : 0,
+        max: stats[stats.length - 1].wpm < 47 ? 50 : null,
         suggstedMin: 0,
         grace: "5%",
         ticks: {
@@ -128,7 +129,7 @@ function PerformanceChartComponent({ rawStats }) {
             weight: 400,
           },
           callback: function (val, index) {
-            return val >= 0 ? val : null;
+            return val > 0 ? val : Math.ceil(val);
           },
         },
       },
@@ -230,6 +231,7 @@ function PerformanceChartComponent({ rawStats }) {
         .container {
           position: relative;
           width: 100%;
+          height: 100%;
           overflow: hidden;
         }
       `}</style>

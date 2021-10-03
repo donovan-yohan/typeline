@@ -24,9 +24,11 @@
 .footer {
   display: flex;
   position: fixed;
-  margin: 24px 0;
+  padding: 24px 0;
   transition: opacity 0.5s ease-in-out;
   opacity: 1;
+  background-color: var(--background);
+  z-index: 10;
 }
 .header {
   top: 0;
@@ -58,7 +60,7 @@
 }
 
 .textColumn {
-  margin-top: 32px;
+  margin: 10em 0 7em;
 }
 
 .textFrame {

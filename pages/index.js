@@ -252,7 +252,7 @@ export default function Home() {
     if (time >= timeTotal) {
       setIsRunning(false);
       setFinished(true);
-      setTime(timeTotal);
+      setTime(0);
     }
   }, [time]);
 
