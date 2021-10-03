@@ -566,7 +566,7 @@ export default function Home() {
                 View source code on{" "}
                 <a
                   className={styles.footerLink}
-                  href='https://github.com/donovan-yohan/typetest'
+                  href='https://github.com/donovan-yohan/typeline'
                   target='_blank'
                 >
                   GitHub

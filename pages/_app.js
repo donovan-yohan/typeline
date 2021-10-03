@@ -68,15 +68,13 @@ export default class MyApp extends App {
         <div
           className='fouc'
           style={{
-            zIndex: 99999,
+            zIndex: 999999999,
             position: "fixed",
             width: "100%",
             height: "100%",
             top: "0",
             left: "0",
-            backgroundColor: `${
-              this.state.theme == "light" ? "white" : "black"
-            }`,
+            backgroundColor: "gray",
           }}
         />
         <Component {...pageProps} />
