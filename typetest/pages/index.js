@@ -550,6 +550,9 @@ export default function Home() {
           {(state) => (
             <div className={`${styles.footer} footer-${state}`}>
               <span className={styles.footerItem}>
+                typeline Typing Test &copy;2021
+              </span>
+              <span className={styles.footerItem}>
                 Made with love by{" "}
                 <a
                   className={styles.footerLink}

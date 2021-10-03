@@ -49,8 +49,20 @@ export default React.memo(function Letter({
           transition: all 0.4s ease;
           color: var(--gray);
         }
+        .letterWrapper:after {
+          opacity: 0;
+          width: 100%;
+          text-align: center;
+          content: "a";
+          font-size: 0.5em;
+          position: absolute;
+          left: 0;
+          bottom: 50%;
+          transition: 0.3s cubic-bezier(0.27, 0.38, 0.14, 0.99);
+        }
 
         .incorrect,
+        .incorrect:after,
         .incorrectUntyped,
         .overflow {
           animation: springWiggle 0.2s cubic-bezier(0, 0.95, 0.25, 1);
@@ -61,6 +73,12 @@ export default React.memo(function Letter({
         }
         .incorrect {
           color: var(--incorrect);
+        }
+        .incorrect:after {
+          content: "${typed.value.charAt(id)}";
+          bottom: -17%;
+          color: var(--gray);
+          opacity: var(--fade);
         }
         .incorrectUntyped {
           text-decoration: underline;
@@ -91,7 +109,9 @@ export default React.memo(function Letter({
           }
         }
 
-        {/* also used in cursor.js for wiggle */}
+         {
+          /* also used in cursor.js for wiggle */
+        }
         @keyframes springWiggle {
           0% {
             transform: translateX(-0.1em);
