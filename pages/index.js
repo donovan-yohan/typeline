@@ -20,6 +20,7 @@ import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useInterval from "@use-it/interval";
 import { calculateRawWPM, calculateTrueWPM } from "../utils/wpmUtils.js";
 import createTextDatabase from "../utils/createTextDatabase.js";
+import { isMobile } from "react-device-detect";
 import {
   cursorReducer,
   initialCursorState,
@@ -343,209 +344,212 @@ export default function Home() {
             </div>
           )}
         </Transition>
-        <div className={styles.textColumn}>
-          <Transition in={!finished && !isResetting} timeout={0}>
-            {(state) => (
-              <div
-                ref={textPageRef}
-                className={`textPage textTransition-${state} ${
-                  finished ? "textTransition-removed" : ""
-                }`}
-                style={{
-                  maxHeight: `${textPageHeight}`,
-                  minHeight: `${textPageHeight}`,
-                }}
-                key={textDatabase.toLocaleString()}
-              >
+        {!isMobile && (
+          <div className={styles.textColumn}>
+            <Transition in={!finished && !isResetting} timeout={0}>
+              {(state) => (
                 <div
-                  ref={paragraphRef}
-                  className={styles.textFrame}
-                  style={{ transform: `translateY(${lineOffset}px)` }}
+                  ref={textPageRef}
+                  className={`textPage textTransition-${state} ${
+                    finished ? "textTransition-removed" : ""
+                  }`}
+                  style={{
+                    maxHeight: `${textPageHeight}`,
+                    minHeight: `${textPageHeight}`,
+                  }}
+                  key={textDatabase.toLocaleString()}
                 >
-                  <Cursor
-                    onTextTyped={handleTextTyped}
-                    onWordChanged={handleWordChanged}
-                    wordRef={highlightState.wordRef}
-                    letterRef={cursorState.letterRef}
-                    paragraphRef={paragraphRef}
-                    activeWord={activeWord}
-                    textTyped={textTyped}
-                    textDatabase={textDatabase}
-                    isFinished={finished}
-                    isEditing={isEditing}
-                    isRunning={isRunning}
-                    isFirstChar={cursorState.isFirstChar}
-                    onLineChange={handleLineChange}
-                    textPageHeight={textPageHeight}
-                  />
-                  <div className={styles.textWrapper}>
-                    {textDatabase.map((word, i) => {
-                      return (
-                        <Word
-                          id={i}
-                          word={word}
-                          active={activeWord == i}
-                          typed={textTyped[i] || EMPTY_TYPED_DATA}
-                          key={`WORD-${i}`}
-                          onLetterUpdate={cursorDispatcher}
-                          onWordUpdate={highlightDispatcher}
-                          finished={finished}
-                          onUpdateStats={textTypedDispatcher}
-                        />
-                      );
-                    })}
+                  <div
+                    ref={paragraphRef}
+                    className={styles.textFrame}
+                    style={{ transform: `translateY(${lineOffset}px)` }}
+                  >
+                    <Cursor
+                      onTextTyped={handleTextTyped}
+                      onWordChanged={handleWordChanged}
+                      wordRef={highlightState.wordRef}
+                      letterRef={cursorState.letterRef}
+                      paragraphRef={paragraphRef}
+                      activeWord={activeWord}
+                      textTyped={textTyped}
+                      textDatabase={textDatabase}
+                      isFinished={finished}
+                      isEditing={isEditing}
+                      isRunning={isRunning}
+                      isFirstChar={cursorState.isFirstChar}
+                      onLineChange={handleLineChange}
+                      textPageHeight={textPageHeight}
+                    />
+                    <div className={styles.textWrapper}>
+                      {textDatabase.map((word, i) => {
+                        return (
+                          <Word
+                            id={i}
+                            word={word}
+                            active={activeWord == i}
+                            typed={textTyped[i] || EMPTY_TYPED_DATA}
+                            key={`WORD-${i}`}
+                            onLetterUpdate={cursorDispatcher}
+                            onWordUpdate={highlightDispatcher}
+                            finished={finished}
+                            onUpdateStats={textTypedDispatcher}
+                          />
+                        );
+                      })}
+                    </div>
                   </div>
+                </div>
+              )}
+            </Transition>
+            {finished && (
+              <div className={styles.results}>
+                <div className={styles.resultsWrapper}>
+                  <div className={styles.statsColumn}>
+                    <div className={styles.largeScore}>
+                      <span
+                        className={`label ${styles.largeScoreLabel} ${styles.highlightLabel}`}
+                      >
+                        <span>WPM</span>
+                        <span
+                          className={"toolTipIcon"}
+                          data-tip
+                          data-for='trueWpmTip'
+                        >
+                          ?
+                        </span>
+                      </span>
+                      <ReactTooltip
+                        className={"toolTipWrapper"}
+                        id='trueWpmTip'
+                        place={"right"}
+                        effect={"solid"}
+                        backgroundColor={theme.values.tooltipColour}
+                        textColor={theme.values.main}
+                      >
+                        <p>
+                          This is your{" "}
+                          <span className={styles.highlightLabel}>
+                            <b>average words per minute</b>
+                          </span>
+                          , but lowered for every{" "}
+                          <span className={styles.miss}>
+                            <b>error</b>
+                          </span>{" "}
+                          left uncorrected.
+                        </p>
+                        <p>
+                          <code>
+                            [correct - (errors - corrected)] / test time
+                          </code>
+                        </p>
+                      </ReactTooltip>
+                      <span
+                        className={`${styles.largeScoreNumber} ${styles.highlightLabel} ${styles.number}`}
+                      >
+                        {calculateTrueWPM(
+                          stats.correct,
+                          stats.incorrect,
+                          stats.corrected,
+                          0,
+                          timeTotal
+                        )}
+                      </span>
+                    </div>
+
+                    <div className={styles.smallScore}>
+                      <span className={`label ${styles.smallScoreLabel}`}>
+                        <span>Raw WPM</span>
+                        <span
+                          className={"toolTipIcon"}
+                          data-tip
+                          data-for='rawWpmTip'
+                        >
+                          ?
+                        </span>
+                      </span>
+                      <ReactTooltip
+                        className={"toolTipWrapper"}
+                        id='rawWpmTip'
+                        place={"right"}
+                        effect={"solid"}
+                        backgroundColor={theme.values.tooltipColour}
+                        textColor={theme.values.main}
+                      >
+                        <p>
+                          This is your <b>raw average words per minute</b>,
+                          calculated using only <b>correct</b> keystrokes.
+                        </p>
+                        <p>
+                          <code>correct / test time</code>
+                        </p>
+                      </ReactTooltip>
+                      <span
+                        className={`${styles.smallScoreNumber} ${styles.number}`}
+                      >
+                        {calculateRawWPM(stats.correct, 0, timeTotal)}
+                      </span>
+                    </div>
+                    <div className={styles.smallScore}>
+                      <span
+                        className={`label ${styles.smallScoreLabel} ${styles.highlightLabel}`}
+                      >
+                        Accuracy
+                      </span>
+                      <span
+                        className={`${styles.smallScoreNumber} ${styles.highlightLabel} ${styles.number}`}
+                      >
+                        {(
+                          (stats.correct / (stats.correct + stats.incorrect)) *
+                            100 || 0
+                        ).toLocaleString("en-US", { maximumFractionDigits: 1 })}
+                        %
+                      </span>
+                    </div>
+                    <div className={styles.smallScore}>
+                      <span className={`label ${styles.smallScoreLabel}`}>
+                        Correct
+                      </span>
+                      <span
+                        className={`${styles.smallScoreNumber} ${styles.number}`}
+                      >
+                        {stats.correct || 0}
+                      </span>
+                    </div>
+                    <div className={styles.smallScore}>
+                      <span
+                        className={`label ${styles.smallScoreLabel} ${styles.miss}`}
+                      >
+                        Errors
+                      </span>
+                      <span
+                        className={`${styles.smallScoreNumber} ${styles.miss} ${styles.number}`}
+                      >
+                        {stats.incorrect || 0}
+                      </span>
+                    </div>
+                  </div>
+                  <PerformanceChart rawStats={chartStats} />
                 </div>
               </div>
             )}
-          </Transition>
-          {finished && (
-            <div className={styles.results}>
-              <div className={styles.resultsWrapper}>
-                <div className={styles.statsColumn}>
-                  <div className={styles.largeScore}>
-                    <span
-                      className={`label ${styles.largeScoreLabel} ${styles.highlightLabel}`}
-                    >
-                      <span>WPM</span>
-                      <span
-                        className={"toolTipIcon"}
-                        data-tip
-                        data-for='trueWpmTip'
-                      >
-                        ?
-                      </span>
-                    </span>
-                    <ReactTooltip
-                      className={"toolTipWrapper"}
-                      id='trueWpmTip'
-                      place={"right"}
-                      effect={"solid"}
-                      backgroundColor={theme.values.tooltipColour}
-                      textColor={theme.values.main}
-                    >
-                      <p>
-                        This is your{" "}
-                        <span className={styles.highlightLabel}>
-                          <b>average words per minute</b>
-                        </span>
-                        , but lowered for every{" "}
-                        <span className={styles.miss}>
-                          <b>error</b>
-                        </span>{" "}
-                        left uncorrected.
-                      </p>
-                      <p>
-                        <code>
-                          [correct - (errors - corrected)] / test time
-                        </code>
-                      </p>
-                    </ReactTooltip>
-                    <span
-                      className={`${styles.largeScoreNumber} ${styles.highlightLabel} ${styles.number}`}
-                    >
-                      {calculateTrueWPM(
-                        stats.correct,
-                        stats.incorrect,
-                        stats.corrected,
-                        0,
-                        timeTotal
-                      )}
-                    </span>
-                  </div>
 
-                  <div className={styles.smallScore}>
-                    <span className={`label ${styles.smallScoreLabel}`}>
-                      <span>Raw WPM</span>
-                      <span
-                        className={"toolTipIcon"}
-                        data-tip
-                        data-for='rawWpmTip'
-                      >
-                        ?
-                      </span>
-                    </span>
-                    <ReactTooltip
-                      className={"toolTipWrapper"}
-                      id='rawWpmTip'
-                      place={"right"}
-                      effect={"solid"}
-                      backgroundColor={theme.values.tooltipColour}
-                      textColor={theme.values.main}
-                    >
-                      <p>
-                        This is your <b>raw average words per minute</b>,
-                        calculated using only <b>correct</b> keystrokes.
-                      </p>
-                      <p>
-                        <code>correct / test time</code>
-                      </p>
-                    </ReactTooltip>
-                    <span
-                      className={`${styles.smallScoreNumber} ${styles.number}`}
-                    >
-                      {calculateRawWPM(stats.correct, 0, timeTotal)}
-                    </span>
-                  </div>
-                  <div className={styles.smallScore}>
-                    <span
-                      className={`label ${styles.smallScoreLabel} ${styles.highlightLabel}`}
-                    >
-                      Accuracy
-                    </span>
-                    <span
-                      className={`${styles.smallScoreNumber} ${styles.highlightLabel} ${styles.number}`}
-                    >
-                      {(
-                        (stats.correct / (stats.correct + stats.incorrect)) *
-                          100 || 0
-                      ).toLocaleString("en-US", { maximumFractionDigits: 1 })}
-                      %
-                    </span>
-                  </div>
-                  <div className={styles.smallScore}>
-                    <span className={`label ${styles.smallScoreLabel}`}>
-                      Correct
-                    </span>
-                    <span
-                      className={`${styles.smallScoreNumber} ${styles.number}`}
-                    >
-                      {stats.correct || 0}
-                    </span>
-                  </div>
-                  <div className={styles.smallScore}>
-                    <span
-                      className={`label ${styles.smallScoreLabel} ${styles.miss}`}
-                    >
-                      Errors
-                    </span>
-                    <span
-                      className={`${styles.smallScoreNumber} ${styles.miss} ${styles.number}`}
-                    >
-                      {stats.incorrect || 0}
-                    </span>
-                  </div>
-                </div>
-                <PerformanceChart rawStats={chartStats} />
-              </div>
-            </div>
-          )}
-
-          <Menu
-            className={styles.menu}
-            isFinished={finished}
-            isRunning={isRunning}
-            isEditing={isEditing}
-            time={time}
-            timeTotal={timeTotal}
-            onChangeTimeTotal={setTimeTotal}
-            onUpdateEditingState={setIsEditing}
-            newTest={newTest}
-            seed={seed}
-          ></Menu>
-          {/* DEBUG */}
-          {/* <pre>{JSON.stringify({ chartStats }, null, 4)}</pre> */}
-        </div>
+            <Menu
+              className={styles.menu}
+              isFinished={finished}
+              isRunning={isRunning}
+              isEditing={isEditing}
+              time={time}
+              timeTotal={timeTotal}
+              onChangeTimeTotal={setTimeTotal}
+              onUpdateEditingState={setIsEditing}
+              newTest={newTest}
+              seed={seed}
+            ></Menu>
+            {/* DEBUG */}
+            {/* <pre>{JSON.stringify({ chartStats }, null, 4)}</pre> */}
+          </div>
+        )}
+        {isMobile && <div>This webapp is not ready for mobile yet, sorry!</div>}
         <Transition in={!isRunning} timeout={0}>
           {(state) => (
             <div className={`${styles.footer} footer-${state}`}>

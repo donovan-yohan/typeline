@@ -136,6 +136,15 @@
   color: var(--incorrect);
 }
 
+@media only screen and (max-width: 800px) {
+  .textColumn,
+  .header,
+  .footer {
+    width: 100vw;
+    min-width: 100vw;
+    padding: 24px 16px;
+  }
+}
 @keyframes fade {
   0% {
     opacity: 0;
