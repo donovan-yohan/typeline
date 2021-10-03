@@ -307,7 +307,7 @@ export default function Home() {
         />
         <meta property='og:type' content='website' />
         <meta property='og:url' content='https://typeline.donovanyohan.com/' />
-        <meta property='og:image' content='/images/og/ogimage.png' />
+        <meta property='og:image' content='/img/og/ogimage.png' />
       </Head>
 
       <main className={styles.main}>
