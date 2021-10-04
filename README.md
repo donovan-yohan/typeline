@@ -7,7 +7,7 @@ An animated typing test focused on improving and encouraging consistency, and us
 
 Visit [typeline.donovanyohan.com](https://typeline.donovanyohan.com/) on any laptop or desktop!
 
-https://user-images.githubusercontent.com/34756395/135836039-3414ae62-af6b-4819-b447-8cd3a65f9f30.mp4
+https://user-images.githubusercontent.com/34756395/135842072-b63c5300-d72e-4581-b6a5-dc09674a2764.mp4
 
 
 ## Word Generation
