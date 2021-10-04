@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import Context from "../components/context";
 import { Line, defaults } from "react-chartjs-2";
 import { formatTime } from "../utils/formatTime";
@@ -61,6 +61,7 @@ const getLabelString = (context) => {
 
 function PerformanceChartComponent({ rawStats }) {
   const theme = useContext(Context);
+  const chartParentRef = useRef(null);
 
   defaults.font.family = "Nunito";
   defaults.font.size = 14;
@@ -247,8 +248,12 @@ function PerformanceChartComponent({ rawStats }) {
   };
 
   return (
-    <div className={"container"}>
-      <CustomLine data={data} options={options} />
+    <div ref={chartParentRef} className={"container"}>
+      <CustomLine
+        data={data}
+        options={options}
+        chartHeight={chartParentRef.current?.parentElement.clientHeight}
+      />
       <style jsx>{`
         .container {
           position: relative;

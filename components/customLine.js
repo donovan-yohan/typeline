@@ -1,7 +1,7 @@
 import { Chart } from "chart.js";
 import { useRef, useEffect, useState } from "react";
 
-export default function CustomLine({ data, options }) {
+export default function CustomLine({ data, options, chartHeight }) {
   const [legend, setLegend] = useState([]);
   const [crossRotColour, setCrossRotColour] = useState("rgb(225,25,25)");
 
@@ -65,9 +65,7 @@ export default function CustomLine({ data, options }) {
         }
         .overflow {
           overflow: hidden;
-          height: 100%;
-          max-height: 50vh;
-          min-height: 500px;
+          height: ${chartHeight + "px" || "500px"};
         }
         .legend {
           display: flex;
