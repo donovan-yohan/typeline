@@ -187,6 +187,7 @@ function PerformanceChartComponent({ rawStats }) {
         },
       },
       tooltip: {
+        titleColor: theme.values.main,
         usePointStyle: true,
         backgroundColor: theme.values.tooltipColourFade,
         boxWidth: 12,
