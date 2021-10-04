@@ -127,9 +127,9 @@ export default function Home() {
       textTyped.reduce(
         (acc, word, i) => {
           if (!word.stats) return acc;
-          acc.correct += word.stats?.correct;
-          acc.incorrect += word.stats?.incorrect;
-          acc.corrected += word.stats?.corrected;
+          acc.correct += word.stats.correct;
+          acc.incorrect += word.stats.incorrect;
+          acc.corrected += word.stats.corrected;
           return acc;
         },
         {

@@ -124,7 +124,7 @@ function PerformanceChartComponent({ rawStats }) {
   };
 
   const hasLowWPM = stats.some(
-    (s) => parseInt(s.wpm < 10) || parseInt(s.raw) < 10
+    (s) => parseInt(s.wpm) < 10 || parseInt(s.raw) < 10
   );
   const needsMinHeight = stats.every((s) => s.wpm < 47 && s.raw < 47);
 

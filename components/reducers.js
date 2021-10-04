@@ -1,5 +1,6 @@
 export const EMPTY_TYPED_DATA = {
   value: "",
+  fullValue: "",
   stats: { correct: 0, incorrect: 0, corrected: 0 },
   visited: false,
 };

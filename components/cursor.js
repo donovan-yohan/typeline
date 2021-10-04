@@ -103,20 +103,27 @@ export default function Cursor({
       if (text.length == 0) {
         if (activeWord > 0) {
           newActiveWord -= 1;
-        }
-        // update word visited
-        onTextTyped(
-          {
-            value: textTyped[newActiveWord].value,
-            fullValue: textTyped[newActiveWord].fullValue,
-            stats: textTyped[newActiveWord].stats,
-            visited: false,
-          },
-          newActiveWord
-        );
-      }
 
-      if (text.length != 0) {
+          // only allow backspace if last word was incorrect
+          if (
+            textTyped[newActiveWord].value !=
+            textDatabase[newActiveWord].join("")
+          ) {
+            // update word visited
+            onTextTyped(
+              {
+                value: textTyped[newActiveWord].value,
+                fullValue: textTyped[newActiveWord].fullValue,
+                stats: textTyped[newActiveWord].stats,
+                visited: false,
+              },
+              newActiveWord
+            );
+          } else {
+            newActiveWord = activeWord;
+          }
+        }
+      } else {
         setText(text.substring(0, text.length - 1));
       }
     }

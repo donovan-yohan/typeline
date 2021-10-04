@@ -1,7 +1,10 @@
 import React, { useRef, useEffect, useState } from "react";
 import Letter from "../components/letter.js";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect";
-import { getCorrections, BACKSPACE_CHAR } from "../utils/getCorrections";
+import {
+  getCorrections,
+  BACKSPACE_CHAR,
+} from "../utils/getCorrections";
 
 export default React.memo(function Word({
   active,
@@ -21,6 +24,7 @@ export default React.memo(function Word({
     incorrect: 0,
     corrected: 0,
   });
+  const [backspaceCorrections, setBackspaceCorrections] = useState(0);
   const isPerfect = stats.incorrect == 0 && typed.visited;
   const isCorrect = typed.value == wordString;
   const wordRef = useRef(null);
@@ -61,7 +65,7 @@ export default React.memo(function Word({
           };
         });
       }
-    } else {
+    } else if (typed.value.length < lastInfo.lastLength) {
       // CHARACTER REMOVED, CHECK IF IT WAS ALREADY CORRECT
       if (lastInfo.lastChar == wordString[lastInfo.lastLength - 1]) {
         setStats((stats) => {
@@ -73,16 +77,18 @@ export default React.memo(function Word({
         });
       }
     }
-    setLastInfo({
-      lastChar: typed.value[typed.value.length - 1],
-      lastLength: typed.value.length,
-    });
+    if (typed.value.length != lastInfo.lastLength) {
+      setLastInfo({
+        lastChar: typed.value[typed.value.length - 1],
+        lastLength: typed.value.length,
+      });
+    }
   }, [fullTyped]);
 
   // UPDATE STATS AND CORRECTIONS ON WORD CHANGE
   useDidUpdateEffect(() => {
     let badBackspace = 0;
-    let goodBackspace = 0;
+    let goodBackspace = backspaceCorrections;
     let goodSpace = 0;
     let badSpace = 0;
     if (
@@ -92,7 +98,10 @@ export default React.memo(function Word({
     ) {
       badBackspace = 1;
     } else if (active && typed.value != wordString && typed.value.length > 0) {
-      goodBackspace = 1;
+      goodBackspace += 1;
+      setBackspaceCorrections(
+        (backspaceCorrections) => backspaceCorrections + 1
+      );
     } else if (!active && typed.value == wordString) {
       goodSpace = 1;
     } else if (!active && typed.value != wordString && typed.value.length > 0) {
@@ -100,13 +109,12 @@ export default React.memo(function Word({
     }
 
     let corrections = getCorrections(wordString, fullTyped);
-    if (goodBackspace > 0) corrections = stats.corrections + 1;
 
     setStats((stats) => {
       return {
         correct: stats.correct + goodSpace,
         incorrect: stats.incorrect + badBackspace + badSpace,
-        corrected: corrections,
+        corrected: corrections + goodBackspace,
       };
     });
   }, [active]);
