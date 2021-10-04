@@ -4,19 +4,32 @@ import { Line, defaults } from "react-chartjs-2";
 import { formatTime } from "../utils/formatTime";
 import CustomLine from "./customLine";
 
-const AVERAGING_FACTOR = 2;
+const AVERAGING_SAMPLES = 2;
+const MAIN_DATA_WEIGHT = 0.85;
+
+const weightedAverage = (array, i, totalSamples, weight) => {
+  let value = 0;
+
+  let weightedValue = array[i];
+  let remainingWeight = 1;
+  let nextWeight = weight;
+
+  for (let k = 1; k <= totalSamples; k++) {
+    if (i - k >= 0) {
+      value += array[i - k + 1] * nextWeight;
+      remainingWeight -= nextWeight;
+      nextWeight = remainingWeight * weight;
+    }
+  }
+  value += remainingWeight * (array[i - totalSamples] || array[0]);
+  return value;
+};
 
 const parseStats = (rawStats) => {
+  let rawArray = rawStats.map((s) => parseInt(s.raw));
   return rawStats.map((stat, i) => {
-    let raw = parseInt(stat.raw);
-    let adj = 1;
-    for (let k = 1; k <= AVERAGING_FACTOR; k++) {
-      if (i - k >= 0) {
-        raw += parseInt(rawStats[i - k].raw);
-        adj += 1;
-      }
-    }
-    raw /= adj;
+    let raw = weightedAverage(rawArray, i, AVERAGING_SAMPLES, MAIN_DATA_WEIGHT);
+
     return {
       wpm: stat.wpm,
       raw: Math.floor(raw),
@@ -90,22 +103,30 @@ function PerformanceChartComponent({ rawStats }) {
         tension: 0.4,
         yAxisID: "wpmAxis",
         pointHitRadius: 12,
-        pointHoverRadius: 6,
+        pointHoverRadius: 8,
+        borderWidth: 3,
       },
       {
         label: "Raw WPM at Time",
         data: stats.map((s) => s.raw),
         fill: false,
-        backgroundColor: theme.values.gray,
-        borderColor: theme.values.gray,
+        backgroundColor: theme.values.main,
+        borderColor: theme.values.main,
         spanGaps: true,
         tension: 0.4,
         yAxisID: "wpmAxis",
+        pointRadius: 3,
         pointHitRadius: 12,
         pointHoverRadius: 6,
+        borderWidth: 2,
       },
     ],
   };
+
+  const hasLowWPM = stats.some(
+    (s) => parseInt(s.wpm < 10) || parseInt(s.raw) < 10
+  );
+  const needsMinHeight = stats.every((s) => s.wpm < 47 && s.raw < 47);
 
   const options = {
     responsive: true,
@@ -120,8 +141,8 @@ function PerformanceChartComponent({ rawStats }) {
           drawBorder: false,
         },
         // stop WPM axis from going negative for very low WPM
-        min: stats[stats.length - 1].wpm < 10 ? -0.5 : 0,
-        max: stats[stats.length - 1].wpm < 47 ? 50 : null,
+        min: hasLowWPM ? -0.99 : 0,
+        max: needsMinHeight ? 50 : null,
         suggstedMin: 0,
         grace: "5%",
         ticks: {

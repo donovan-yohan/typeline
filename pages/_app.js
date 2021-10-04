@@ -32,7 +32,8 @@ export default class MyApp extends App {
 
     let transition = document.createElement("div");
     transition.setAttribute("id", "transition");
-    let color = newTheme === "dark" ? "black" : "white";
+    let color =
+      newTheme === "dark" ? cssDarkVars.background : cssRootVars.background;
     transition.style.backgroundColor = color;
 
     document.getElementsByTagName("body")[0].appendChild(transition);
@@ -68,13 +69,16 @@ export default class MyApp extends App {
         <div
           className='fouc'
           style={{
-            zIndex: 999999999,
+            zIndex: 9999999999,
             position: "fixed",
             width: "100%",
             height: "100%",
             top: "0",
             left: "0",
-            backgroundColor: "gray",
+            backgroundColor:
+              this.state.theme == "light"
+                ? cssRootVars.background
+                : cssDarkVars.background,
           }}
         />
         <Component {...pageProps} />

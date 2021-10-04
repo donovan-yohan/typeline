@@ -7,6 +7,7 @@ import { formatTime } from "../utils/formatTime";
 import ReactTooltip from "react-tooltip";
 import Context from "./context";
 import { PUNCTUATION_TABLE, SYMBOL_TABLE } from "../utils/cleanSeed";
+import Tooltip from "./tooltip";
 
 export default function Timer({
   time,
@@ -108,16 +109,11 @@ export default function Timer({
         {!isEditing && (
           <span className={"time"}>
             {formatTime(time)}
-            <span className={"toolTipIcon"} data-tip data-for='urlTip'>
-              ?
-            </span>
-            <ReactTooltip
-              className={"toolTipWrapper"}
-              id='urlTip'
-              place={"left"}
-              effect={"solid"}
+            <Tooltip
+              placement={"left"}
               backgroundColor={theme.values.tooltipColour}
-              textColor={theme.values.main}
+              fontColor={theme.values.main}
+              opacity={0.9}
             >
               <p>
                 The test is generated from the <code>/#/seed/test_length</code>{" "}
@@ -176,7 +172,7 @@ export default function Timer({
                 <code>/#/ABCD-1234.EFGH/15</code>
               </p>
               <p>UI for all of this coming soon!</p>
-            </ReactTooltip>
+            </Tooltip>
           </span>
         )}
       </div>

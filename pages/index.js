@@ -201,6 +201,11 @@ export default function Home() {
         timeTotal
       ),
       raw: calculateRawWPM(
+        correct + incorrect - lastStat.correctToTime - lastStat.incorrectToTime,
+        lastStat.time,
+        currentTime
+      ),
+      correctRaw: calculateRawWPM(
         correct - lastStat.correctToTime,
         lastStat.time,
         currentTime
@@ -312,35 +317,39 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <Transition in={!isRunning} timeout={0}>
+        <Transition in={!isRunning} timeout={500}>
           {(state) => (
             <div className={`${styles.header} header-${state}`}>
               <Logo
                 colour={theme.values.gray}
                 hoverColour={theme.values.highlight}
               />
-              <div
-                className={styles.themeToggle}
-                ref={darkmodeRef}
-                onClick={() => {
-                  theme.toggleTheme();
-                }}
-              >
-                <Lottie
-                  options={{
-                    animationData: themeAnimation,
-                    autoplay: false,
-                    loop: false,
-                  }}
-                  height={30}
-                  width={30}
-                  direction={
-                    isDarkmodeHovered
-                      ? 1 * themeMultiplier
-                      : -1 * themeMultiplier
-                  }
-                />
-              </div>
+              <Transition in={!finished} timeout={300}>
+                {(state) => (
+                  <div
+                    className={`${styles.themeToggle} themeToggle-${state}`}
+                    ref={darkmodeRef}
+                    onClick={() => {
+                      theme.toggleTheme();
+                    }}
+                  >
+                    <Lottie
+                      options={{
+                        animationData: themeAnimation,
+                        autoplay: false,
+                        loop: false,
+                      }}
+                      height={30}
+                      width={30}
+                      direction={
+                        isDarkmodeHovered
+                          ? 1 * themeMultiplier
+                          : -1 * themeMultiplier
+                      }
+                    />
+                  </div>
+                )}
+              </Transition>
             </div>
           )}
         </Transition>
@@ -477,16 +486,38 @@ export default function Home() {
                       >
                         <p>
                           This is your <b>raw average words per minute</b>,
-                          calculated using only <b>correct</b> keystrokes.
+                          calculated using both <b>correct</b> and{" "}
+                          <span className={styles.miss}>
+                            <b>error</b>
+                          </span>{" "}
+                          keystrokes.
                         </p>
                         <p>
-                          <code>correct / test time</code>
+                          <code>(correct + errors) / test time</code>
+                        </p>
+                        <p>
+                          In brackets is the same, but calculated using only{" "}
+                          <b>correct</b> keystrokes.
+                        </p>
+                        <p>
+                          <code>correct/ test time</code>
                         </p>
                       </ReactTooltip>
-                      <span
-                        className={`${styles.smallScoreNumber} ${styles.number}`}
-                      >
-                        {calculateRawWPM(stats.correct, 0, timeTotal)}
+                      <span>
+                        <span
+                          className={`${styles.smallScoreNumber} ${styles.number}`}
+                        >
+                          {calculateRawWPM(
+                            stats.correct + stats.incorrect,
+                            0,
+                            timeTotal
+                          )}
+                        </span>
+                        <span
+                          className={`${styles.smallScoreNumber} ${styles.number} ${styles.gray}`}
+                        >
+                          {` (${calculateRawWPM(stats.correct, 0, timeTotal)})`}
+                        </span>
                       </span>
                     </div>
                     <div className={styles.smallScore}>
@@ -516,15 +547,29 @@ export default function Home() {
                       </span>
                     </div>
                     <div className={styles.smallScore}>
-                      <span
-                        className={`label ${styles.smallScoreLabel} ${styles.miss}`}
-                      >
-                        Errors
+                      <span>
+                        <span
+                          className={`label ${styles.smallScoreLabel} ${styles.miss}`}
+                        >
+                          Errors
+                        </span>
+                        <span
+                          className={`label ${styles.smallScoreLabel} ${styles.gray}`}
+                        >
+                          {` (corrected)`}
+                        </span>
                       </span>
-                      <span
-                        className={`${styles.smallScoreNumber} ${styles.miss} ${styles.number}`}
-                      >
-                        {stats.incorrect || 0}
+                      <span>
+                        <span
+                          className={`${styles.smallScoreNumber} ${styles.miss} ${styles.number}`}
+                        >
+                          {stats.incorrect || 0}
+                        </span>
+                        <span
+                          className={`${styles.smallScoreNumber} ${styles.gray} ${styles.number}`}
+                        >
+                          {` (${stats.corrected || 0})`}
+                        </span>
                       </span>
                     </div>
                   </div>
@@ -550,7 +595,7 @@ export default function Home() {
           </div>
         )}
         {isMobile && <div>This webapp is not ready for mobile yet, sorry!</div>}
-        <Transition in={!isRunning} timeout={0}>
+        <Transition in={!isRunning} timeout={500}>
           {(state) => (
             <div className={`${styles.footer} footer-${state}`}>
               <span className={styles.footerItem}>
@@ -581,9 +626,13 @@ export default function Home() {
         </Transition>
       </main>
       <style jsx>{`
+        .header-exiting,
+        .footer-exiting {
+          opacity: 0;
+        }
         .header-exited,
         .footer-exited {
-          opacity: 0;
+          display: none;
         }
         .textPage {
           margin-top: 32px;
@@ -601,6 +650,12 @@ export default function Home() {
           opacity: 1;
         }
         .textTransition-removed {
+          display: none;
+        }
+        .themeToggle-exiting {
+          opacity: 0;
+        }
+        .themeToggle-exited {
           display: none;
         }
       `}</style>
