@@ -13,6 +13,7 @@ export default function Tooltip(props) {
           position: relative;
           overflow: visible;
           user-select: none;
+          margin-left: 0.5em;
         }
         .tooltipIcon {
           z-index: 9999;
@@ -21,14 +22,12 @@ export default function Tooltip(props) {
           height: 100%;
           border: 2px solid;
           border-radius: 50%;
-          letter-spacing: 0.45em;
-          padding-left: 0.45em;
-          margin-left: 0.5em;
-          margin-right: -0.1em;
+          letter-spacing: 0.49em;
+          padding-left: 0.47em;
           transition: 0.25s ease-in-out;
           cursor: default;
-          user-select: none;
           opacity: var(--fade);
+          margin-bottom: 1em;
         }
 
         .tooltipIcon:hover {
@@ -61,8 +60,10 @@ export default function Tooltip(props) {
         }
 
         .left {
-          transform: translateY(-50%) translateX(-100%);
-          top: 50%;
+          transform: translateY(-50%)
+            translateX(calc(-100% - ${arrowPadding}px));
+          top: 15%;
+          left: calc(0px - ${arrowSize}px - ${arrowPadding}px);
         }
         .left:after {
           content: "";
@@ -72,7 +73,7 @@ export default function Tooltip(props) {
           border-color: transparent transparent transparent
             ${props.backgroundColor};
           position: absolute;
-          right: calc(0px - ${arrowSize * 2}px + ${arrowPadding}px);
+          right: calc(0px - ${arrowSize * 2}px);
           top: 50%;
           opacity: ${props.opacity};
         }

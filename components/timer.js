@@ -185,6 +185,8 @@ export default function Timer({
         }
 
         .time {
+          display: flex;
+          align-items: center;
           font-weight: bold;
           font-size: 18px;
           margin-left: 8px;
