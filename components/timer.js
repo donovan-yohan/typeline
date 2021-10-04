@@ -47,6 +47,7 @@ export default function Timer({
 
   const timerBackgroundStyle = {
     backgroundColor: "var(--gray)",
+    opacity: "var(--fade)",
     height: "2px",
   };
 
