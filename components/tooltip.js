@@ -12,6 +12,7 @@ export default function Tooltip(props) {
           display: inline;
           position: relative;
           overflow: visible;
+          user-select: none;
         }
         .tooltipIcon {
           z-index: 9999;
