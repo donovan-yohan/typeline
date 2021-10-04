@@ -41,7 +41,7 @@ The URL will always follow the format `typeline.donovanyohan.com/#/seed/time`
 where `seed` uniquely identifies the same test every time
 and `time` is a value between 1 and 120 for the duration of the test
 
-Including any of the following in the `seed` part of the `/#/seed/time` URL will have the following effects:
+Including any of the following character triggers in the `seed` part of the `/#/seed/time` URL will have the following effects:
 | Name | Character Triggers | Effect | Example Seed | 
 | --- | --- | --- | --- |
 | Capitals | CAPITALS | will add capital letters | `/#/Abcd/30` |
