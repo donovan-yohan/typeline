@@ -1,34 +1,58 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# typeline Typing Test
 
-## Getting Started
+An animated typing test focused on improving and encouraging consistency, and using seeded rng to generate tests so test takers can share and compare test results easily with friends.
 
-First, run the development server:
 
-```bash
-npm run dev
-# or
-yarn dev
+## Live Version
+
+Visit [typeline.donovanyohan.com](https://typeline.donovanyohan.com/) on any laptop or desktop!
+
+https://user-images.githubusercontent.com/34756395/135836039-3414ae62-af6b-4819-b447-8cd3a65f9f30.mp4
+
+
+## Word Generation
+
+The default test uses the short words from the [n-gram frequency analysis of the Google's Trillion Word Corpus](https://github.com/first20hours/google-10000-english). A nice feature of this was the list being already ordered by frequency of use.
+
+
+## Score Calculation
+
+Given one of the goals of this test was to promote consistency and flow of typing over just speed, the core word per minute (WPM) score penalizes users for making mistakes and ignoring them, according to the following formula:
+
+```
+[correct - (errors - corrected)] / test time
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+There are also more traditional measures of what I call "raw WPM" to measure total inputs in the test time, and just correct keystrokes using these formulas:
+```
+correct / test time
+```
+```
+(correct + incorrect) / test time
+```
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## Seeded RNG
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+The tests are generated using [seed-random](https://www.npmjs.com/package/seed-random) and a custom formatted URL hash for ease of sharing and generating tests. The contents of this hash determine what kind of test is generated. Test takers can share the exact test they took with others easily to more directly compare performance, and have fun putting anything they want to in the code to generate a test.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+Visiting the root site or typing in an invalid character into the seed will just automatically generate and format an appropriate one.
 
-## Learn More
+The URL will always follow the format `typeline.donovanyohan.com/#/seed/time`
+where `seed` uniquely identifies the same test every time
+and `time` is a value between 1 and 120 for the duration of the test
 
-To learn more about Next.js, take a look at the following resources:
+Including any of the following in the `seed` part of the `/#/seed/time` URL will have the following effects:
+| Name | Character Triggers | Effect | Example Seed | 
+| --- | --- | --- | --- |
+| Capitals | CAPITALS | will add capital letters | `/#/Abcd/30` |
+| Numbers | 1234567890 | will add numbers like '3rd', '2015', '400BC' | `/#/abcd123/15` |
+| Punctuation | .,;:!?"" | will add those punctuation | `/#/ab.cd/60` |
+| Symbols | &()$%-_ | will add those symbols | `/#/efg-hij/60` | 
+| Long Words | Seed of length 10 or longer | will add from the most frequently used long words | `/#/thisIsAReallyLongSeed/60` |  
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Why is this hosted out of a personal domain?
 
-## Deploy on Vercel
+![Screenshot 2021-09-29 195436](https://user-images.githubusercontent.com/34756395/135837789-a03fca56-75ee-4fce-9dd0-b85699af2285.png)
+unlucky
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
