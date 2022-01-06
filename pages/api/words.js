@@ -10,20 +10,21 @@ import cleanSeed, {
   SYMBOL_TABLE,
 } from "../../utils/cleanSeed.js";
 
+const SHORT_WORD_MAX_LENGTH = 4;
+const MEDIUM_WORD_MAX_LENGTH = 8;
+const LONGEST_WORD_LENGTH = 14;
+
+const CAPITAL_CHANCE = 0.1;
 const NUMBER_CHANCE = 0.15;
 const NEW_DATE_CHANCE = 0.4;
 const OLD_DATE_CHANCE = 0.1;
 const SYMBOL_CHANCE = 0.05;
 const PUNCTUATION_CHANCE = 0.2;
-const MEDIUM_WORD_CHANCE = 0.15;
-const LONG_WORD_CHANCE = 0.1;
 
 const MIN_PUNCTUATION_SPACE = 7;
 const MAX_PUNCTUATION_SPACE = 15;
 
 const MAX_SYMBOL_SPACE = 15;
-
-const LONG_WORD_BREAKPOINT = 10;
 
 const MIN_WORDS = 50;
 
@@ -32,6 +33,22 @@ const containsNumber = (string) => /^\S*[0-9]+\S*$/.test(string);
 const containsCharacter = (string, character) => {
   const regex = new RegExp(`\S*[${character}]\S*`);
   return regex.test(string);
+};
+const getWordLengthRange = (string) => {
+  let ranges = string.split("-");
+  if (ranges.length === 2) {
+    let start = Math.min(
+      ranges[0].length % LONGEST_WORD_LENGTH,
+      ranges[1].length % LONGEST_WORD_LENGTH
+    );
+    let end = Math.max(
+      ranges[0].length % LONGEST_WORD_LENGTH,
+      ranges[1].length % LONGEST_WORD_LENGTH
+    );
+    return [start, end];
+  }
+
+  return [0, string.length % LONGEST_WORD_LENGTH];
 };
 
 function getRandomWithBias(random, min, max, bias, influence) {
@@ -50,7 +67,7 @@ function generateFlags(seed) {
     containsNumber(seed), // hasNumbers
     containsCharacter(seed, punctuationTriggers), // hasPunctuation
     containsCharacter(seed, symbolTriggers), // hasSymbols
-    seed.length > LONG_WORD_BREAKPOINT, // hasLongWords
+    getWordLengthRange(seed), // wordLengthRange
   ];
 }
 
@@ -78,12 +95,11 @@ function generateDate(r, random) {
 }
 
 function getRandomWord(wordList, random) {
-  return wordList[
-    Math.floor(getRandomWithBias(random, 0, shortWords.length - 1, 0, 1))
-  ];
+  let index = getRandomWithBias(random, 0, wordList.length - 0.001, 0, 0.9);
+  return wordList[Math.floor(index)];
 }
 
-function formatWord(word, symbol, placement) {
+export function formatWord(word, symbol, placement) {
   if (placement === CHARACTER_PLACEMENT.BEFORE) {
     return symbol + word;
   } else if (placement === CHARACTER_PLACEMENT.AFTER) {
@@ -100,13 +116,45 @@ function formatWord(word, symbol, placement) {
   }
 }
 
+// combine n arrays with alternating values
+function combineArraysAlternating(arrays) {
+  let combined = [];
+  let length = Math.max(...arrays.map((a) => a.length));
+  for (let i = 0; i < length; i++) {
+    arrays.forEach((a) => {
+      if (a[i]) combined.push(a[i]);
+    });
+  }
+  return combined;
+}
+
+function filterWordBank(range) {
+  let [min, max] = range;
+  let short = shortWords;
+  let med = mediumWords;
+  let long = longWords;
+
+  if (min > SHORT_WORD_MAX_LENGTH) short = [];
+  else if (max < SHORT_WORD_MAX_LENGTH)
+    short = short.filter((w) => w.length <= max && w.length > min);
+
+  if (min > MEDIUM_WORD_MAX_LENGTH || max <= SHORT_WORD_MAX_LENGTH) med = [];
+  else med = med.filter((w) => w.length <= max && w.length > min);
+
+  if (max <= MEDIUM_WORD_MAX_LENGTH) long = [];
+  else if (min > MEDIUM_WORD_MAX_LENGTH)
+    long = long.filter((w) => w.length <= max && w.length > min);
+
+  return combineArraysAlternating([short, med, long]);
+}
+
 function generateWords(
   random,
   hasUppercase,
   hasNumbers,
   hasPunctuation,
   hasSymbols,
-  hasLongWords,
+  wordLengthRange,
   time
 ) {
   let words = [];
@@ -115,6 +163,8 @@ function generateWords(
 
   let totalWords = (time / 60) * 400;
   if (totalWords < MIN_WORDS) totalWords = MIN_WORDS;
+
+  let wordBank = filterWordBank(wordLengthRange);
 
   while (words.length < totalWords) {
     let r = random();
@@ -145,9 +195,9 @@ function generateWords(
 
       if (symbol.placement === CHARACTER_PLACEMENT.MIDDLE) {
         word =
-          getRandomWord(shortWords, random) +
+          getRandomWord(wordBank, random) +
           symbol.char +
-          getRandomWord(shortWords, random);
+          getRandomWord(wordBank, random);
       } else if (symbol.char === "$") {
         word = formatWord(
           getRandom(random, 0, 100).toFixed(2),
@@ -162,7 +212,7 @@ function generateWords(
         );
       } else if (symbol.placement === CHARACTER_PLACEMENT.WRAP) {
         word = formatWord(
-          getRandomWord(shortWords, random),
+          getRandomWord(wordBank, random),
           symbol.char,
           symbol.placement
         );
@@ -172,32 +222,27 @@ function generateWords(
     } else {
       symbolCounter += 1;
       r = random();
-      if (r < MEDIUM_WORD_CHANCE) {
-        word = getRandomWord(mediumWords, random);
-      } else if (hasLongWords && r < MEDIUM_WORD_CHANCE + LONG_WORD_CHANCE) {
-        word = getRandomWord(longWords, random);
-      } else {
-        word = getRandomWord(shortWords, random);
-      }
+      word = getRandomWord(wordBank, random);
       if (hasPunctuation && puncCounter > MIN_PUNCTUATION_SPACE) {
         r = random();
         if (puncCounter > MAX_PUNCTUATION_SPACE || r < PUNCTUATION_CHANCE) {
           puncCounter = 0;
           r = random();
           let probability = 0;
-          let punctuation = ".";
+          let punctuation = PUNCTUATION_TABLE[0];
 
           PUNCTUATION_TABLE.some((p) => {
             probability += p.probability;
             if (r <= probability) {
-              punctuation = p.char;
+              punctuation = p;
               return true;
             }
           });
 
-          if (punctuation.placement === CHARACTER_PLACEMENT.WRAP)
-            word = formatWord(word, punctuation);
-          else word += punctuation;
+          if (punctuation.placement == CHARACTER_PLACEMENT.WRAP) {
+            word = formatWord(word, punctuation.char, punctuation.placement);
+            console.log(word);
+          } else word += punctuation.char;
         } else {
           puncCounter += 1;
         }
@@ -207,7 +252,7 @@ function generateWords(
     }
 
     if (!hasUppercase) word = word.toLowerCase();
-    else if (random() < 0.1)
+    else if (random() < CAPITAL_CHANCE)
       word = word.charAt(0).toUpperCase() + word.slice(1);
 
     words.push(word);

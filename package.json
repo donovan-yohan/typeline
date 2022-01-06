@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "jest"
   },
   "dependencies": {
     "@use-it/interval": "^1.0.0",
@@ -21,5 +22,9 @@
     "react-tooltip": "^4.2.21",
     "react-transition-group": "^4.4.2",
     "seed-random": "^2.2.0"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.16.7",
+    "jest": "^27.4.7"
   }
 }

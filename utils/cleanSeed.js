@@ -33,13 +33,14 @@ export const punctuationTriggers = PUNCTUATION_TABLE.reduce((acc, p) => {
 }, "");
 
 export const symbolTriggers = SYMBOL_TABLE.reduce((acc, s) => {
+  if (s.char === "-") return acc;
   return acc + "\\" + s.char;
 }, "");
 
 export default function cleanSeed(seed) {
   let info = seed.split("/");
   let regex = () =>
-    RegExp(`[^a-zA-Z0-9${punctuationTriggers}${symbolTriggers}]+`, "g");
+    RegExp(`[^a-zA-Z0-9${punctuationTriggers}${symbolTriggers}\\-]+`, "g");
   // check appropriate number of slashes AND first element is special char AND last element is only a number in accepted range
   let testTime = info[2];
   if (/^\d+$/.test(testTime) && testTime > 0) {
