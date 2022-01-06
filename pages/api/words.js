@@ -10,6 +10,8 @@ import cleanSeed, {
   SYMBOL_TABLE,
 } from "../../utils/cleanSeed.js";
 
+const COMMON_WORD_BIAS = 0.8;
+
 const SHORT_WORD_MAX_LENGTH = 4;
 const MEDIUM_WORD_MAX_LENGTH = 8;
 const LONGEST_WORD_LENGTH = 14;
@@ -95,7 +97,13 @@ function generateDate(r, random) {
 }
 
 function getRandomWord(wordList, random) {
-  let index = getRandomWithBias(random, 0, wordList.length - 0.001, 0, 0.9);
+  let index = getRandomWithBias(
+    random,
+    0,
+    wordList.length - 0.001,
+    0,
+    COMMON_WORD_BIAS
+  );
   return wordList[Math.floor(index)];
 }
 
@@ -145,7 +153,7 @@ function filterWordBank(range) {
   else if (min > MEDIUM_WORD_MAX_LENGTH)
     long = long.filter((w) => w.length <= max && w.length > min);
 
-  return combineArraysAlternating([short, med, long]);
+  return combineArraysAlternating([short, med]).concat(long);
 }
 
 function generateWords(
