@@ -12,9 +12,7 @@
   color: var(--main);
 }
 
-.textColumn,
-.header,
-.footer {
+.textColumn {
   width: 55vw;
   max-width: 55vw;
   min-width: 800px;
@@ -22,6 +20,7 @@
 
 .header,
 .footer {
+  width: 55vw;
   display: flex;
   position: fixed;
   padding: 24px 0;
@@ -29,7 +28,12 @@
   opacity: 1;
   background-color: var(--background);
   z-index: 10;
+  @media only screen and (max-width: 1440px) {
+    width: 100vw;
+    padding: 24px;
+  }
 }
+
 .header {
   top: 0;
   justify-content: space-between;

@@ -11,7 +11,7 @@ import ReactTooltip from "react-tooltip";
 import { Transition } from "react-transition-group";
 import Lottie from "lottie-react-web";
 import themeAnimation from "../public/img/animations/darkmode.json";
-import styles from "../styles/Home.module.css";
+import styles from "../styles/Home.module.scss";
 import Word from "../components/word.js";
 import Cursor from "../components/cursor.js";
 import Menu from "../components/menu.js";
