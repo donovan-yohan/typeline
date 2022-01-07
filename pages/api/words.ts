@@ -2,13 +2,22 @@ import pseudorandom from "seed-random";
 import shortWords from "../../assets/short.js";
 import mediumWords from "../../assets/medium.js";
 import longWords from "../../assets/long.js";
-import cleanSeed, {
+import getSeedAndTime, {
   CHARACTER_PLACEMENT,
   punctuationTriggers,
   PUNCTUATION_TABLE,
   symbolTriggers,
   SYMBOL_TABLE,
-} from "../../utils/cleanSeed.js";
+} from "../../utils/getSeedAndTime.js";
+import { NextApiRequest, NextApiResponse } from "next";
+
+interface seedFlags {
+  hasUppercase: boolean;
+  hasNumbers: boolean;
+  hasPunctuation: boolean;
+  hasSymbols: boolean;
+  wordLengthRange: [number, number];
+}
 
 const COMMON_WORD_BIAS = 0.8;
 
@@ -30,13 +39,15 @@ const MAX_SYMBOL_SPACE = 15;
 
 const MIN_WORDS = 50;
 
-const containsUpperCase = (string) => /^\S*[A-Z]+\S*$/.test(string);
-const containsNumber = (string) => /^\S*[0-9]+\S*$/.test(string);
-const containsCharacter = (string, character) => {
-  const regex = new RegExp(`\S*[${character}]\S*`);
+const containsUpperCase = (string: string): boolean =>
+  /^\S*[A-Z]+\S*$/.test(string);
+const containsNumber = (string: string): boolean =>
+  /^\S*[0-9]+\S*$/.test(string);
+const containsCharacter = (string: string, characters: string): boolean => {
+  const regex = new RegExp(`\S*[${characters}]\S*`);
   return regex.test(string);
 };
-const getWordLengthRange = (string) => {
+const getWordLengthRange = (string: string): [number, number] => {
   let ranges = string.split("-");
   if (ranges.length === 2) {
     let start = Math.min(
@@ -53,27 +64,33 @@ const getWordLengthRange = (string) => {
   return [0, string.length % LONGEST_WORD_LENGTH];
 };
 
-function getRandomWithBias(random, min, max, bias, influence) {
+function getRandomWithBias(
+  random: () => number,
+  min: number,
+  max: number,
+  bias: number,
+  influence: number
+) {
   let num = random() * (max - min) + min;
   let mix = random() * influence;
   return num * (1 - mix) + bias * mix;
 }
 
-function getRandom(random, min, max) {
+const getRandom = (random: () => number, min: number, max: number): number => {
   return random() * (max - min) + min;
-}
+};
 
-function generateFlags(seed) {
-  return [
-    containsUpperCase(seed), // hasUppercase
-    containsNumber(seed), // hasNumbers
-    containsCharacter(seed, punctuationTriggers), // hasPunctuation
-    containsCharacter(seed, symbolTriggers), // hasSymbols
-    getWordLengthRange(seed), // wordLengthRange
-  ];
-}
+const generateFlags = (seed: string): seedFlags => {
+  return {
+    hasUppercase: containsUpperCase(seed),
+    hasNumbers: containsNumber(seed),
+    hasPunctuation: containsCharacter(seed, punctuationTriggers),
+    hasSymbols: containsCharacter(seed, symbolTriggers),
+    wordLengthRange: getWordLengthRange(seed),
+  };
+};
 
-function generateDate(r, random) {
+function generateDate(r: number, random: () => number) {
   if (r < NEW_DATE_CHANCE) {
     // generate date from 1600 to present
     return Math.floor(getRandom(random, 1600, new Date().getFullYear())) + "";
@@ -96,7 +113,7 @@ function generateDate(r, random) {
   }
 }
 
-function getRandomWord(wordList, random) {
+function getRandomWord(wordList: string[], random: () => number): string {
   let index = getRandomWithBias(
     random,
     0,
@@ -107,26 +124,27 @@ function getRandomWord(wordList, random) {
   return wordList[Math.floor(index)];
 }
 
-export function formatWord(word, symbol, placement) {
+export function formatWord(
+  word: string,
+  symbol: string,
+  placement: CHARACTER_PLACEMENT
+): string {
   if (placement === CHARACTER_PLACEMENT.BEFORE) {
     return symbol + word;
   } else if (placement === CHARACTER_PLACEMENT.AFTER) {
     return word + symbol;
-  } else if (placement === CHARACTER_PLACEMENT.WRAP) {
+  } else {
     if (symbol.length == 2) {
       return symbol.charAt(0) + word + symbol.charAt(1);
     } else {
-      warn(
-        `Wrapping word, ${word}, but did not receive explicit pair of symbols. (Received: ${symbol})`
-      );
       return symbol + word + symbol;
     }
   }
 }
 
 // combine n arrays with alternating values
-function combineArraysAlternating(arrays) {
-  let combined = [];
+function combineArraysAlternating<T>(arrays: T[][]): T[] {
+  let combined: T[] = [];
   let length = Math.max(...arrays.map((a) => a.length));
   for (let i = 0; i < length; i++) {
     arrays.forEach((a) => {
@@ -136,7 +154,7 @@ function combineArraysAlternating(arrays) {
   return combined;
 }
 
-function filterWordBank(range) {
+function filterWordBank(range: [number, number]) {
   let [min, max] = range;
   let short = shortWords;
   let med = mediumWords;
@@ -156,28 +174,26 @@ function filterWordBank(range) {
   return combineArraysAlternating([short, med]).concat(long);
 }
 
-function generateWords(
-  random,
-  hasUppercase,
-  hasNumbers,
-  hasPunctuation,
-  hasSymbols,
-  wordLengthRange,
-  time
-) {
+function generateWords(random: () => number, flags: seedFlags, time: number) {
+  let {
+    hasUppercase,
+    hasNumbers,
+    hasPunctuation,
+    hasSymbols,
+    wordLengthRange,
+  } = flags;
   let words = [];
   let symbolCounter = 0;
   let puncCounter = 0;
 
-  let totalWords = (time / 60) * 400;
+  let totalWords = (time / 60) * 500;
   if (totalWords < MIN_WORDS) totalWords = MIN_WORDS;
 
   let wordBank = filterWordBank(wordLengthRange);
 
   while (words.length < totalWords) {
     let r = random();
-
-    let word;
+    let word = "";
 
     if (hasNumbers && r < NUMBER_CHANCE) {
       r = random();
@@ -214,7 +230,7 @@ function generateWords(
         );
       } else if (symbol.char === "%") {
         word = formatWord(
-          Math.floor(getRandom(random, 0, 100)),
+          Math.floor(getRandom(random, 0, 100)).toString(),
           symbol.char,
           symbol.placement
         );
@@ -268,11 +284,11 @@ function generateWords(
   return words;
 }
 
-export default (req, res) => {
+export default (req: NextApiRequest, res: NextApiResponse) => {
   let { seed, time } = JSON.parse(req.body);
-  let random = pseudorandom(cleanSeed(seed));
+  let random = pseudorandom(getSeedAndTime(seed).seed);
 
-  let words = generateWords(random, ...generateFlags(seed), time);
+  let words = generateWords(random, generateFlags(seed), time);
 
   res.status(200).json({ words });
 };

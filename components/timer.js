@@ -6,7 +6,7 @@ import cx from "classnames";
 import { formatTime } from "../utils/formatTime";
 import ReactTooltip from "react-tooltip";
 import Context from "./context";
-import { PUNCTUATION_TABLE, SYMBOL_TABLE } from "../utils/cleanSeed";
+import { PUNCTUATION_TABLE, SYMBOL_TABLE } from "../utils/getSeedAndTime";
 import Tooltip from "./tooltip";
 
 export default function Timer({

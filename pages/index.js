@@ -29,7 +29,7 @@ import {
   textTypedReducer,
   EMPTY_TYPED_DATA,
 } from "../components/reducers";
-import cleanSeed, { generateSeed } from "../utils/cleanSeed";
+import cleanSeed, { generateSeed } from "../utils/getSeedAndTime";
 import Context from "../components/context";
 import useEventListener from "../hooks/useEventListener";
 import Logo from "../components/logo";
