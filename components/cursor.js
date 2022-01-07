@@ -3,6 +3,7 @@ import { useOffset } from "../hooks/useOffset.js";
 import cx from "classnames";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useEventListener from "../hooks/useEventListener.js";
+import styles from "./cursor.module.scss";
 
 const KEYBOARD_INPUTS = ["Escape", " "];
 
@@ -225,6 +226,7 @@ export default function Cursor({
       <span className={inputClassList}>
         <span>Click to focus</span>
       </span>
+      <div className={styles.bepis} />
       <input
         ref={typingField}
         value={text}
