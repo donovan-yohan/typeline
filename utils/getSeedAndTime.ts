@@ -1,7 +1,7 @@
 export const MAX_TIME = 120;
 export const MAX_LENGTH = 100;
 
-interface TestInfo {
+export interface TestInfo {
   seed: string;
   time: number;
 }

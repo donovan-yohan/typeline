@@ -1,8 +1,36 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useOffset } from "../hooks/useOffset.js";
-import cx from "classnames";
+import React, {
+  ChangeEvent,
+  KeyboardEvent,
+  MouseEvent,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { OffsetType, useOffset } from "../hooks/useOffset";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useEventListener from "../hooks/useEventListener.js";
+import { TypelineRef } from "types";
+import { TypedData } from "./reducers";
+const cx = require("classnames");
+
+interface Props {
+  letterRef: TypelineRef;
+  wordRef: TypelineRef;
+  paragraphRef: RefObject<HTMLDivElement>;
+  onTextTyped: (textTyped: TypedData, index?: number) => void;
+  onWordChanged: (newActiveWordIndex: number) => void;
+  isFinished: boolean;
+  isEditing: boolean;
+  isRunning: boolean;
+  activeWordIndex: number;
+  textTyped: TypedData[];
+  textDatabase: string[][];
+  isFirstChar: boolean;
+  onLineChange: (linePos: OffsetType) => void;
+  textPageHeight: string;
+}
 
 const KEYBOARD_INPUTS = ["Escape", " "];
 
@@ -15,24 +43,24 @@ export default function Cursor({
   isFinished,
   isEditing,
   isRunning,
-  activeWord,
+  activeWordIndex,
   textTyped,
   textDatabase,
   isFirstChar,
   onLineChange,
   textPageHeight,
-}) {
+}: Props) {
   const [text, setText] = useState("");
   const [valid, setValid] = useState(true);
   const [repeat, setRepeat] = useState(false);
   const [hasFocus, setHasFocus] = useState(true);
   const [shouldAnimateCursor, setShouldAnimateCursor] = useState(true);
-  const typingField = useRef(null);
-  const cursorRef = useRef(null);
-  const highlightRef = useRef(null);
+  const typingField = useRef<HTMLInputElement>(null);
+  const cursorRef = useRef<HTMLSpanElement>(null);
+  const highlightRef = useRef<HTMLSpanElement>(null);
   const cursorOffset = useOffset(paragraphRef, letterRef);
   const highlightOffset = useOffset(paragraphRef, wordRef, [
-    textTyped[activeWord],
+    textTyped[activeWordIndex],
   ]);
 
   const cursorClassList = cx({
@@ -53,14 +81,14 @@ export default function Cursor({
   }, [textDatabase]);
 
   // UPDATE STATS AND SEND TO INDEX PAGE
-  let handleTextTyped = (e) => {
+  let handleTextTyped = (e: ChangeEvent<HTMLInputElement>) => {
     let w = e.target.value;
     setText(w);
   };
 
   // UPDATE TEXT ON TYPE AND SEND BACK TO INDEX
   useDidUpdateEffect(() => {
-    let lastVal = textTyped[activeWord].value;
+    let lastVal = textTyped[activeWordIndex].value;
     let lastChar = "";
     if (text.length > lastVal.length) {
       lastChar = text.charAt(text.length - 1);
@@ -68,19 +96,19 @@ export default function Cursor({
 
     onTextTyped({
       value: text,
-      fullValue: textTyped[activeWord].fullValue + lastChar,
-      stats: textTyped[activeWord].stats,
+      fullValue: textTyped[activeWordIndex].fullValue + lastChar,
+      stats: textTyped[activeWordIndex].stats,
       visited: false,
     });
   }, [text]);
 
   // HANDLE SPACEBAR AND BACKSPACE FOR CHANGING WORDS
-  const handleSpecialChar = (e) => {
-    let newActiveWord = activeWord;
+  const handleSpecialChar = (e: KeyboardEvent<HTMLInputElement>) => {
+    let newActiveWord = activeWordIndex;
 
     if (e.key == " " || e.key == "Spacebar") {
       e.preventDefault();
-      if (!repeat && (activeWord != 0 || text.length > 0)) {
+      if (!repeat && (activeWordIndex != 0 || text.length > 0)) {
         // handle holding character down
         setRepeat(true);
 
@@ -91,17 +119,17 @@ export default function Cursor({
           {
             value: text,
             fullValue: textTyped[newActiveWord].fullValue,
-            stats: textTyped[activeWord].stats,
+            stats: textTyped[activeWordIndex].stats,
             visited: true,
           },
-          activeWord
+          activeWordIndex
         );
       }
     } else if (e.key == "Backspace") {
       e.preventDefault();
       // if new value matches old and backsapce was pressed, move to previous word
       if (text.length == 0) {
-        if (activeWord > 0) {
+        if (activeWordIndex > 0) {
           newActiveWord -= 1;
 
           // only allow backspace if last word was incorrect
@@ -120,7 +148,7 @@ export default function Cursor({
               newActiveWord
             );
           } else {
-            newActiveWord = activeWord;
+            newActiveWord = activeWordIndex;
           }
         }
       } else {
@@ -128,7 +156,7 @@ export default function Cursor({
       }
     }
 
-    if (newActiveWord != activeWord) {
+    if (newActiveWord != activeWordIndex) {
       setText(textTyped[newActiveWord].value);
       onWordChanged(newActiveWord);
     }
@@ -137,29 +165,30 @@ export default function Cursor({
     setShouldAnimateCursor(false);
   };
 
-  const checkIfHoldingKey = (e) => {
+  const checkIfHoldingKey = () => {
     setRepeat(false);
     setShouldAnimateCursor(true);
   };
 
   // UPDATE TEXT POSITION
-  let handleLineChange = (linePos) => {
+  let handleLineChange = (linePos: OffsetType) => {
     onLineChange(linePos);
   };
 
   // Focus text on load and when focus is assigned
   useEffect(() => {
-    if (hasFocus) typingField.current.focus();
+    if (hasFocus && typingField.current) typingField.current.focus();
   }, [hasFocus]);
 
   // FOCUS TEXT ON CLICK
-  const handleClick = (e) => {
+  const handleClick = (e: MouseEvent<HTMLInputElement>) => {
     setHasFocus(true);
-    e.target.focus();
+    e.currentTarget.focus();
   };
 
   // Focus text on first character press
-  const [key, setKey] = useState({ key: null });
+  const [key, setKey] = useState({ key: "" });
+
   const keyTypedHandler = useCallback(
     ({ key }) => {
       setKey({ key });
@@ -185,7 +214,7 @@ export default function Cursor({
     if (cursorOffset) {
       let pos;
       let x;
-      if (text.length <= textDatabase[activeWord].length) {
+      if (text.length <= textDatabase[activeWordIndex].length) {
         pos = cursorOffset;
         x = isFirstChar ? pos.left : pos.right;
       } else {
@@ -193,7 +222,8 @@ export default function Cursor({
         x = pos.right;
       }
       let y = pos.top;
-      cursorRef.current.style.transform = `translate(${x}px, ${y}px)`;
+      if (cursorRef.current)
+        cursorRef.current.style.transform = `translate(${x}px, ${y}px)`;
     }
   }, [cursorOffset, highlightOffset, isFirstChar]);
 
@@ -203,15 +233,19 @@ export default function Cursor({
       let pos = highlightOffset;
       let width = pos.right - pos.left;
       let height = pos.bottom - pos.top;
-      highlightRef.current.style.transform = `translate(${pos.left}px, ${pos.top}px)`;
-      highlightRef.current.style.width = width + "px";
-      highlightRef.current.style.height = height + "px";
+      if (highlightRef.current) {
+        highlightRef.current.style.transform = `translate(${pos.left}px, ${pos.top}px)`;
+        highlightRef.current.style.width = width + "px";
+        highlightRef.current.style.height = height + "px";
+      }
       handleLineChange(highlightOffset);
     }
   }, [highlightOffset]);
 
   useEffect(() => {
-    if (textDatabase[activeWord].join("").substring(0, text.length) != text) {
+    if (
+      textDatabase[activeWordIndex].join("").substring(0, text.length) != text
+    ) {
       setValid(false);
     } else {
       setValid(true);

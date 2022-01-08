@@ -8,7 +8,7 @@ import getSeedAndTime, {
   PUNCTUATION_TABLE,
   symbolTriggers,
   SYMBOL_TABLE,
-} from "../../utils/getSeedAndTime.js";
+} from "utils/getSeedAndTime";
 import { NextApiRequest, NextApiResponse } from "next";
 
 interface seedFlags {
@@ -156,6 +156,8 @@ function combineArraysAlternating<T>(arrays: T[][]): T[] {
 
 function filterWordBank(range: [number, number]) {
   let [min, max] = range;
+  if (min === max) min = 0;
+
   let short = shortWords;
   let med = mediumWords;
   let long = longWords;

@@ -25,13 +25,14 @@ function fallbackCopyTextToClipboard(text) {
 }
 
 export default function copyTextToClipboard(text) {
+  console.log(text);
   if (!navigator.clipboard) {
     fallbackCopyTextToClipboard(text);
     return;
   }
   navigator.clipboard.writeText(text).then(
     function () {
-      // Do nothing
+      console.log(`Copied "${text}"to clipboard`);
     },
     function (err) {
       console.error("Async: Could not copy text: ", err);

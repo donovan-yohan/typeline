@@ -3,9 +3,36 @@ import React from "react";
 import Context from "../components/context";
 import "../styles/globals.css";
 import { cssRootVars, cssDarkVars } from "../styles/globalVars.js";
+
+enum THEMES {
+  LIGHT = "light",
+  DARK = "dark",
+}
+
+export interface ThemeProps {
+  background: string;
+  main: string;
+  mainFaded: string;
+  highlight: string;
+  highlightFaded: string;
+  incorrect: string;
+  gray: string;
+  fade: string;
+  grayOpacity: string;
+  tooltipColour: string;
+  tooltipColourFade: string;
+  themeFilter: string;
+  hoverFilter: string;
+}
+
+interface State {
+  theme: THEMES;
+  values: ThemeProps;
+}
+
 export default class MyApp extends App {
-  state = {
-    theme: "light",
+  state: State = {
+    theme: THEMES.LIGHT,
     values: cssRootVars,
   };
 
@@ -15,25 +42,29 @@ export default class MyApp extends App {
     // Define which query we will check
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     // If matches, set data-theme to dark
-    if (storedTheme === "light") {
+    if (storedTheme === THEMES.LIGHT) {
       // do nothing
-    } else if (mediaQuery.matches || storedTheme === "dark") {
-      document.documentElement.setAttribute("data-theme", "dark");
-      this.setState({ theme: "dark", values: cssDarkVars });
+    } else if (mediaQuery.matches || storedTheme === THEMES.DARK) {
+      document.documentElement.setAttribute("data-theme", THEMES.DARK);
+      this.setState({ theme: THEMES.DARK, values: cssDarkVars });
     }
   };
 
   toggleTheme = () => {
     let newTheme = this.state.theme;
-    newTheme === "dark" ? (newTheme = "light") : (newTheme = "dark");
-    let newValues = newTheme === "dark" ? cssDarkVars : cssRootVars;
+    newTheme === THEMES.DARK
+      ? (newTheme = THEMES.LIGHT)
+      : (newTheme = THEMES.DARK);
+    let newValues = newTheme === THEMES.DARK ? cssDarkVars : cssRootVars;
 
     localStorage.setItem("theme", newTheme);
 
     let transition = document.createElement("div");
     transition.setAttribute("id", "transition");
     let color =
-      newTheme === "dark" ? cssDarkVars.background : cssRootVars.background;
+      newTheme === THEMES.DARK
+        ? cssDarkVars.background
+        : cssRootVars.background;
     transition.style.backgroundColor = color;
 
     document.getElementsByTagName("body")[0].appendChild(transition);
@@ -49,9 +80,10 @@ export default class MyApp extends App {
     );
 
     window.setTimeout(function () {
-      document
-        .getElementById("transition")
-        .parentNode.removeChild(document.getElementById("transition"));
+      let t = document.getElementById("transition");
+      if (t) {
+        t.parentNode?.removeChild(t);
+      }
     }, 750);
   };
 
@@ -76,7 +108,7 @@ export default class MyApp extends App {
             top: "0",
             left: "0",
             backgroundColor:
-              this.state.theme == "light"
+              this.state.theme == THEMES.LIGHT
                 ? cssRootVars.background
                 : cssDarkVars.background,
           }}
@@ -117,7 +149,7 @@ export default class MyApp extends App {
                 .map(([key, val]) => `--${key}: ${val}`)
                 .join(";")}
             }
-            html[data-theme="dark"] {
+            html[data-theme=${THEMES.DARK}] {
               ${Object.entries(cssDarkVars)
                 .map(([key, val]) => `--${key}: ${val}`)
                 .join(";")}

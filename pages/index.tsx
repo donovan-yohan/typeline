@@ -6,19 +6,20 @@ import React, {
   useReducer,
   useContext,
   useCallback,
+  LegacyRef,
 } from "react";
 import ReactTooltip from "react-tooltip";
 import { Transition } from "react-transition-group";
 import Lottie from "lottie-react-web";
 import themeAnimation from "../public/img/animations/darkmode.json";
 import styles from "../styles/Home.module.scss";
-import Word from "../components/word.js";
-import Cursor from "../components/cursor.js";
-import Menu from "../components/menu.js";
+import Word from "../components/word";
+import Cursor from "../components/cursor";
+import Menu from "../components/menu";
 import PerformanceChart from "../components/performanceChart";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useInterval from "@use-it/interval";
-import { calculateRawWPM, calculateTrueWPM } from "../utils/wpmUtils.js";
+import { calculateRawWPM, calculateTrueWPM } from "../utils/wpmUtils";
 import createTextDatabase from "../utils/createTextDatabase.js";
 import { isMobile } from "react-device-detect";
 import {
@@ -28,15 +29,39 @@ import {
   initialHighlightState,
   textTypedReducer,
   EMPTY_TYPED_DATA,
+  Stats,
+  TypedData,
+  TextTypedActionType,
+  TextTypedUpdatePayload,
+  TextTypedInitPayload,
 } from "../components/reducers";
-import cleanSeed, { generateSeed } from "../utils/getSeedAndTime";
+import cleanSeed, { generateSeed, TestInfo } from "../utils/getSeedAndTime";
 import Context from "../components/context";
 import useEventListener from "../hooks/useEventListener";
 import Logo from "../components/logo";
 import useHover from "../hooks/useHover";
+import { OffsetType } from "hooks/useOffset";
+
+interface ChartStat {
+  wpm: number;
+  raw: number;
+  correctRawAverage: number;
+  allRawAverage: number;
+  correctInInterval: number;
+  incorrectInInterval: number;
+  correctedInInterval: number;
+  time: number;
+  correctToTime: number;
+  incorrectToTime: number;
+  correctedToTime: number;
+}
 
 const DEFAULT_TIME = 30;
 const FADE_DURATION = 150; // in ms
+
+const allAreZero = (stats: Stats) => {
+  return Object.values(stats).every((stat) => stat === 0);
+};
 
 export default function Home() {
   const theme = useContext(Context);
@@ -45,19 +70,22 @@ export default function Home() {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
-  const [chartStats, setChartStats] = useState([]);
+  const [chartStats, setChartStats] = useState<ChartStat[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
 
-  const [activeWord, setActiveWord] = useState(0);
-  const [textDatabase, setTextDatabase] = useState([[]]);
+  const [activeWordIndex, setActiveWordIndex] = useState(0);
+  const [textDatabase, setTextDatabase] = useState<string[][]>([[]]);
   const [textTyped, textTypedDispatcher] = useReducer(textTypedReducer, [
     EMPTY_TYPED_DATA,
   ]);
 
   // initial start up logic
   // {seed: String, time: int}
-  const [seed, setSeed] = useState();
+  const [seed, setSeed] = useState<TestInfo>({
+    seed: generateSeed(),
+    time: DEFAULT_TIME,
+  });
 
   // assign hash on first load
   useEffect(() => {
@@ -77,7 +105,7 @@ export default function Home() {
   // generate new words when hash changes
   useDidUpdateEffect(() => {
     // reset to original state
-    setActiveWord(0);
+    setActiveWordIndex(0);
     setIsRunning(false);
     setFinished(false);
     setTime(0);
@@ -95,7 +123,11 @@ export default function Home() {
       setIsResetting(false);
       let newTextDatabase = createTextDatabase(json.words);
       setTextDatabase(newTextDatabase);
-      textTypedDispatcher({ type: "setTextTyped", textData: newTextDatabase });
+      let payload: TextTypedInitPayload = {
+        type: TextTypedActionType.INIT,
+        textData: newTextDatabase,
+      };
+      textTypedDispatcher(payload);
     })();
   }, [seed]);
 
@@ -114,9 +146,9 @@ export default function Home() {
     highlightReducer,
     initialHighlightState
   );
-  const [lineOffset, setLineOffset] = useState();
+  const [lineOffset, setLineOffset] = useState<number>(0);
 
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<Stats>({
     correct: 0,
     incorrect: 0,
     corrected: 0,
@@ -125,8 +157,8 @@ export default function Home() {
   useEffect(() => {
     setStats(
       textTyped.reduce(
-        (acc, word, i) => {
-          if (!word.stats) return acc;
+        (acc: Stats, word: TypedData) => {
+          if (allAreZero(word.stats)) return acc;
           acc.correct += word.stats.correct;
           acc.incorrect += word.stats.incorrect;
           acc.corrected += word.stats.corrected;
@@ -146,39 +178,37 @@ export default function Home() {
   const [currentLineHeight, setCurrentLineHeight] = useState(89);
   useDidUpdateEffect(() => {
     if (!finished) {
-      if (
-        highlightState.wordRef &&
-        highlightState.wordRef.current.parentNode.clientHeight !=
-          currentLineHeight
-      ) {
-        setCurrentLineHeight(
-          highlightState.wordRef.current.parentNode.clientHeight
-        );
+      if (highlightState.wordRef) {
+        let offsetNode = highlightState.wordRef.current
+          ?.parentNode as HTMLElement | null;
+        if (offsetNode) setCurrentLineHeight(offsetNode.clientHeight);
       }
     }
   }, [highlightState]);
   useEffect(() => {
     setTextPageHeight(currentLineHeight * 3 + "px");
   }, [currentLineHeight]);
+  // --------------------------------------------------
 
-  const paragraphRef = useRef(null);
-  const rootRef = useRef(null);
-  const textPageRef = useRef(null);
+  const paragraphRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const textPageRef = useRef<HTMLDivElement>(null);
 
   // TYPING LOGIC
-  const handleTextTyped = (value, index = activeWord) => {
-    textTypedDispatcher({
-      type: "updateTextTyped",
+  const handleTextTyped = (textTyped: TypedData, index = activeWordIndex) => {
+    let payload: TextTypedUpdatePayload = {
+      type: TextTypedActionType.UPDATE,
       targetIndex: index,
-      newValue: value,
-    });
+      newValue: textTyped,
+    };
+    textTypedDispatcher(payload);
   };
 
-  const handleWordChanged = (newActiveWord) => {
-    setActiveWord(newActiveWord);
+  const handleWordChanged = (newActiveWordIndex: number) => {
+    setActiveWordIndex(newActiveWordIndex);
   };
 
-  const handleLineChange = (linePos) => {
+  const handleLineChange = (linePos: OffsetType) => {
     // magic value that compensates for highlight being different height from the whole line...
     // works assuming the highlight is centered in a word
     let relativeLineHeight = linePos.bottom + currentLineHeight / 2;
@@ -191,7 +221,13 @@ export default function Home() {
   };
 
   // helper function to find change in values over time for graph
-  const newStat = (lastStat, currentTime, correct, incorrect) => {
+  const newStat = (
+    lastStat: ChartStat,
+    currentTime: number,
+    correct: number,
+    incorrect: number,
+    corrected: number
+  ): ChartStat => {
     return {
       wpm: calculateTrueWPM(
         stats.correct,
@@ -205,17 +241,19 @@ export default function Home() {
         lastStat.time,
         currentTime
       ),
-      correctRaw: calculateRawWPM(
+      correctRawAverage: calculateRawWPM(
         correct - lastStat.correctToTime,
         lastStat.time,
         currentTime
       ),
-      rawAverage: calculateRawWPM(correct, 0, currentTime),
+      allRawAverage: calculateRawWPM(correct, 0, currentTime),
       correctInInterval: correct - lastStat.correctToTime,
       incorrectInInterval: incorrect - lastStat.incorrectToTime,
+      correctedInInterval: corrected - lastStat.correctedToTime,
       time: currentTime,
       correctToTime: correct,
       incorrectToTime: incorrect,
+      correctedToTime: corrected,
     };
   };
 
@@ -235,22 +273,32 @@ export default function Home() {
           {
             wpm: 0,
             raw: 0,
-            rawAverage: 0,
+            correctRawAverage: 0,
+            allRawAverage: 0,
             correctInInterval: 0,
             incorrectInInterval: 0,
+            correctedInInterval: 0,
             time: 0,
             correctToTime: 0,
             incorrectToTime: 0,
+            correctedToTime: 0,
           },
           time,
           stats.correct,
-          stats.incorrect
+          stats.incorrect,
+          stats.corrected
         ),
       ]);
     } else if (time > 1) {
       setChartStats([
         ...chartStats,
-        newStat(chartStats[time - 2], time, stats.correct, stats.incorrect),
+        newStat(
+          chartStats[time - 2],
+          time,
+          stats.correct,
+          stats.incorrect,
+          stats.corrected
+        ),
       ]);
     }
 
@@ -328,7 +376,7 @@ export default function Home() {
                 {(state) => (
                   <div
                     className={`${styles.themeToggle} themeToggle-${state}`}
-                    ref={darkmodeRef}
+                    ref={darkmodeRef as LegacyRef<HTMLDivElement>}
                     onClick={() => {
                       theme.toggleTheme();
                     }}
@@ -342,9 +390,9 @@ export default function Home() {
                       height={30}
                       width={30}
                       direction={
-                        isDarkmodeHovered
+                        (isDarkmodeHovered
                           ? 1 * themeMultiplier
-                          : -1 * themeMultiplier
+                          : -1 * themeMultiplier) as 1 | -1
                       }
                     />
                   </div>
@@ -379,7 +427,7 @@ export default function Home() {
                       wordRef={highlightState.wordRef}
                       letterRef={cursorState.letterRef}
                       paragraphRef={paragraphRef}
-                      activeWord={activeWord}
+                      activeWordIndex={activeWordIndex}
                       textTyped={textTyped}
                       textDatabase={textDatabase}
                       isFinished={finished}
@@ -395,13 +443,13 @@ export default function Home() {
                           <Word
                             id={i}
                             word={word}
-                            active={activeWord == i}
+                            active={activeWordIndex == i}
                             typed={textTyped[i] || EMPTY_TYPED_DATA}
-                            key={`WORD-${i}`}
                             onLetterUpdate={cursorDispatcher}
                             onWordUpdate={highlightDispatcher}
                             finished={finished}
                             onUpdateStats={textTypedDispatcher}
+                            key={`WORD-${i}`}
                           />
                         );
                       })}
@@ -579,7 +627,6 @@ export default function Home() {
             )}
 
             <Menu
-              className={styles.menu}
               isFinished={finished}
               isRunning={isRunning}
               isEditing={isEditing}

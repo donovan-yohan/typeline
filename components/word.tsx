@@ -1,21 +1,36 @@
 import React, { useRef, useEffect, useState } from "react";
-import Letter from "../components/letter.js";
+import Letter from "./letter";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect";
+import { getCorrections, BACKSPACE_CHAR } from "../utils/getCorrections";
 import {
-  getCorrections,
-  BACKSPACE_CHAR,
-} from "../utils/getCorrections";
+  CursorSetLetterRefPayload,
+  HighlightActionType,
+  HighlightSetWordRefPayload,
+  TextTypedActionType,
+  TextTypedInitPayload,
+  TextTypedUpdatePayload,
+  TypedData,
+} from "./reducers";
+interface Props {
+  id: number;
+  active: boolean;
+  word: string[];
+  typed: TypedData;
+  onLetterUpdate: React.Dispatch<CursorSetLetterRefPayload>;
+  onWordUpdate: React.Dispatch<HighlightSetWordRefPayload>;
+  finished: boolean;
+  onUpdateStats: React.Dispatch<TextTypedUpdatePayload | TextTypedInitPayload>;
+}
 
 export default React.memo(function Word({
+  id,
   active,
   word,
   typed,
-  id,
   onLetterUpdate,
   onWordUpdate,
-  finished,
   onUpdateStats,
-}) {
+}: Props) {
   const wordString = word.join("");
   const [fullTyped, setFullTyped] = useState("");
   const [lastInfo, setLastInfo] = useState({ lastChar: "", lastLength: 0 });
@@ -35,7 +50,7 @@ export default React.memo(function Word({
 
   useEffect(() => {
     if (active) {
-      onWordUpdate({ type: "setWordRef", payload: wordRef });
+      onWordUpdate({ type: HighlightActionType.UPDATE, wordRef: wordRef });
     }
   }, [active]);
 
@@ -122,7 +137,7 @@ export default React.memo(function Word({
   // SEND UPDATE BACK
   useDidUpdateEffect(() => {
     onUpdateStats({
-      type: "updateTextTyped",
+      type: TextTypedActionType.UPDATE,
       targetIndex: id,
       newValue: {
         value: typed.value,
@@ -155,12 +170,10 @@ export default React.memo(function Word({
                 active={active}
                 letter={letter}
                 typed={typed}
-                wordId={id}
-                key={`${id}-CHAR-${i}`}
                 onLetterUpdate={onLetterUpdate}
-                finished={finished}
                 isPerfect={isPerfect}
                 isCorrect={isCorrect}
+                key={`${id}-CHAR-${i}`}
               />
             );
           })}
@@ -173,11 +186,9 @@ export default React.memo(function Word({
                 active={active}
                 letter={letter}
                 typed={typed}
-                wordId={id}
-                key={`${id}-OVERFLOW-${i + word.length}`}
                 onLetterUpdate={onLetterUpdate}
-                finished={finished}
                 overflow={true}
+                key={`${id}-OVERFLOW-${i + word.length}`}
               />
             );
           })}

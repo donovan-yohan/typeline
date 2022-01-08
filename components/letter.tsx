@@ -1,5 +1,21 @@
 import React, { useRef, useEffect } from "react";
-import cx from "classnames";
+import {
+  CursorActionType,
+  CursorSetLetterRefPayload,
+  TypedData,
+} from "./reducers";
+const cx = require("classnames");
+
+interface Props {
+  active: boolean;
+  typed: TypedData;
+  letter: string;
+  onLetterUpdate: React.Dispatch<CursorSetLetterRefPayload>;
+  id: number;
+  overflow?: boolean;
+  isPerfect?: boolean;
+  isCorrect?: boolean;
+}
 
 export default React.memo(function Letter({
   active,
@@ -7,10 +23,10 @@ export default React.memo(function Letter({
   letter,
   onLetterUpdate,
   id,
-  overflow,
-  isPerfect,
-  isCorrect,
-}) {
+  overflow = false,
+  isPerfect = false,
+  isCorrect = false,
+}: Props) {
   const letterRef = useRef(null);
   const letterClassList = cx({
     letterWrapper: true,
@@ -26,14 +42,14 @@ export default React.memo(function Letter({
   useEffect(() => {
     if (active && id == typed.value.length - 1) {
       onLetterUpdate({
-        type: "setLetterRef",
-        payload: letterRef,
+        type: CursorActionType.UPDATE,
+        letterRef: letterRef,
         isFirstChar: false,
       });
     } else if (active && typed.value.length == 0 && id == 0) {
       onLetterUpdate({
-        type: "setLetterRef",
-        payload: letterRef,
+        type: CursorActionType.UPDATE,
+        letterRef: letterRef,
         isFirstChar: true,
       });
     }

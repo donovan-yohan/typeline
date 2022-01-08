@@ -1,43 +1,65 @@
-import React, { useContext, useRef, useState } from "react";
+import React, { LegacyRef, useContext, useState } from "react";
 import Timer from "./timer.js";
-import cx from "classnames";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import copyTextToClipboard from "../utils/copyToClipboard.js";
 import ReactTooltip from "react-tooltip";
-import Context from "./context.js";
+import Context from "./context";
 import useHover from "../hooks/useHover.js";
+import { generateSeed, TestInfo } from "utils/getSeedAndTime";
+const cx = require("classnames");
 
+enum SettingsTypes {
+  HAS_CAPITALS = "hasCapitals",
+  HAS_NUMBERS = "hasNumbers",
+  HAS_PUNCTUATION = "hasPunctuation",
+  HAS_SYMBOLS = "hasSymbols",
+  WORD_LENGTH_RANGE = "wordLengthRange",
+}
+
+interface Settings {
+  [SettingsTypes.HAS_CAPITALS]: boolean;
+  [SettingsTypes.HAS_NUMBERS]: boolean;
+  [SettingsTypes.HAS_PUNCTUATION]: boolean;
+  [SettingsTypes.HAS_SYMBOLS]: boolean;
+  [SettingsTypes.WORD_LENGTH_RANGE]: [number, number];
+}
+
+interface Props {
+  isFinished: boolean;
+  isRunning: boolean;
+  time: number;
+  timeTotal: number;
+  onChangeTimeTotal: React.Dispatch<React.SetStateAction<number>>;
+  isEditing: boolean;
+  onUpdateEditingState: React.Dispatch<React.SetStateAction<boolean>>;
+  newTest: (seed: string, time: number) => void;
+  seed: TestInfo;
+  className?: string;
+}
 export default function Menu({
   isFinished,
   isRunning,
   time,
   timeTotal,
   onChangeTimeTotal,
-  options,
   isEditing,
-  onUpdateEditingState,
   newTest,
   seed,
-}) {
+}: Props) {
   const theme = useContext(Context);
-  const urlRef = useRef(null);
-  const [settings, setSettings] = useState([
-    { name: "Capitals" },
-    {
-      hasCapitals: false,
-      hasPunctuation: false,
-      hasNumbers: false,
-      hasSymbols: false,
-    },
-  ]);
+  const [settings, setSettings] = useState<Settings>({
+    hasCapitals: false,
+    hasPunctuation: false,
+    hasNumbers: false,
+    hasSymbols: false,
+    wordLengthRange: [0, 6],
+  });
   const [url, setUrl] = useState("");
   const [hoverCopyLink, isHoverCopyLink] = useHover([isFinished]);
 
   useDidUpdateEffect(() => {
     setUrl(window.location.href);
   }, [seed]);
-
-  const customizeText = isEditing ? "Save" : "Customize";
 
   const noEditMenuButtonText = isRunning ? "Restart" : "New Test";
   const menuButtonClassList = cx({
@@ -50,20 +72,7 @@ export default function Menu({
     urlHover: isHoverCopyLink,
   });
 
-  const handleCustomizeClick = (e) => {
-    if (!isRunning) {
-      if (isEditing) {
-        onUpdateEditingState(false);
-      } else {
-        onUpdateEditingState(true);
-      }
-    }
-  };
-
-  const flipSetting = (setting) => {
-    if (settings[setting] === undefined) {
-      throw new Error("unknown setting parameter flipped");
-    }
+  const flipSetting = (setting: SettingsTypes) => {
     setSettings((s) => ({
       ...s,
       [setting]: !s[setting],
@@ -93,24 +102,12 @@ export default function Menu({
       )}
       {isEditing && (
         <div className={"wordSettingsWrapper"}>
-          {settings.map((setting) => {
-            <label>
-              <input
-                type='checkbox'
-                name={settings}
-                checked={settings.hasCapitals}
-                onClick={() => flipSetting("hasCapitals")}
-              />
-              <span className={"checkmark"} />
-              Capitals
-            </label>;
-          })}
           <label>
             <input
               type='checkbox'
-              name='hasCapitals'
+              name={SettingsTypes.HAS_CAPITALS}
               checked={settings.hasCapitals}
-              onClick={() => flipSetting("hasCapitals")}
+              onClick={() => flipSetting(SettingsTypes.HAS_CAPITALS)}
             />
             <span className={"checkmark"} />
             Capitals
@@ -120,9 +117,9 @@ export default function Menu({
             <span className={"checkmark"} />
             <input
               type='checkbox'
-              name='hasPunctuation'
+              name={SettingsTypes.HAS_PUNCTUATION}
               checked={settings.hasPunctuation}
-              onClick={() => flipSetting("hasPunctuation")}
+              onClick={() => flipSetting(SettingsTypes.HAS_PUNCTUATION)}
             />
             Punctuation
           </label>
@@ -130,9 +127,9 @@ export default function Menu({
           <label>
             <input
               type='checkbox'
-              name='hasNumbers'
+              name={SettingsTypes.HAS_NUMBERS}
               checked={settings.hasNumbers}
-              onClick={() => flipSetting("hasNumbers")}
+              onClick={() => flipSetting(SettingsTypes.HAS_NUMBERS)}
             />
             <span className={"checkmark"} />
             Numbers
@@ -140,9 +137,9 @@ export default function Menu({
           <label>
             <input
               type='checkbox'
-              name='hasSymbols'
+              name={SettingsTypes.HAS_SYMBOLS}
               checked={settings.hasSymbols}
-              onClick={() => flipSetting("hasSymbols")}
+              onClick={() => flipSetting(SettingsTypes.HAS_SYMBOLS)}
             />
             <span className={"checkmark"} />
             Symbols
@@ -168,7 +165,7 @@ export default function Menu({
               if (isRunning) {
                 newTest(seed.seed, seed.time);
               } else {
-                newTest(undefined, seed.time);
+                newTest(generateSeed(), seed.time);
               }
             }}
             className={menuButtonClassList}
@@ -189,7 +186,10 @@ export default function Menu({
           </div>
         )}
         {isFinished && (
-          <div ref={hoverCopyLink} className='buttonContainer'>
+          <div
+            ref={hoverCopyLink as LegacyRef<HTMLDivElement>}
+            className='buttonContainer'
+          >
             <button
               data-tip
               data-for='copyTip'
@@ -207,12 +207,12 @@ export default function Menu({
               effect={"solid"}
               backgroundColor={theme.values.tooltipColour}
               textColor={theme.values.main}
-              event={"click"}
+              event={"mousedown"}
               eventOff={"mouseleave"}
             >
               <p>Link copied!</p>
             </ReactTooltip>
-            <div className={"buttonTooltip"} >
+            <div className={"buttonTooltip"}>
               <span className={"toolTipIcon"} data-tip data-for='urlTip'>
                 ?
               </span>
