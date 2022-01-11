@@ -1,16 +1,32 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
-import Context from "../components/context";
-import { Line, defaults } from "react-chartjs-2";
+import React, {
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  MouseEvent,
+} from "react";
+import Context from "./context";
+import { defaults } from "react-chartjs-2";
 import { formatTime } from "../utils/formatTime";
 import CustomLine from "./customLine";
+import { ChartStat } from "pages";
+import { Chart, LegendItem, TooltipItem } from "chart.js";
+
+interface Props {
+  rawStats: ChartStat[];
+}
 
 const AVERAGING_SAMPLES = 2;
 const MAIN_DATA_WEIGHT = 0.85;
 
-const weightedAverage = (array, i, totalSamples, weight) => {
+const weightedAverage = (
+  array: number[],
+  i: number,
+  totalSamples: number,
+  weight: number
+) => {
   let value = 0;
 
-  let weightedValue = array[i];
   let remainingWeight = 1;
   let nextWeight = weight;
 
@@ -25,8 +41,8 @@ const weightedAverage = (array, i, totalSamples, weight) => {
   return value;
 };
 
-const parseStats = (rawStats) => {
-  let rawArray = rawStats.map((s) => parseInt(s.raw));
+const parseStats = (rawStats: ChartStat[]) => {
+  let rawArray = rawStats.map((s) => s.raw);
   return rawStats.map((stat, i) => {
     let raw = weightedAverage(rawArray, i, AVERAGING_SAMPLES, MAIN_DATA_WEIGHT);
 
@@ -35,15 +51,18 @@ const parseStats = (rawStats) => {
       raw: Math.floor(raw),
       correctInInterval: stat.correctInInterval,
       incorrectInInterval: stat.incorrectInInterval,
+      correctedInInterval: stat.correctedInInterval,
       time: stat.time,
       correctToTime: stat.correctToTime,
       incorrectToTime: stat.incorrectToTime,
+      correctedToTime: stat.correctedToTime,
     };
   });
 };
 
-const getLabelString = (context) => {
-  let value = ` ${context.parsed.y}`;
+const getLabelString = (context: TooltipItem<"line">) => {
+  let value = `${context.parsed.y}`;
+  if (!context.dataset.label) return value;
   if (context.dataset.label.includes("WPM")) {
     return (
       value + `wpm ${context.dataset.label.replace(" WPM", "").toLowerCase()}`
@@ -59,14 +78,14 @@ const getLabelString = (context) => {
   }
 };
 
-function PerformanceChartComponent({ rawStats }) {
+function PerformanceChartComponent({ rawStats }: Props) {
   const theme = useContext(Context);
-  const chartParentRef = useRef(null);
+  const chartParentRef = useRef<HTMLDivElement>(null);
 
   defaults.font.family = "Nunito";
   defaults.font.size = 14;
   defaults.font.lineHeight = 1.5;
-  defaults.font.weight = 700;
+  defaults.font.weight = "700";
 
   const [stats, setStats] = useState(parseStats(rawStats));
   useEffect(() => {
@@ -124,9 +143,7 @@ function PerformanceChartComponent({ rawStats }) {
     ],
   };
 
-  const hasLowWPM = stats.some(
-    (s) => parseInt(s.wpm) < 10 || parseInt(s.raw) < 10
-  );
+  const hasLowWPM = stats.some((s) => s.wpm < 10 || s.raw < 10);
   const needsMinHeight = stats.every((s) => s.wpm < 47 && s.raw < 47);
 
   const options = {
@@ -150,7 +167,7 @@ function PerformanceChartComponent({ rawStats }) {
           font: {
             weight: 400,
           },
-          callback: function (val, index) {
+          callback: function (val: number) {
             return val > 0 ? val : Math.ceil(val);
           },
         },
@@ -166,7 +183,7 @@ function PerformanceChartComponent({ rawStats }) {
         ticks: {
           color: theme.values.background,
           beginAtZero: true,
-          callback: (tick) => {
+          callback: (tick: number) => {
             if (tick % 1 === 0) return tick;
           },
         },
@@ -189,11 +206,11 @@ function PerformanceChartComponent({ rawStats }) {
       legend: {
         display: false,
         labels: {
-          generateLabels: (chart) => {
+          generateLabels: (chart: Chart<"line">) => {
             let data = chart.data.datasets;
-            return data.map((l, i) => {
+            return data.map((l) => {
               return {
-                text: l.label.toLowerCase(),
+                text: l.label?.toLowerCase() || "",
                 fontColor: l.backgroundColor,
                 fillStyle: "fill",
                 strokeStyle: "none",
@@ -204,7 +221,11 @@ function PerformanceChartComponent({ rawStats }) {
             });
           },
         },
-        onClick: function (e, legendItem, legend) {
+        onClick: function (
+          e: MouseEvent,
+          legendItem: LegendItem,
+          legend: ChartLegend
+        ) {
           // do nothing
         },
       },
@@ -223,16 +244,16 @@ function PerformanceChartComponent({ rawStats }) {
         caretPadding: 4,
         multiKeyBackground: "rgba(0,0,0,0)",
         callbacks: {
-          title: (context) => {
+          title: (context: TooltipItem<"line">[]) => {
             return formatTime(context[0].parsed.x + 1);
           },
-          label: (context) => {
+          label: (context: TooltipItem<"line">) => {
             return getLabelString(context);
           },
-          labelTextColor: (context) => {
-            return context.backgroundColor;
+          labelTextColor: (context: TooltipItem<"line">) => {
+            return context.dataset.backgroundColor;
           },
-          labelColor: (context) => {
+          labelColor: (context: TooltipItem<"line">) => {
             return {
               bodyColor: context.dataset.backgroundColor,
               borderColor: context.dataset.backgroundColor,
@@ -252,7 +273,7 @@ function PerformanceChartComponent({ rawStats }) {
       <CustomLine
         data={data}
         options={options}
-        chartHeight={chartParentRef.current?.parentElement.clientHeight}
+        chartHeight={chartParentRef.current?.parentElement?.clientHeight}
       />
       <style jsx>{`
         .container {

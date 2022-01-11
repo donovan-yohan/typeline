@@ -42,7 +42,7 @@ import Logo from "../components/logo";
 import useHover from "../hooks/useHover";
 import { OffsetType } from "hooks/useOffset";
 
-interface ChartStat {
+export interface ChartStat {
   wpm: number;
   raw: number;
   correctRawAverage: number;
