@@ -221,11 +221,7 @@ function PerformanceChartComponent({ rawStats }: Props) {
             });
           },
         },
-        onClick: function (
-          e: MouseEvent,
-          legendItem: LegendItem,
-          legend: ChartLegend
-        ) {
+        onClick: function (e: MouseEvent, legendItem: LegendItem) {
           // do nothing
         },
       },
