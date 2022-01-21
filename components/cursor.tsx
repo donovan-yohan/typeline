@@ -80,7 +80,7 @@ export default function Cursor({
     setHasFocus(true);
   }, [textDatabase]);
 
-  // UPDATE STATS AND SEND TO INDEX PAGE
+  // Handle regular text typed
   let handleTextTyped = (e: ChangeEvent<HTMLInputElement>) => {
     let w = e.target.value;
     setText(w);
@@ -118,7 +118,7 @@ export default function Cursor({
         onTextTyped(
           {
             value: text,
-            fullValue: textTyped[newActiveWord].fullValue,
+            fullValue: textTyped[activeWordIndex].fullValue,
             stats: textTyped[activeWordIndex].stats,
             visited: true,
           },

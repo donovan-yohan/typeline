@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import Letter from "./letter";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect";
-import { getCorrections, BACKSPACE_CHAR } from "../utils/getCorrections";
+import { getCorrections, BACKSPACE_CHAR } from "../utils/typedDataUtils";
 import {
   CursorSetLetterRefPayload,
   HighlightActionType,

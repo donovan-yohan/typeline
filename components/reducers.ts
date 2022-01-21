@@ -6,6 +6,7 @@ export interface Stats {
   corrected: number;
 }
 
+// implement textDatabase type separate from typedDatabase so typed data can be dynamically sized
 export interface TypedData {
   value: string;
   fullValue: string;

@@ -8,7 +8,7 @@ import getSeedAndTime, {
   PUNCTUATION_TABLE,
   symbolTriggers,
   SYMBOL_TABLE,
-} from "utils/getSeedAndTime";
+} from "../../utils/getSeedAndTime";
 import { NextApiRequest, NextApiResponse } from "next";
 
 interface seedFlags {
