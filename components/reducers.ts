@@ -1,4 +1,11 @@
-import { TypelineRef } from "types";
+import {
+  LetterState,
+  LetterType,
+  TypelineRef,
+  WordState,
+  WordType
+} from "interfaces/typeline";
+import { getWordState } from "utils/cursorUtils";
 
 export interface Stats {
   correct: number;
@@ -18,11 +25,25 @@ export const EMPTY_TYPED_DATA: TypedData = {
   value: "",
   fullValue: "",
   stats: { correct: 0, incorrect: 0, corrected: 0 },
-  visited: false,
+  visited: false
+};
+
+export const EMPTY_LETTER_TYPE: LetterType = {
+  value: "",
+  received: "",
+  state: LetterState.UNVISITED
+};
+
+export const EMPTY_WORD_TYPE: WordType = {
+  value: "",
+  letters: [EMPTY_LETTER_TYPE],
+  state: WordState.UNVISITED,
+  overflowTotal: 0,
+  overflowRemoved: 0
 };
 
 export enum CursorActionType {
-  UPDATE = "UPDATE",
+  UPDATE = "UPDATE"
 }
 export interface CursorState {
   letterRef: TypelineRef;
@@ -33,7 +54,7 @@ export interface CursorSetLetterRefPayload extends CursorState {
 }
 export let initialCursorState: CursorState = {
   letterRef: null,
-  isFirstChar: true,
+  isFirstChar: true
 };
 export function cursorReducer(
   state: CursorState,
@@ -43,25 +64,26 @@ export function cursorReducer(
     case CursorActionType.UPDATE:
       return {
         letterRef: action.letterRef || state.letterRef,
-        isFirstChar: action.isFirstChar,
-      };
-
+        isFirstChar: action.isFirstChar
+      } as CursorState;
     default:
       throw new Error(JSON.stringify(action.type));
   }
 }
 
 export enum HighlightActionType {
-  UPDATE = "UPDATE",
+  UPDATE = "UPDATE"
 }
 export interface HighlightState {
   wordRef: TypelineRef;
+  isValid: boolean;
 }
 export interface HighlightSetWordRefPayload extends HighlightState {
   type: HighlightActionType.UPDATE;
 }
 export let initialHighlightState: HighlightState = {
   wordRef: null,
+  isValid: false
 };
 export function highlightReducer(
   state: HighlightState,
@@ -71,6 +93,7 @@ export function highlightReducer(
     case HighlightActionType.UPDATE:
       return {
         wordRef: action.wordRef || state.wordRef,
+        isValid: action.isValid
       };
     default:
       throw new Error(JSON.stringify({ state, action }));
@@ -82,7 +105,7 @@ export enum StatsActionType {
   ADD_CORRECT = "ADD_CORRECT",
   ADD_INCORRECT = "ADD_INCORRECT",
   ADD_CORRECTED = "ADD_CORRECTED",
-  RESET = "RESET",
+  RESET = "RESET"
 }
 export interface StatsState {
   correct: number;
@@ -95,7 +118,7 @@ export interface StatsAction {
 export let initialStatsState = {
   correct: 0,
   incorrect: 0,
-  corrected: 0,
+  corrected: 0
 };
 export function statsReducer(state: StatsState, action: StatsAction) {
   switch (action.type) {
@@ -103,25 +126,25 @@ export function statsReducer(state: StatsState, action: StatsAction) {
       return {
         correct: state.correct + 1,
         incorrect: state.incorrect,
-        corrected: state.corrected,
+        corrected: state.corrected
       };
     case StatsActionType.ADD_INCORRECT:
       return {
         correct: state.correct,
         incorrect: state.incorrect + 1,
-        corrected: state.corrected,
+        corrected: state.corrected
       };
     case StatsActionType.ADD_CORRECTED:
       return {
         correct: state.correct,
         incorrect: state.incorrect,
-        corrected: state.corrected + 1,
+        corrected: state.corrected + 1
       };
     case StatsActionType.RESET:
       return {
         correct: 0,
         incorrect: 0,
-        corrected: 0,
+        corrected: 0
       };
     default:
       throw new Error(JSON.stringify({ state, action }));
@@ -131,36 +154,65 @@ export function statsReducer(state: StatsState, action: StatsAction) {
 
 export enum TextTypedActionType {
   UPDATE = "UPDATE",
-  INIT = "INIT",
+  UPDATE_LETTER = "UPDATE_LETTER",
+  INIT = "INIT"
 }
 
 export interface TextTypedUpdatePayload {
   type: TextTypedActionType.UPDATE;
   targetIndex: number;
-  newValue: TypedData;
+  newWordValue: WordType;
+}
+export interface TextTypedUpdateLetterPayload {
+  type: TextTypedActionType.UPDATE_LETTER;
+  targetIndex: number;
+  targetLetterIndex: number;
+  newLetterValue: LetterType;
 }
 export interface TextTypedInitPayload {
   type: TextTypedActionType.INIT;
-  textData: string[][];
+  textData: WordType[];
 }
 
-export function textTypedReducer(
-  state: TypedData[],
-  action: TextTypedUpdatePayload | TextTypedInitPayload
-) {
+export type TextTypedPayload =
+  | TextTypedUpdatePayload
+  | TextTypedInitPayload
+  | TextTypedUpdateLetterPayload;
+
+export function textTypedReducer(state: WordType[], action: TextTypedPayload) {
   switch (action.type) {
     case TextTypedActionType.UPDATE:
       return state.map((w, i) => {
         if (i == action.targetIndex) {
-          return action.newValue;
-        } else {
-          return w;
+          return action.newWordValue;
         }
+        return w;
+      });
+    case TextTypedActionType.UPDATE_LETTER:
+      return state.map((w, i) => {
+        if (i === action.targetIndex) {
+          let newLetters = w.letters;
+          // handle overflow add
+          const j = action.targetLetterIndex;
+          if (j < newLetters.length) {
+            newLetters[j] = action.newLetterValue;
+          } else {
+            newLetters.push(action.newLetterValue);
+            w.overflowTotal += 1;
+          }
+
+          // handle overflow remove
+          if (newLetters[j].value === "" && newLetters[j].received === "") {
+            newLetters.splice(j, 1);
+            w.overflowRemoved += 1;
+          }
+          w.letters = newLetters;
+          w.state = getWordState(w);
+        }
+        return w;
       });
     case TextTypedActionType.INIT:
-      return action.textData.map(() => {
-        return EMPTY_TYPED_DATA;
-      });
+      return action.textData;
     default:
       throw new Error(JSON.stringify({ state, action }));
   }

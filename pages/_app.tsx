@@ -1,12 +1,12 @@
 import App from "next/app";
 import React from "react";
 import Context from "../components/context";
-import "../styles/globals.css";
+import "../styles/globals.scss";
 import { cssRootVars, cssDarkVars } from "../styles/globalVars.js";
 
 enum THEMES {
   LIGHT = "light",
-  DARK = "dark",
+  DARK = "dark"
 }
 
 export interface ThemeProps {
@@ -33,7 +33,7 @@ interface State {
 export default class MyApp extends App {
   state: State = {
     theme: THEMES.LIGHT,
-    values: cssRootVars,
+    values: cssRootVars
   };
 
   componentDidMount = () => {
@@ -95,7 +95,7 @@ export default class MyApp extends App {
         value={{
           theme: this.state.theme,
           values: this.state.values,
-          toggleTheme: this.toggleTheme,
+          toggleTheme: this.toggleTheme
         }}
       >
         <div
@@ -110,7 +110,7 @@ export default class MyApp extends App {
             backgroundColor:
               this.state.theme == THEMES.LIGHT
                 ? cssRootVars.background
-                : cssDarkVars.background,
+                : cssDarkVars.background
           }}
         />
         <Component {...pageProps} />

@@ -1,63 +1,75 @@
-import React, { useRef, useEffect } from "react";
-import {
-  CursorActionType,
-  CursorSetLetterRefPayload,
-  TypedData,
-} from "./reducers";
+import { LetterType, WordState } from "interfaces/typeline";
+import React, { useRef, useLayoutEffect, useEffect } from "react";
+import { CursorActionType, CursorSetLetterRefPayload } from "./reducers";
 const cx = require("classnames");
 
 interface Props {
-  active: boolean;
-  typed: TypedData;
-  letter: string;
+  isActive: Boolean;
+  wordString: string;
+  wordState: WordState;
+  letter: LetterType;
   onLetterUpdate: React.Dispatch<CursorSetLetterRefPayload>;
   id: number;
-  overflow?: boolean;
-  isPerfect?: boolean;
-  isCorrect?: boolean;
+  wordId: number;
+  isPerfect?: boolean | undefined;
+  isCorrect?: boolean | undefined;
 }
 
 export default React.memo(function Letter({
-  active,
-  typed,
+  isActive,
+  wordString,
+  wordState,
   letter,
   onLetterUpdate,
   id,
-  overflow = false,
+  wordId,
   isPerfect = false,
-  isCorrect = false,
+  isCorrect = false
 }: Props) {
   const letterRef = useRef(null);
+  const visited = wordState !== WordState.UNVISITED;
+  const isLetterActive = wordString.length - 1 === id;
+  const isFirstLetterActive = id === 0 && wordString.length === 0;
+  const isOverflow = letter.value === "";
   const letterClassList = cx({
     letterWrapper: true,
-    correct: typed.value.charAt(id) == letter && !overflow,
-    incorrect: typed.value.charAt(id) && typed.value.charAt(id) != letter,
-    incorrectUntyped: typed.visited && !typed.value.charAt(id),
-    overflow: overflow,
+    correct: letter.value === letter.received && letter.value !== "",
+    incorrect: letter.received && letter.received !== letter.value,
+    incorrectUntyped: visited && isOverflow,
+    overflow: isOverflow,
     perfect: isPerfect,
-    incorrectAnimate:
-      (typed.visited && !isCorrect) || (typed.visited && overflow),
+    incorrectAnimate: (visited && !isCorrect) || (visited && isOverflow)
   });
-
-  useEffect(() => {
-    if (active && id == typed.value.length - 1) {
+  // handle first initial load
+  useLayoutEffect(() => {
+    if (wordId === 0 && id === 0) {
       onLetterUpdate({
         type: CursorActionType.UPDATE,
         letterRef: letterRef,
-        isFirstChar: false,
-      });
-    } else if (active && typed.value.length == 0 && id == 0) {
-      onLetterUpdate({
-        type: CursorActionType.UPDATE,
-        letterRef: letterRef,
-        isFirstChar: true,
+        isFirstChar: true
       });
     }
-  }, [typed.value, active]);
+  }, []);
+
+  useEffect(() => {
+    if (isActive && isFirstLetterActive) {
+      onLetterUpdate({
+        type: CursorActionType.UPDATE,
+        letterRef: letterRef,
+        isFirstChar: true
+      });
+    } else if (isActive && isLetterActive) {
+      onLetterUpdate({
+        type: CursorActionType.UPDATE,
+        letterRef: letterRef,
+        isFirstChar: false
+      });
+    }
+  }, [isLetterActive, isActive, isFirstLetterActive]);
 
   return (
     <span className={letterClassList}>
-      <span ref={letterRef}>{letter}</span>
+      <span ref={letterRef}>{isOverflow ? letter.received : letter.value}</span>
       <style jsx>{`
         .letterWrapper {
           display: inline-block;
@@ -91,7 +103,7 @@ export default React.memo(function Letter({
           color: var(--incorrect);
         }
         .incorrect:after {
-          content: "${typed.value.charAt(id)}";
+          content: "${letter.received}";
           bottom: -17%;
           color: var(--gray);
           opacity: var(--fade);

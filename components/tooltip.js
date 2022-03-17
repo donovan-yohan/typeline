@@ -1,11 +1,11 @@
-import React from "react";
+import React from 'react'
 
-export default function Tooltip(props) {
-  let arrowSize = props.arrowSize || 10;
-  let arrowPadding = props.arrowPadding || 4;
+export default function Tooltip (props) {
+  let arrowSize = props.arrowSize || 10
+  let arrowPadding = props.arrowPadding || 4
   return (
     <div className='container'>
-      <span className={"tooltipIcon"}>?</span>
+      <span className={'tooltipIcon'}>?</span>
       <div className={`tooltip ${props.placement}`}>{props.children}</div>
       <style jsx>{`
         .container {
@@ -44,10 +44,11 @@ export default function Tooltip(props) {
           position: absolute;
           border-radius: 4px;
           padding: 8px 20px;
+          pointer-events: none;
         }
         .tooltip:before {
           display: inline;
-          content: "";
+          content: '';
           position: absolute;
           background-color: ${props.backgroundColor};
           border-radius: 4px;
@@ -66,7 +67,7 @@ export default function Tooltip(props) {
           left: calc(0px - ${arrowSize}px - ${arrowPadding}px);
         }
         .left:after {
-          content: "";
+          content: '';
           max-width: 0;
           max-height: 0;
           border: ${arrowSize}px solid;
@@ -83,5 +84,5 @@ export default function Tooltip(props) {
         }
       `}</style>
     </div>
-  );
+  )
 }

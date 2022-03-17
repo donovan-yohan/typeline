@@ -44,7 +44,12 @@ export const useOffset = <T extends HTMLElement, U extends HTMLElement>(
     } else {
       console.warn("Could not find parent from child.");
     }
-  }, [childRef, ...properties]);
+  }, [
+    childRef,
+    childRef?.current?.offsetHeight,
+    childRef?.current?.offsetWidth,
+    ...properties
+  ]);
 
   return { left, top, right, bottom } as OffsetType;
 };

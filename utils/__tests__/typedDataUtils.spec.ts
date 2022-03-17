@@ -5,7 +5,7 @@ import {
   PREVWORD_CHAR,
   getTypedFromFull,
   getWordStats,
-  findEndOfVisitIndex,
+  findEndOfVisitIndex
 } from "../typedDataUtils";
 
 describe("getTypedFromFull", () => {
@@ -39,7 +39,7 @@ describe("getWordStats", () => {
     expect(
       getWordStats(
         {
-          fullValue: `hellpzc${BACKSPACE_CHAR}${BACKSPACE_CHAR}${BACKSPACE_CHAR}o${SPACE_CHAR}`,
+          fullValue: `hellpzc${BACKSPACE_CHAR}${BACKSPACE_CHAR}${BACKSPACE_CHAR}o${SPACE_CHAR}`
         } as TypedData,
         "hello",
         { fullValue: "" } as TypedData,
@@ -50,7 +50,7 @@ describe("getWordStats", () => {
     expect(
       getWordStats(
         {
-          fullValue: `hello${SPACE_CHAR}`,
+          fullValue: `hello${SPACE_CHAR}`
         } as TypedData,
         "hello",
         { fullValue: "" } as TypedData,
@@ -61,7 +61,7 @@ describe("getWordStats", () => {
     expect(
       getWordStats(
         {
-          fullValue: `he${BACKSPACE_CHAR}${BACKSPACE_CHAR}${PREVWORD_CHAR}`,
+          fullValue: `he${BACKSPACE_CHAR}${BACKSPACE_CHAR}${PREVWORD_CHAR}`
         } as TypedData,
         "hello",
         { fullValue: `goodby${SPACE_CHAR}` } as TypedData,
@@ -72,7 +72,7 @@ describe("getWordStats", () => {
     expect(
       getWordStats(
         {
-          fullValue: `he${BACKSPACE_CHAR}${BACKSPACE_CHAR}${PREVWORD_CHAR}hello${SPACE_CHAR}`,
+          fullValue: `he${BACKSPACE_CHAR}${BACKSPACE_CHAR}${PREVWORD_CHAR}hello${SPACE_CHAR}`
         } as TypedData,
         "hello",
         { fullValue: `goodby${SPACE_CHAR}e${SPACE_CHAR}` } as TypedData,

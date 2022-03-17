@@ -1,38 +1,45 @@
 import React, {
-  ChangeEvent,
+  Dispatch,
   KeyboardEvent,
   MouseEvent,
   RefObject,
   useCallback,
   useEffect,
   useRef,
-  useState,
+  useState
 } from "react";
 import { OffsetType, useOffset } from "../hooks/useOffset";
-import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useEventListener from "../hooks/useEventListener.js";
-import { TypelineRef } from "types";
-import { TypedData } from "./reducers";
+import { TypelineRef } from "interfaces/typeline";
+import { TextTypedPayload } from "./reducers";
+import {
+  getActiveLetterIndex,
+  getLastActiveLetterindex,
+  isInvalidKey,
+  isWordCorrect,
+  updateLetterReceived
+} from "utils/cursorUtils";
+import { WordType } from "interfaces/typeline";
 const cx = require("classnames");
 
 interface Props {
   letterRef: TypelineRef;
   wordRef: TypelineRef;
   paragraphRef: RefObject<HTMLDivElement>;
-  onTextTyped: (textTyped: TypedData, index?: number) => void;
+  onTextTyped: Dispatch<TextTypedPayload>;
   onWordChanged: (newActiveWordIndex: number) => void;
   isFinished: boolean;
   isEditing: boolean;
   isRunning: boolean;
   activeWordIndex: number;
-  textTyped: TypedData[];
-  textDatabase: string[][];
+  textTyped: WordType[];
   isFirstChar: boolean;
   onLineChange: (linePos: OffsetType) => void;
   textPageHeight: string;
+  isValid: boolean;
 }
 
-const KEYBOARD_INPUTS = ["Escape", " "];
+const IGNORE_START_KEYBOARD_INPUTS = ["Escape", " "];
 
 export default function Cursor({
   letterRef,
@@ -41,17 +48,14 @@ export default function Cursor({
   onTextTyped,
   onWordChanged,
   isFinished,
-  isEditing,
   isRunning,
   activeWordIndex,
   textTyped,
-  textDatabase,
   isFirstChar,
   onLineChange,
   textPageHeight,
+  isValid
 }: Props) {
-  const [text, setText] = useState("");
-  const [valid, setValid] = useState(true);
   const [repeat, setRepeat] = useState(false);
   const [hasFocus, setHasFocus] = useState(true);
   const [shouldAnimateCursor, setShouldAnimateCursor] = useState(true);
@@ -60,105 +64,61 @@ export default function Cursor({
   const highlightRef = useRef<HTMLSpanElement>(null);
   const cursorOffset = useOffset(paragraphRef, letterRef);
   const highlightOffset = useOffset(paragraphRef, wordRef, [
-    textTyped[activeWordIndex],
+    textTyped[activeWordIndex].letters.length
   ]);
 
   const cursorClassList = cx({
     cursor: true,
     cursorAnimate: shouldAnimateCursor,
-    hideCursor: !hasFocus && isRunning,
+    hideCursor: !hasFocus && isRunning
   });
 
   const inputClassList = cx({
     focusBanner: true,
-    lostFocus: !hasFocus && isRunning,
+    lostFocus: !hasFocus && isRunning
   });
 
-  // Reset when textDatabase is changed
-  useDidUpdateEffect(() => {
-    setText("");
-    setHasFocus(true);
-  }, [textDatabase]);
+  // Handle input
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    // TODO: Handle custom keyboard combos
+    if (isInvalidKey(e.key)) return;
 
-  // Handle regular text typed
-  let handleTextTyped = (e: ChangeEvent<HTMLInputElement>) => {
-    let w = e.target.value;
-    setText(w);
-  };
-
-  // UPDATE TEXT ON TYPE AND SEND BACK TO INDEX
-  useDidUpdateEffect(() => {
-    let lastVal = textTyped[activeWordIndex].value;
-    let lastChar = "";
-    if (text.length > lastVal.length) {
-      lastChar = text.charAt(text.length - 1);
-    }
-
-    onTextTyped({
-      value: text,
-      fullValue: textTyped[activeWordIndex].fullValue + lastChar,
-      stats: textTyped[activeWordIndex].stats,
-      visited: false,
-    });
-  }, [text]);
-
-  // HANDLE SPACEBAR AND BACKSPACE FOR CHANGING WORDS
-  const handleSpecialChar = (e: KeyboardEvent<HTMLInputElement>) => {
-    let newActiveWord = activeWordIndex;
-
-    if (e.key == " " || e.key == "Spacebar") {
+    const letters = textTyped[activeWordIndex].letters;
+    if (e.key == " ") {
       e.preventDefault();
-      if (!repeat && (activeWordIndex != 0 || text.length > 0)) {
+      if (!repeat && getActiveLetterIndex(letters) > 0) {
         // handle holding character down
         setRepeat(true);
-
-        newActiveWord += 1;
-
+        onWordChanged(activeWordIndex + 1);
         // update word visited
-        onTextTyped(
-          {
-            value: text,
-            fullValue: textTyped[activeWordIndex].fullValue,
-            stats: textTyped[activeWordIndex].stats,
-            visited: true,
-          },
-          activeWordIndex
-        );
       }
     } else if (e.key == "Backspace") {
       e.preventDefault();
-      // if new value matches old and backsapce was pressed, move to previous word
-      if (text.length == 0) {
-        if (activeWordIndex > 0) {
-          newActiveWord -= 1;
-
-          // only allow backspace if last word was incorrect
-          if (
-            textTyped[newActiveWord].value !=
-            textDatabase[newActiveWord].join("")
-          ) {
-            // update word visited
-            onTextTyped(
-              {
-                value: textTyped[newActiveWord].value,
-                fullValue: textTyped[newActiveWord].fullValue,
-                stats: textTyped[newActiveWord].stats,
-                visited: false,
-              },
-              newActiveWord
-            );
-          } else {
-            newActiveWord = activeWordIndex;
-          }
+      if (getActiveLetterIndex(letters) === 0) {
+        if (activeWordIndex == 0) return;
+        // only allow backspace if last word was incorrect
+        if (!isWordCorrect(textTyped[activeWordIndex - 1])) {
+          onWordChanged(activeWordIndex - 1);
         }
       } else {
-        setText(text.substring(0, text.length - 1));
+        onTextTyped(
+          updateLetterReceived(
+            activeWordIndex,
+            getLastActiveLetterindex(letters),
+            textTyped,
+            ""
+          )
+        );
       }
-    }
-
-    if (newActiveWord != activeWordIndex) {
-      setText(textTyped[newActiveWord].value);
-      onWordChanged(newActiveWord);
+    } else {
+      onTextTyped(
+        updateLetterReceived(
+          activeWordIndex,
+          getActiveLetterIndex(letters),
+          textTyped,
+          e.key
+        )
+      );
     }
 
     // remove cursor animation when typing
@@ -200,11 +160,10 @@ export default function Cursor({
   useEffect(() => {
     if (key.key && !hasFocus && !isRunning && !isFinished) {
       if (
-        !KEYBOARD_INPUTS.some((input) => key.key === input) &&
+        !IGNORE_START_KEYBOARD_INPUTS.some((input) => key.key === input) &&
         key.key.length === 1
       ) {
         setHasFocus(true);
-        setText(key.key);
       }
     }
   }, [key]);
@@ -214,18 +173,13 @@ export default function Cursor({
     if (cursorOffset) {
       let pos;
       let x;
-      if (text.length <= textDatabase[activeWordIndex].length) {
-        pos = cursorOffset;
-        x = isFirstChar ? pos.left : pos.right;
-      } else {
-        pos = highlightOffset;
-        x = pos.right;
-      }
+      pos = cursorOffset;
+      x = isFirstChar ? pos.left : pos.right;
       let y = pos.top;
       if (cursorRef.current)
         cursorRef.current.style.transform = `translate(${x}px, ${y}px)`;
     }
-  }, [cursorOffset, highlightOffset, isFirstChar]);
+  }, [cursorOffset, letterRef]);
 
   // UPDATE HIGHLIGHT
   useEffect(() => {
@@ -242,16 +196,6 @@ export default function Cursor({
     }
   }, [highlightOffset]);
 
-  useEffect(() => {
-    if (
-      textDatabase[activeWordIndex].join("").substring(0, text.length) != text
-    ) {
-      setValid(false);
-    } else {
-      setValid(true);
-    }
-  }, [text]);
-
   return (
     <div className={"container"}>
       <span ref={cursorRef} className={cursorClassList}></span>
@@ -261,11 +205,9 @@ export default function Cursor({
       </span>
       <input
         ref={typingField}
-        value={text}
         onClick={handleClick}
-        onKeyDown={handleSpecialChar}
+        onKeyDown={handleKeyDown}
         onKeyUp={checkIfHoldingKey}
-        onChange={handleTextTyped}
         onBlur={() => {
           setHasFocus(false);
         }}
@@ -282,7 +224,9 @@ export default function Cursor({
           z-index: 97;
           position: absolute;
           display: block;
-          background-color: ${valid ? "var(--highlight)" : "var(--incorrect)"};
+          background-color: ${isValid
+            ? "var(--highlight)"
+            : "var(--incorrect)"};
           width: 3px;
           height: 3.5em;
           border-radius: 2px;
@@ -299,19 +243,17 @@ export default function Cursor({
         }
 
         input {
-          width: 55vw;
+          width: 100%;
           height: ${textPageHeight};
           position: fixed;
           z-index: 99;
           font-size: 2.5em;
           overflow: hidden;
           opacity: 0;
-          font-family: Roboto;
           padding: 0;
           border: none;
           margin: 0;
           user-select: none;
-
           outline: none;
           background-color: transparent;
           border-radius: 4px;
@@ -331,7 +273,6 @@ export default function Cursor({
           opacity: 0;
           border-radius: 8px;
           user-select: none;
-
           font-size: 32px;
           font-weight: bold;
           text-transform: uppercase;
@@ -346,7 +287,9 @@ export default function Cursor({
         .activeHighlight {
           top: 0;
           position: absolute;
-          background-color: ${valid ? "var(--highlight)" : "var(--incorrect)"};
+          background-color: ${isValid
+            ? "var(--highlight)"
+            : "var(--incorrect)"};
           opacity: 0.2;
           transition: all 0.25s cubic-bezier(0.33, 0, 0, 1);
           border-radius: 4px;

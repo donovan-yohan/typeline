@@ -1,1 +1,0 @@
-export type TypelineRef = React.MutableRefObject<HTMLSpanElement | null> | null;

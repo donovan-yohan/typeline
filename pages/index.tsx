@@ -6,7 +6,7 @@ import React, {
   useReducer,
   useContext,
   useCallback,
-  LegacyRef,
+  LegacyRef
 } from "react";
 import ReactTooltip from "react-tooltip";
 import { Transition } from "react-transition-group";
@@ -20,7 +20,6 @@ import PerformanceChart from "../components/performanceChart";
 import useDidUpdateEffect from "../hooks/useDidUpdateEffect.js";
 import useInterval from "@use-it/interval";
 import { calculateRawWPM, calculateTrueWPM } from "../utils/wpmUtils";
-import createTextDatabase from "../utils/createTextDatabase.js";
 import { isMobile } from "react-device-detect";
 import {
   cursorReducer,
@@ -28,12 +27,10 @@ import {
   highlightReducer,
   initialHighlightState,
   textTypedReducer,
-  EMPTY_TYPED_DATA,
   Stats,
-  TypedData,
   TextTypedActionType,
-  TextTypedUpdatePayload,
   TextTypedInitPayload,
+  EMPTY_WORD_TYPE
 } from "../components/reducers";
 import cleanSeed, { generateSeed, TestInfo } from "../utils/getSeedAndTime";
 import Context from "../components/context";
@@ -41,6 +38,8 @@ import useEventListener from "../hooks/useEventListener";
 import Logo from "../components/logo";
 import useHover from "../hooks/useHover";
 import { OffsetType } from "hooks/useOffset";
+import { createTextDatabase } from "../utils/createTextDatabase";
+import { getActiveLetterIndex } from "utils/cursorUtils";
 
 export interface ChartStat {
   wpm: number;
@@ -59,10 +58,6 @@ export interface ChartStat {
 const DEFAULT_TIME = 30;
 const FADE_DURATION = 150; // in ms
 
-const allAreZero = (stats: Stats) => {
-  return Object.values(stats).every((stat) => stat === 0);
-};
-
 export default function Home() {
   const theme = useContext(Context);
 
@@ -75,16 +70,15 @@ export default function Home() {
   const [isResetting, setIsResetting] = useState(false);
 
   const [activeWordIndex, setActiveWordIndex] = useState(0);
-  const [textDatabase, setTextDatabase] = useState<string[][]>([[]]);
   const [textTyped, textTypedDispatcher] = useReducer(textTypedReducer, [
-    EMPTY_TYPED_DATA,
+    EMPTY_WORD_TYPE
   ]);
 
   // initial start up logic
   // {seed: String, time: int}
   const [seed, setSeed] = useState<TestInfo>({
     seed: generateSeed(),
-    time: DEFAULT_TIME,
+    time: DEFAULT_TIME
   });
 
   // assign hash on first load
@@ -110,22 +104,20 @@ export default function Home() {
     setFinished(false);
     setTime(0);
     setTimeTotal(seed.time);
-    setTextDatabase([[]]);
 
     window.location.hash = "/" + seed.seed + "/" + seed.time;
 
     (async () => {
       const res = await fetch("/api/words", {
         method: "POST",
-        body: JSON.stringify({ ...seed }),
+        body: JSON.stringify({ ...seed })
       });
       const json = await res.json();
       setIsResetting(false);
       let newTextDatabase = createTextDatabase(json.words);
-      setTextDatabase(newTextDatabase);
       let payload: TextTypedInitPayload = {
         type: TextTypedActionType.INIT,
-        textData: newTextDatabase,
+        textData: newTextDatabase
       };
       textTypedDispatcher(payload);
     })();
@@ -151,27 +143,8 @@ export default function Home() {
   const [stats, setStats] = useState<Stats>({
     correct: 0,
     incorrect: 0,
-    corrected: 0,
+    corrected: 0
   });
-
-  useEffect(() => {
-    setStats(
-      textTyped.reduce(
-        (acc: Stats, word: TypedData) => {
-          if (allAreZero(word.stats)) return acc;
-          acc.correct += word.stats.correct;
-          acc.incorrect += word.stats.incorrect;
-          acc.corrected += word.stats.corrected;
-          return acc;
-        },
-        {
-          correct: 0,
-          incorrect: 0,
-          corrected: 0,
-        }
-      )
-    );
-  }, [textTyped]);
 
   // Dynamic text height on zoom
   const [textPageHeight, setTextPageHeight] = useState("30vh");
@@ -195,15 +168,6 @@ export default function Home() {
   const textPageRef = useRef<HTMLDivElement>(null);
 
   // TYPING LOGIC
-  const handleTextTyped = (textTyped: TypedData, index = activeWordIndex) => {
-    let payload: TextTypedUpdatePayload = {
-      type: TextTypedActionType.UPDATE,
-      targetIndex: index,
-      newValue: textTyped,
-    };
-    textTypedDispatcher(payload);
-  };
-
   const handleWordChanged = (newActiveWordIndex: number) => {
     setActiveWordIndex(newActiveWordIndex);
   };
@@ -253,7 +217,7 @@ export default function Home() {
       time: currentTime,
       correctToTime: correct,
       incorrectToTime: incorrect,
-      correctedToTime: corrected,
+      correctedToTime: corrected
     };
   };
 
@@ -281,13 +245,13 @@ export default function Home() {
             time: 0,
             correctToTime: 0,
             incorrectToTime: 0,
-            correctedToTime: 0,
+            correctedToTime: 0
           },
           time,
           stats.correct,
           stats.incorrect,
           stats.corrected
-        ),
+        )
       ]);
     } else if (time > 1) {
       setChartStats([
@@ -298,7 +262,7 @@ export default function Home() {
           stats.correct,
           stats.incorrect,
           stats.corrected
-        ),
+        )
       ]);
     }
 
@@ -312,8 +276,13 @@ export default function Home() {
 
   // HANDLE INITIAL TEXT TYPED
   useDidUpdateEffect(() => {
-    if (!isRunning && textTyped[0].value != "") setIsRunning(true);
-  }, [textTyped[0].value]);
+    if (
+      !isRunning &&
+      textTyped[0].letters[0] &&
+      textTyped[0].letters[0].received != ""
+    )
+      setIsRunning(true);
+  }, [textTyped[0].letters[0]]);
 
   // CUSTOMIZE SETTINGS
   useEffect(() => {
@@ -385,7 +354,7 @@ export default function Home() {
                       options={{
                         animationData: themeAnimation,
                         autoplay: false,
-                        loop: false,
+                        loop: false
                       }}
                       height={30}
                       width={30}
@@ -412,9 +381,9 @@ export default function Home() {
                   }`}
                   style={{
                     maxHeight: `${textPageHeight}`,
-                    minHeight: `${textPageHeight}`,
+                    minHeight: `${textPageHeight}`
                   }}
-                  key={textDatabase.toLocaleString()}
+                  key={seed.toLocaleString()}
                 >
                   <div
                     ref={paragraphRef}
@@ -422,33 +391,37 @@ export default function Home() {
                     style={{ transform: `translateY(${lineOffset}px)` }}
                   >
                     <Cursor
-                      onTextTyped={handleTextTyped}
+                      onTextTyped={textTypedDispatcher}
                       onWordChanged={handleWordChanged}
                       wordRef={highlightState.wordRef}
                       letterRef={cursorState.letterRef}
                       paragraphRef={paragraphRef}
                       activeWordIndex={activeWordIndex}
                       textTyped={textTyped}
-                      textDatabase={textDatabase}
                       isFinished={finished}
                       isEditing={isEditing}
                       isRunning={isRunning}
                       isFirstChar={cursorState.isFirstChar}
                       onLineChange={handleLineChange}
                       textPageHeight={textPageHeight}
+                      isValid={highlightState.isValid}
                     />
                     <div className={styles.textWrapper}>
-                      {textDatabase.map((word, i) => {
+                      {textTyped.map((word, i) => {
                         return (
                           <Word
                             id={i}
-                            word={word}
-                            active={activeWordIndex == i}
-                            typed={textTyped[i] || EMPTY_TYPED_DATA}
+                            activeLetterIndex={
+                              activeWordIndex === i
+                                ? getActiveLetterIndex(word.letters)
+                                : -1
+                            }
+                            wordState={word.state}
+                            letters={word.letters}
+                            active={activeWordIndex === i}
                             onLetterUpdate={cursorDispatcher}
                             onWordUpdate={highlightDispatcher}
                             finished={finished}
-                            onUpdateStats={textTypedDispatcher}
                             key={`WORD-${i}`}
                           />
                         );

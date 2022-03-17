@@ -51,6 +51,10 @@ a {
   max-width: 20vw !important;
   transition: opacity 0.25s ease-in-out, visibility 0.25s ease-in-out !important;
   font-weight: normal;
+  pointer-events: none !important;
+  * {
+    pointer-events: none !important;
+  }
 }
 
 .label {
