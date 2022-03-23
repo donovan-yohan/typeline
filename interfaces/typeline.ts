@@ -29,3 +29,22 @@ export enum WordState {
   CORRECT = "CORRECT",
   INCORRECT = "INCORRECT"
 }
+
+export interface Stat {
+  wpm: number;
+  raw: number;
+  correctRawAverage: number;
+  allRawAverage: number;
+  correctInInterval: number;
+  incorrectInInterval: number;
+  correctedInInterval: number;
+  time: number;
+  correctToTime: number;
+  incorrectToTime: number;
+  correctedToTime: number;
+}
+
+export interface TypedData {
+  key: string;
+  delay: number;
+}

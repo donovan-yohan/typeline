@@ -7,27 +7,7 @@ import {
 } from "interfaces/typeline";
 import { getWordState } from "utils/cursorUtils";
 
-export interface Stats {
-  correct: number;
-  incorrect: number;
-  corrected: number;
-}
-
 // implement textDatabase type separate from typedDatabase so typed data can be dynamically sized
-export interface TypedData {
-  value: string;
-  fullValue: string;
-  stats: Stats;
-  visited: boolean;
-}
-
-export const EMPTY_TYPED_DATA: TypedData = {
-  value: "",
-  fullValue: "",
-  stats: { correct: 0, incorrect: 0, corrected: 0 },
-  visited: false
-};
-
 export const EMPTY_LETTER_TYPE: LetterType = {
   value: "",
   received: "",
@@ -99,58 +79,6 @@ export function highlightReducer(
       throw new Error(JSON.stringify({ state, action }));
   }
 }
-
-// verify these are needed
-export enum StatsActionType {
-  ADD_CORRECT = "ADD_CORRECT",
-  ADD_INCORRECT = "ADD_INCORRECT",
-  ADD_CORRECTED = "ADD_CORRECTED",
-  RESET = "RESET"
-}
-export interface StatsState {
-  correct: number;
-  incorrect: number;
-  corrected: number;
-}
-export interface StatsAction {
-  type: StatsActionType;
-}
-export let initialStatsState = {
-  correct: 0,
-  incorrect: 0,
-  corrected: 0
-};
-export function statsReducer(state: StatsState, action: StatsAction) {
-  switch (action.type) {
-    case StatsActionType.ADD_CORRECT:
-      return {
-        correct: state.correct + 1,
-        incorrect: state.incorrect,
-        corrected: state.corrected
-      };
-    case StatsActionType.ADD_INCORRECT:
-      return {
-        correct: state.correct,
-        incorrect: state.incorrect + 1,
-        corrected: state.corrected
-      };
-    case StatsActionType.ADD_CORRECTED:
-      return {
-        correct: state.correct,
-        incorrect: state.incorrect,
-        corrected: state.corrected + 1
-      };
-    case StatsActionType.RESET:
-      return {
-        correct: 0,
-        incorrect: 0,
-        corrected: 0
-      };
-    default:
-      throw new Error(JSON.stringify({ state, action }));
-  }
-}
-// --------------------------------------------------
 
 export enum TextTypedActionType {
   UPDATE = "UPDATE",

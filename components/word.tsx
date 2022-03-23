@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
 import Letter from "./letter";
-import _ from "lodash";
 
 import {
   CursorSetLetterRefPayload,

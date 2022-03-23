@@ -1,4 +1,6 @@
+import { TypedData } from "interfaces/typeline";
 import App from "next/app";
+import Head from "next/head";
 import React from "react";
 import Context from "../components/context";
 import "../styles/globals.scss";
@@ -28,12 +30,16 @@ export interface ThemeProps {
 interface State {
   theme: THEMES;
   values: ThemeProps;
+  typedState: TypedData[];
+  lastTime: number;
 }
 
 export default class MyApp extends App {
   state: State = {
     theme: THEMES.LIGHT,
-    values: cssRootVars
+    values: cssRootVars,
+    typedState: [],
+    lastTime: 0
   };
 
   componentDidMount = () => {
@@ -87,6 +93,21 @@ export default class MyApp extends App {
     }, 750);
   };
 
+  addTypedState = (key: string) => {
+    const now = new Date().getTime();
+    const delay = this.state.lastTime === 0 ? 0 : now - this.state.lastTime;
+
+    const typedState: TypedData = {
+      key,
+      delay
+    };
+
+    this.setState({
+      typedState: [...this.state.typedState, typedState],
+      lastTime: now
+    });
+  };
+
   render() {
     const { Component, pageProps } = this.props;
 
@@ -95,9 +116,44 @@ export default class MyApp extends App {
         value={{
           theme: this.state.theme,
           values: this.state.values,
+          typedState: this.state.typedState,
+          addTypedState: this.addTypedState,
           toggleTheme: this.toggleTheme
         }}
       >
+        <Head>
+          <title>typeline Typing Test</title>
+          <link rel='icon' href='/favicon.ico' />
+          <link
+            rel='apple-touch-icon'
+            sizes='180x180'
+            href='/apple-touch-icon.png'
+          />
+          <link
+            rel='icon'
+            type='image/png'
+            sizes='32x32'
+            href='/favicon-32x32.png'
+          />
+          <link
+            rel='icon'
+            type='image/png'
+            sizes='16x16'
+            href='/favicon-16x16.png'
+          />
+          <link rel='manifest' href='/site.webmanifest' />
+          <meta property='og:title' content='typeline Typing Test' />
+          <meta
+            property='og:description'
+            content='A simple animated type test focused on encouraging and improving consistency and accuracy.'
+          />
+          <meta property='og:type' content='website' />
+          <meta
+            property='og:url'
+            content='https://typeline.donovanyohan.com/'
+          />
+          <meta property='og:image' content='/img/og/ogimage.png' />
+        </Head>
         <div
           className='fouc'
           style={{

@@ -25,11 +25,14 @@ export const isWordCorrect = (word: WordType) => {
 
 export const isWordIncorrect = (word: WordType) => {
   return word.letters.some(
-    (letter: LetterType) => letter.state == LetterState.INCORRECT
+    (letter: LetterType) =>
+      letter.state == LetterState.INCORRECT ||
+      letter.state == LetterState.OVERFLOW
   );
 };
 
 export const isWordPerfect = (word: WordType) => {
+  if (word.state === WordState.INCORRECT) return false;
   return word.letters.every(
     (letter: LetterType) => letter.state == LetterState.CORRECT
   );
@@ -91,23 +94,15 @@ export const getTextTypedString = (letters: LetterType[]): string => {
 };
 
 export const getWordState = (word: WordType): WordState => {
-  if (
-    word.letters.some(
-      (l) =>
-        l.state === LetterState.INCORRECT || l.state === LetterState.OVERFLOW
-    )
-  ) {
+  if (isWordIncorrect(word)) {
     return WordState.INCORRECT;
   }
-
-  if (word.letters.every((l) => l.state === LetterState.CORRECT)) {
+  if (isWordPerfect(word)) {
     return WordState.PERFECT;
   }
-
-  if (word.letters.every((l) => l.received === "")) {
+  if (isWordBlank(word)) {
     return WordState.UNVISITED;
   }
-
   return WordState.CORRECT;
 };
 

@@ -4,6 +4,7 @@ import React, {
   MouseEvent,
   RefObject,
   useCallback,
+  useContext,
   useEffect,
   useRef,
   useState
@@ -20,6 +21,7 @@ import {
   updateLetterReceived
 } from "utils/cursorUtils";
 import { WordType } from "interfaces/typeline";
+import Context from "./context";
 const cx = require("classnames");
 
 interface Props {
@@ -56,6 +58,7 @@ export default function Cursor({
   textPageHeight,
   isValid
 }: Props) {
+  const { addTypedState } = useContext(Context);
   const [repeat, setRepeat] = useState(false);
   const [hasFocus, setHasFocus] = useState(true);
   const [shouldAnimateCursor, setShouldAnimateCursor] = useState(true);
@@ -90,7 +93,7 @@ export default function Cursor({
         // handle holding character down
         setRepeat(true);
         onWordChanged(activeWordIndex + 1);
-        // update word visited
+        addTypedState(e.key);
       }
     } else if (e.key == "Backspace") {
       e.preventDefault();
@@ -99,6 +102,7 @@ export default function Cursor({
         // only allow backspace if last word was incorrect
         if (!isWordCorrect(textTyped[activeWordIndex - 1])) {
           onWordChanged(activeWordIndex - 1);
+          addTypedState(e.key);
         }
       } else {
         onTextTyped(
@@ -109,6 +113,7 @@ export default function Cursor({
             ""
           )
         );
+        addTypedState(e.key);
       }
     } else {
       onTextTyped(
@@ -119,6 +124,7 @@ export default function Cursor({
           e.key
         )
       );
+      addTypedState(e.key);
     }
 
     // remove cursor animation when typing
@@ -167,6 +173,7 @@ export default function Cursor({
       }
     }
   }, [key]);
+  // --------------------------------------------------
 
   // UPDATE CURSOR
   useEffect(() => {

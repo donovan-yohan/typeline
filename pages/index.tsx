@@ -1,4 +1,3 @@
-import Head from "next/head";
 import React, {
   useState,
   useEffect,
@@ -27,7 +26,6 @@ import {
   highlightReducer,
   initialHighlightState,
   textTypedReducer,
-  Stats,
   TextTypedActionType,
   TextTypedInitPayload,
   EMPTY_WORD_TYPE
@@ -41,20 +39,6 @@ import { OffsetType } from "hooks/useOffset";
 import { createTextDatabase } from "../utils/createTextDatabase";
 import { getActiveLetterIndex } from "utils/cursorUtils";
 
-export interface ChartStat {
-  wpm: number;
-  raw: number;
-  correctRawAverage: number;
-  allRawAverage: number;
-  correctInInterval: number;
-  incorrectInInterval: number;
-  correctedInInterval: number;
-  time: number;
-  correctToTime: number;
-  incorrectToTime: number;
-  correctedToTime: number;
-}
-
 const DEFAULT_TIME = 30;
 const FADE_DURATION = 150; // in ms
 
@@ -65,7 +49,7 @@ export default function Home() {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [finished, setFinished] = useState(false);
-  const [chartStats, setChartStats] = useState<ChartStat[]>([]);
+  const [graphStats, setGraphStats] = useState<GraphStat[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
 
@@ -140,12 +124,6 @@ export default function Home() {
   );
   const [lineOffset, setLineOffset] = useState<number>(0);
 
-  const [stats, setStats] = useState<Stats>({
-    correct: 0,
-    incorrect: 0,
-    corrected: 0
-  });
-
   // Dynamic text height on zoom
   const [textPageHeight, setTextPageHeight] = useState("30vh");
   const [currentLineHeight, setCurrentLineHeight] = useState(89);
@@ -184,43 +162,6 @@ export default function Home() {
     }
   };
 
-  // helper function to find change in values over time for graph
-  const newStat = (
-    lastStat: ChartStat,
-    currentTime: number,
-    correct: number,
-    incorrect: number,
-    corrected: number
-  ): ChartStat => {
-    return {
-      wpm: calculateTrueWPM(
-        stats.correct,
-        stats.incorrect,
-        stats.corrected,
-        timeTotal - time,
-        timeTotal
-      ),
-      raw: calculateRawWPM(
-        correct + incorrect - lastStat.correctToTime - lastStat.incorrectToTime,
-        lastStat.time,
-        currentTime
-      ),
-      correctRawAverage: calculateRawWPM(
-        correct - lastStat.correctToTime,
-        lastStat.time,
-        currentTime
-      ),
-      allRawAverage: calculateRawWPM(correct, 0, currentTime),
-      correctInInterval: correct - lastStat.correctToTime,
-      incorrectInInterval: incorrect - lastStat.incorrectToTime,
-      correctedInInterval: corrected - lastStat.correctedToTime,
-      time: currentTime,
-      correctToTime: correct,
-      incorrectToTime: incorrect,
-      correctedToTime: corrected
-    };
-  };
-
   // COUNTER
   useInterval(
     () => {
@@ -230,42 +171,6 @@ export default function Home() {
   );
 
   useEffect(() => {
-    // update stats for graph/chart
-    if (time == 1) {
-      setChartStats([
-        newStat(
-          {
-            wpm: 0,
-            raw: 0,
-            correctRawAverage: 0,
-            allRawAverage: 0,
-            correctInInterval: 0,
-            incorrectInInterval: 0,
-            correctedInInterval: 0,
-            time: 0,
-            correctToTime: 0,
-            incorrectToTime: 0,
-            correctedToTime: 0
-          },
-          time,
-          stats.correct,
-          stats.incorrect,
-          stats.corrected
-        )
-      ]);
-    } else if (time > 1) {
-      setChartStats([
-        ...chartStats,
-        newStat(
-          chartStats[time - 2],
-          time,
-          stats.correct,
-          stats.incorrect,
-          stats.corrected
-        )
-      ]);
-    }
-
     // end test
     if (time >= timeTotal) {
       setIsRunning(false);
@@ -302,37 +207,6 @@ export default function Home() {
 
   return (
     <div ref={rootRef} className={styles.container}>
-      <Head>
-        <title>typeline Typing Test</title>
-        <link rel='icon' href='/favicon.ico' />
-        <link
-          rel='apple-touch-icon'
-          sizes='180x180'
-          href='/apple-touch-icon.png'
-        />
-        <link
-          rel='icon'
-          type='image/png'
-          sizes='32x32'
-          href='/favicon-32x32.png'
-        />
-        <link
-          rel='icon'
-          type='image/png'
-          sizes='16x16'
-          href='/favicon-16x16.png'
-        />
-        <link rel='manifest' href='/site.webmanifest' />
-        <meta property='og:title' content='typeline Typing Test' />
-        <meta
-          property='og:description'
-          content='A simple animated type test focused on encouraging and improving consistency and accuracy.'
-        />
-        <meta property='og:type' content='website' />
-        <meta property='og:url' content='https://typeline.donovanyohan.com/' />
-        <meta property='og:image' content='/img/og/ogimage.png' />
-      </Head>
-
       <main className={styles.main}>
         <Transition in={!isRunning} timeout={500}>
           {(state) => (
@@ -432,6 +306,7 @@ export default function Home() {
               )}
             </Transition>
             {finished && (
+              // TODO: refactor as results component
               <div className={styles.results}>
                 <div className={styles.resultsWrapper}>
                   <div className={styles.statsColumn}>
@@ -594,7 +469,7 @@ export default function Home() {
                       </span>
                     </div>
                   </div>
-                  <PerformanceChart rawStats={chartStats} />
+                  <PerformanceChart rawStats={graphStats} />
                 </div>
               </div>
             )}
@@ -615,8 +490,10 @@ export default function Home() {
           </div>
         )}
         {isMobile && <div>This webapp is not ready for mobile yet, sorry!</div>}
+
         <Transition in={!isRunning} timeout={500}>
           {(state) => (
+            /* TODO: refactor as footer component */
             <div className={`${styles.footer} footer-${state}`}>
               <span className={styles.footerItem}>
                 typeline Typing Test &copy;2021
