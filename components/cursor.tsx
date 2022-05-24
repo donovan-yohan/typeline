@@ -15,9 +15,9 @@ import { TypelineRef } from "interfaces/typeline";
 import { TextTypedPayload } from "./reducers";
 import {
   getActiveLetterIndex,
-  getLastActiveLetterindex,
   isInvalidKey,
   isWordCorrect,
+  isWordIncorrect,
   updateLetterReceived
 } from "utils/cursorUtils";
 import { WordType } from "interfaces/typeline";
@@ -39,6 +39,7 @@ interface Props {
   onLineChange: (linePos: OffsetType) => void;
   textPageHeight: string;
   isValid: boolean;
+  startTime: number;
 }
 
 const IGNORE_START_KEYBOARD_INPUTS = ["Escape", " "];
@@ -56,7 +57,8 @@ export default function Cursor({
   isFirstChar,
   onLineChange,
   textPageHeight,
-  isValid
+  isValid,
+  startTime
 }: Props) {
   const { addTypedState } = useContext(Context);
   const [repeat, setRepeat] = useState(false);
@@ -86,21 +88,22 @@ export default function Cursor({
     // TODO: Handle custom keyboard combos
     if (isInvalidKey(e.key)) return;
 
-    const letters = textTyped[activeWordIndex].letters;
+    const word = textTyped[activeWordIndex];
     if (e.key == " ") {
       e.preventDefault();
-      if (!repeat && getActiveLetterIndex(letters) > 0) {
+      if (!repeat && getActiveLetterIndex(word) > 0) {
         // handle holding character down
         setRepeat(true);
+
         onWordChanged(activeWordIndex + 1);
         addTypedState(e.key);
       }
     } else if (e.key == "Backspace") {
       e.preventDefault();
-      if (getActiveLetterIndex(letters) === 0) {
+      if (getActiveLetterIndex(word) === 0) {
         if (activeWordIndex == 0) return;
         // only allow backspace if last word was incorrect
-        if (!isWordCorrect(textTyped[activeWordIndex - 1])) {
+        if (isWordIncorrect(textTyped[activeWordIndex - 1])) {
           onWordChanged(activeWordIndex - 1);
           addTypedState(e.key);
         }
@@ -108,9 +111,10 @@ export default function Cursor({
         onTextTyped(
           updateLetterReceived(
             activeWordIndex,
-            getLastActiveLetterindex(letters),
+            getActiveLetterIndex(word) - 1,
             textTyped,
-            ""
+            "",
+            new Date().getTime() - startTime
           )
         );
         addTypedState(e.key);
@@ -119,16 +123,19 @@ export default function Cursor({
       onTextTyped(
         updateLetterReceived(
           activeWordIndex,
-          getActiveLetterIndex(letters),
+          getActiveLetterIndex(word),
           textTyped,
-          e.key
+          e.key,
+          new Date().getTime() - startTime
         )
       );
       addTypedState(e.key);
     }
 
     // remove cursor animation when typing
+    console.log(textTyped);
     setShouldAnimateCursor(false);
+    console.log(getActiveLetterIndex(word));
   };
 
   const checkIfHoldingKey = () => {
@@ -231,9 +238,7 @@ export default function Cursor({
           z-index: 97;
           position: absolute;
           display: block;
-          background-color: ${isValid
-            ? "var(--highlight)"
-            : "var(--incorrect)"};
+          background-color: ${isValid ? "var(--highlight)" : "var(--incorrect)"};
           width: 3px;
           height: 3.5em;
           border-radius: 2px;
@@ -241,8 +246,7 @@ export default function Cursor({
           will-change: transform;
         }
         .cursorAnimate {
-          animation: 0.45s cubic-bezier(0.9, 0, 0, 0.9) 0.66s infinite alternate
-            blink;
+          animation: 0.45s cubic-bezier(0.9, 0, 0, 0.9) 0.66s infinite alternate blink;
         }
         .hideCursor {
           opacity: 0;
@@ -294,9 +298,7 @@ export default function Cursor({
         .activeHighlight {
           top: 0;
           position: absolute;
-          background-color: ${isValid
-            ? "var(--highlight)"
-            : "var(--incorrect)"};
+          background-color: ${isValid ? "var(--highlight)" : "var(--incorrect)"};
           opacity: 0.2;
           transition: all 0.25s cubic-bezier(0.33, 0, 0, 1);
           border-radius: 4px;

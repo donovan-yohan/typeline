@@ -1,25 +1,18 @@
-import {
-  LetterState,
-  LetterType,
-  TypelineRef,
-  WordState,
-  WordType
-} from "interfaces/typeline";
+import { LetterType, TypelineRef, WordState, WordType } from "interfaces/typeline";
 import { getWordState } from "utils/cursorUtils";
 
 // implement textDatabase type separate from typedDatabase so typed data can be dynamically sized
 export const EMPTY_LETTER_TYPE: LetterType = {
   value: "",
   received: "",
-  state: LetterState.UNVISITED
+  history: []
 };
 
 export const EMPTY_WORD_TYPE: WordType = {
   value: "",
   letters: [EMPTY_LETTER_TYPE],
   state: WordState.UNVISITED,
-  overflowTotal: 0,
-  overflowRemoved: 0
+  overflow: [] as LetterType[]
 };
 
 export enum CursorActionType {
@@ -36,10 +29,7 @@ export let initialCursorState: CursorState = {
   letterRef: null,
   isFirstChar: true
 };
-export function cursorReducer(
-  state: CursorState,
-  action: CursorSetLetterRefPayload
-) {
+export function cursorReducer(state: CursorState, action: CursorSetLetterRefPayload) {
   switch (action.type) {
     case CursorActionType.UPDATE:
       return {
@@ -83,7 +73,8 @@ export function highlightReducer(
 export enum TextTypedActionType {
   UPDATE = "UPDATE",
   UPDATE_LETTER = "UPDATE_LETTER",
-  INIT = "INIT"
+  INIT = "INIT",
+  UPDATE_OVERFLOW = "UPDATE_OVERFLOW"
 }
 
 export interface TextTypedUpdatePayload {
@@ -97,6 +88,12 @@ export interface TextTypedUpdateLetterPayload {
   targetLetterIndex: number;
   newLetterValue: LetterType;
 }
+export interface TextTypedUpdateOverflowPayload {
+  type: TextTypedActionType.UPDATE_OVERFLOW;
+  targetIndex: number;
+  targetOverflowIndex: number;
+  newOverflowValue: LetterType;
+}
 export interface TextTypedInitPayload {
   type: TextTypedActionType.INIT;
   textData: WordType[];
@@ -105,7 +102,8 @@ export interface TextTypedInitPayload {
 export type TextTypedPayload =
   | TextTypedUpdatePayload
   | TextTypedInitPayload
-  | TextTypedUpdateLetterPayload;
+  | TextTypedUpdateLetterPayload
+  | TextTypedUpdateOverflowPayload;
 
 export function textTypedReducer(state: WordType[], action: TextTypedPayload) {
   switch (action.type) {
@@ -120,21 +118,28 @@ export function textTypedReducer(state: WordType[], action: TextTypedPayload) {
       return state.map((w, i) => {
         if (i === action.targetIndex) {
           let newLetters = w.letters;
-          // handle overflow add
+
           const j = action.targetLetterIndex;
           if (j < newLetters.length) {
             newLetters[j] = action.newLetterValue;
-          } else {
-            newLetters.push(action.newLetterValue);
-            w.overflowTotal += 1;
-          }
-
-          // handle overflow remove
-          if (newLetters[j].value === "" && newLetters[j].received === "") {
-            newLetters.splice(j, 1);
-            w.overflowRemoved += 1;
           }
           w.letters = newLetters;
+          w.state = getWordState(w);
+        }
+        return w;
+      });
+    case TextTypedActionType.UPDATE_OVERFLOW:
+      return state.map((w, i) => {
+        if (i === action.targetIndex) {
+          let newOverflow = w.overflow;
+
+          const j = action.targetOverflowIndex;
+          if (j < newOverflow.length) {
+            newOverflow[j] = action.newOverflowValue;
+          } else {
+            newOverflow.push(action.newOverflowValue);
+          }
+          w.overflow = newOverflow;
           w.state = getWordState(w);
         }
         return w;
@@ -142,6 +147,6 @@ export function textTypedReducer(state: WordType[], action: TextTypedPayload) {
     case TextTypedActionType.INIT:
       return action.textData;
     default:
-      throw new Error(JSON.stringify({ state, action }));
+      return [EMPTY_WORD_TYPE];
   }
 }

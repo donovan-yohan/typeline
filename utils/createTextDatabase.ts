@@ -1,9 +1,4 @@
-import {
-  LetterState,
-  LetterType,
-  WordState,
-  WordType
-} from "interfaces/typeline";
+import { LetterType, WordState, WordType } from "interfaces/typeline";
 
 export function createTextDatabase(text: string[]): WordType[] {
   let textData = text.map((word) => {
@@ -13,12 +8,11 @@ export function createTextDatabase(text: string[]): WordType[] {
         return {
           value: letter,
           received: "",
-          state: LetterState.UNVISITED
+          history: []
         } as LetterType;
       }),
-      state: WordState.UNVISITED,
-      overflowTotal: 0,
-      overflowRemoved: 0
+      overflow: [] as LetterType[],
+      state: WordState.UNVISITED
     } as WordType;
   });
 

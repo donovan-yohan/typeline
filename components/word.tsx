@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useMemo } from "react";
 import Letter from "./letter";
 
 import {
@@ -13,17 +13,19 @@ interface Props {
   active: boolean;
   activeLetterIndex: number;
   letters: LetterType[];
+  overflow: LetterType[];
   wordState: WordState;
   onLetterUpdate: React.Dispatch<CursorSetLetterRefPayload>;
   onWordUpdate: React.Dispatch<HighlightSetWordRefPayload>;
   finished: boolean;
 }
 
-export default React.memo(function Word({
+export default function Word({
   id,
   active,
   activeLetterIndex,
   letters,
+  overflow,
   wordState,
   onLetterUpdate,
   onWordUpdate
@@ -70,7 +72,7 @@ export default React.memo(function Word({
               <Letter
                 id={i}
                 wordId={id}
-                wordString={getTextTypedString(letters)}
+                wordString={getTextTypedString(letters, overflow)}
                 wordState={wordState}
                 isActive={active}
                 letter={letter}
@@ -81,6 +83,25 @@ export default React.memo(function Word({
               />
             );
           })}
+          {/* TODO: how the heck should i do this
+            prop updating is very dumb
+            should I listen to prop for overflow string
+            split it and render each letter
+          */}
+          {overflow.map((letter, index) => (
+            <Letter
+              id={letters.length + index}
+              wordId={id}
+              wordString={getTextTypedString(letters, overflow)}
+              wordState={wordState}
+              isActive={active}
+              letter={letter}
+              onLetterUpdate={onLetterUpdate}
+              isPerfect={isPerfect}
+              isCorrect={isCorrect}
+              key={`${id}-OVERFLOW-${letters.length + index}`}
+            />
+          ))}
         </span>
       </span>
 
@@ -97,4 +118,4 @@ export default React.memo(function Word({
       `}</style>
     </span>
   );
-});
+}

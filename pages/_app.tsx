@@ -1,4 +1,4 @@
-import { TypedData } from "interfaces/typeline";
+import { BACKSPACE_CHAR, TypedData } from "interfaces/typeline";
 import App from "next/app";
 import Head from "next/head";
 import React from "react";
@@ -96,6 +96,7 @@ export default class MyApp extends App {
   addTypedState = (key: string) => {
     const now = new Date().getTime();
     const delay = this.state.lastTime === 0 ? 0 : now - this.state.lastTime;
+    if (key === "Backspace") key = BACKSPACE_CHAR;
 
     const typedState: TypedData = {
       key,

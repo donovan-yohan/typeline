@@ -48,6 +48,7 @@ export default function Home() {
   const [timeTotal, setTimeTotal] = useState(DEFAULT_TIME);
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [startTime, setStartTime] = useState(0);
   const [finished, setFinished] = useState(false);
   const [graphStats, setGraphStats] = useState<GraphStat[]>([]);
   const [isEditing, setIsEditing] = useState(false);
@@ -114,10 +115,7 @@ export default function Home() {
     }, FADE_DURATION);
   };
 
-  const [cursorState, cursorDispatcher] = useReducer(
-    cursorReducer,
-    initialCursorState
-  );
+  const [cursorState, cursorDispatcher] = useReducer(cursorReducer, initialCursorState);
   const [highlightState, highlightDispatcher] = useReducer(
     highlightReducer,
     initialHighlightState
@@ -130,8 +128,7 @@ export default function Home() {
   useDidUpdateEffect(() => {
     if (!finished) {
       if (highlightState.wordRef) {
-        let offsetNode = highlightState.wordRef.current
-          ?.parentNode as HTMLElement | null;
+        let offsetNode = highlightState.wordRef.current?.parentNode as HTMLElement | null;
         if (offsetNode) setCurrentLineHeight(offsetNode.clientHeight);
       }
     }
@@ -181,12 +178,10 @@ export default function Home() {
 
   // HANDLE INITIAL TEXT TYPED
   useDidUpdateEffect(() => {
-    if (
-      !isRunning &&
-      textTyped[0].letters[0] &&
-      textTyped[0].letters[0].received != ""
-    )
+    if (!isRunning && textTyped[0].letters[0] && textTyped[0].letters[0].received != "") {
       setIsRunning(true);
+      setStartTime(new Date().getTime());
+    }
   }, [textTyped[0].letters[0]]);
 
   // CUSTOMIZE SETTINGS
@@ -211,10 +206,7 @@ export default function Home() {
         <Transition in={!isRunning} timeout={500}>
           {(state) => (
             <div className={`${styles.header} header-${state}`}>
-              <Logo
-                colour={theme.values.gray}
-                hoverColour={theme.values.highlight}
-              />
+              <Logo colour={theme.values.gray} hoverColour={theme.values.highlight} />
               <Transition in={!finished} timeout={300}>
                 {(state) => (
                   <div
@@ -279,6 +271,7 @@ export default function Home() {
                       onLineChange={handleLineChange}
                       textPageHeight={textPageHeight}
                       isValid={highlightState.isValid}
+                      startTime={startTime}
                     />
                     <div className={styles.textWrapper}>
                       {textTyped.map((word, i) => {
@@ -292,6 +285,7 @@ export default function Home() {
                             }
                             wordState={word.state}
                             letters={word.letters}
+                            overflow={word.overflow}
                             active={activeWordIndex === i}
                             onLetterUpdate={cursorDispatcher}
                             onWordUpdate={highlightDispatcher}
@@ -315,11 +309,7 @@ export default function Home() {
                         className={`label ${styles.largeScoreLabel} ${styles.highlightLabel}`}
                       >
                         <span>WPM</span>
-                        <span
-                          className={"toolTipIcon"}
-                          data-tip
-                          data-for='trueWpmTip'
-                        >
+                        <span className={"toolTipIcon"} data-tip data-for='trueWpmTip'>
                           ?
                         </span>
                       </span>
@@ -343,9 +333,7 @@ export default function Home() {
                           left uncorrected.
                         </p>
                         <p>
-                          <code>
-                            [correct - (errors - corrected)] / test time
-                          </code>
+                          <code>[correct - (errors - corrected)] / test time</code>
                         </p>
                       </ReactTooltip>
                       <span
@@ -364,11 +352,7 @@ export default function Home() {
                     <div className={styles.smallScore}>
                       <span className={`label ${styles.smallScoreLabel}`}>
                         <span>Raw WPM</span>
-                        <span
-                          className={"toolTipIcon"}
-                          data-tip
-                          data-for='rawWpmTip'
-                        >
+                        <span className={"toolTipIcon"} data-tip data-for='rawWpmTip'>
                           ?
                         </span>
                       </span>
@@ -381,8 +365,8 @@ export default function Home() {
                         textColor={theme.values.main}
                       >
                         <p>
-                          This is your <b>raw average words per minute</b>,
-                          calculated using both <b>correct</b> and{" "}
+                          This is your <b>raw average words per minute</b>, calculated
+                          using both <b>correct</b> and{" "}
                           <span className={styles.miss}>
                             <b>error</b>
                           </span>{" "}
@@ -400,14 +384,8 @@ export default function Home() {
                         </p>
                       </ReactTooltip>
                       <span>
-                        <span
-                          className={`${styles.smallScoreNumber} ${styles.number}`}
-                        >
-                          {calculateRawWPM(
-                            stats.correct + stats.incorrect,
-                            0,
-                            timeTotal
-                          )}
+                        <span className={`${styles.smallScoreNumber} ${styles.number}`}>
+                          {calculateRawWPM(stats.correct + stats.incorrect, 0, timeTotal)}
                         </span>
                         <span
                           className={`${styles.smallScoreNumber} ${styles.number} ${styles.gray}`}
@@ -426,19 +404,14 @@ export default function Home() {
                         className={`${styles.smallScoreNumber} ${styles.highlightLabel} ${styles.number}`}
                       >
                         {(
-                          (stats.correct / (stats.correct + stats.incorrect)) *
-                            100 || 0
+                          (stats.correct / (stats.correct + stats.incorrect)) * 100 || 0
                         ).toLocaleString("en-US", { maximumFractionDigits: 1 })}
                         %
                       </span>
                     </div>
                     <div className={styles.smallScore}>
-                      <span className={`label ${styles.smallScoreLabel}`}>
-                        Correct
-                      </span>
-                      <span
-                        className={`${styles.smallScoreNumber} ${styles.number}`}
-                      >
+                      <span className={`label ${styles.smallScoreLabel}`}>Correct</span>
+                      <span className={`${styles.smallScoreNumber} ${styles.number}`}>
                         {stats.correct || 0}
                       </span>
                     </div>
@@ -495,9 +468,7 @@ export default function Home() {
           {(state) => (
             /* TODO: refactor as footer component */
             <div className={`${styles.footer} footer-${state}`}>
-              <span className={styles.footerItem}>
-                typeline Typing Test &copy;2021
-              </span>
+              <span className={styles.footerItem}>typeline Typing Test &copy;2021</span>
               <span className={styles.footerItem}>
                 Made with love by{" "}
                 <a

@@ -1,22 +1,34 @@
-import { Stat, TypedData, WordType } from "interfaces/typeline";
+import {
+  BACKSPACE_CHAR,
+  LetterState,
+  SPACE_CHAR,
+  Stat,
+  TypedData,
+  WordType
+} from "interfaces/typeline";
 
 export const getAllStats = (
-  typedData: TypedData[],
-  wordDatabase: string[],
-  totalTime: number
+  words: WordType[],
+  totalTime: number // in ms
 ): Stat[] => {
   let currentTime = 0;
 
-  let correct = 0;
-  let incorrect = 0;
-  let corrected = 0;
+  // sort words into indexes based on time
+  let lettersByTime = words.reduce(
+    (acc, cur) => {
+      cur.letters.forEach((letter) => {
+        letter.history.forEach((keystroke) => {
+          const timeIndex = Math.floor(keystroke.timeModified / 1000);
+          if (acc[timeIndex] === undefined) acc[timeIndex] = [];
+          acc[timeIndex].push(keystroke.state);
+        });
+      });
+      return acc;
+    },
+    [[]] as [LetterState[]]
+  );
 
-  // how to handle letters that were corrected?
-  // while (time < 1000)
-  // ...
-  // typedData -> textTyped -> stats
-  // extract cursor functions into utils that can be called with custom reducers/state
-  // takes a letter as a parameter and treats it like a key input
+  
 };
 
 export const getStatAtTime = (
