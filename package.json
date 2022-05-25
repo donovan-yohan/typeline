@@ -13,6 +13,8 @@
   "dependencies": {
     "@babel/plugin-syntax-jsx": "^7.16.7",
     "@babel/preset-env": "^7.16.7",
+    "@emotion/react": "^11.9.0",
+    "@emotion/styled": "^11.8.1",
     "@use-it/interval": "^1.0.0",
     "chart.js": "^3.4.0",
     "classnames": "^2.2.6",
