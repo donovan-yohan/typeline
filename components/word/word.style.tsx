@@ -5,6 +5,8 @@ export const LetterSpan = styled.span<LetterSpanProps>`
   position: relative;
   font-size: 32px;
   color: ${(props) => props.color};
+  opacity: ${(props) => props.opacity};
+  text-decoration: ${(props) => (props.underline ? "underline" : "none")};
 
   &:after {
     display: ${(props) => !props.showWrongLetter && "none"};

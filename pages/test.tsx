@@ -1,53 +1,10 @@
 import Word from "components/word/word.component";
-import React, { SyntheticEvent, useEffect, useState } from "react";
+import React, { SyntheticEvent, useState } from "react";
 
 const expectedString = "The quick brown fox jumps over the lazy dog";
 
 export default function Test() {
   const [inputString, setInputString] = useState("");
-
-  useEffect(() => {
-    console.log(getCurrentInput(inputString));
-    console.log(getCurrentExpected(expectedString, inputString));
-  }, [inputString]);
-
-  const getCurrentInput = (actual: string): string => {
-    const actualArray = actual.split(" ");
-    const [currentActualWord] = actualArray.slice(-1);
-
-    return currentActualWord;
-  };
-
-  const getCurrentExpected = (expected: string, actual: string): string => {
-    const actualArray = actual.split(" ");
-    const currentExpectedIndex = actualArray.length - 1;
-    const currentExpectedWord = expected.split(" ")[currentExpectedIndex];
-
-    return currentExpectedWord;
-  };
-
-  const visualString = (expected: string, actual: string) => {
-    return expected
-      .split("")
-      .map<React.ReactNode>((char, index) => {
-        if (index > actual.length - 1) {
-          return <span style={{ color: "lightgray" }}>{char}</span>;
-        } else if (char === actual[index]) {
-          return (
-            <span key={index} style={{ color: "green" }}>
-              {char}
-            </span>
-          );
-        } else {
-          return (
-            <span key={index} style={{ color: "red", textDecoration: "underline" }}>
-              {actual[index]}
-            </span>
-          );
-        }
-      })
-      .reduce((prev, curr) => [prev, curr]);
-  };
 
   const onSelect = (e: SyntheticEvent) => {
     const input = e.target as HTMLInputElement;
@@ -85,28 +42,43 @@ export default function Test() {
   };
 
   return (
-    <div>
-      <input
-        value={inputString}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyPress}
-        onSelect={onSelect}
-        onMouseDown={onMouseDown}
-      />
-      {expectedString.split(" ").map((expected, index) => {
-        const actualWord = inputString.split(" ")[index];
-        return (
-          <>
-            <Word
-              actual={actualWord || ""}
-              expected={expected}
-              key={`word-${index}`}
-              id={`word-${index}`}
-            />
-          </>
-        );
-      })}
-      <div></div>
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+      }}
+    >
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div>
+          {expectedString.split(" ").map((expected, index) => {
+            const actualWordArray = inputString.split(" ");
+            const actualWord = actualWordArray[index];
+            return (
+              <>
+                <Word
+                  index={index}
+                  activeIndex={actualWordArray.length - 1}
+                  actual={actualWord || ""}
+                  expected={expected}
+                  key={`word-${index}`}
+                  id={`word-${index}`}
+                />
+              </>
+            );
+          })}
+        </div>
+        <input
+          value={inputString}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyPress}
+          onSelect={onSelect}
+          onMouseDown={onMouseDown}
+          style={{ marginTop: "64px" }}
+        />
+      </div>
     </div>
   );
 }
