@@ -2,9 +2,9 @@ import useCounter from "hooks/useCounter";
 import useDidUpdateEffect from "hooks/useDidUpdateEffect";
 import useIsomorphicLayoutEffect from "hooks/useIsomorphicLayoutEffect";
 import { useOffset } from "hooks/useOffset";
-import { useAtom, useSetAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import { wordOffsetAtom } from "pages/test";
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { LetterProps, WordProps } from "./word.definition";
 import { LetterSpan, WordWrapper } from "./word.style";
 
@@ -15,7 +15,6 @@ export const Letter = (props: LetterProps) => {
   const correct = expected === actual;
   const untyped = wordPassed && !correct && !actual;
   const overflow = expected === "";
-  const untyped = wordPassed && !actual;
 
   let color = "lightgray";
   if (wordPerfect) color = "green";
@@ -29,6 +28,7 @@ export const Letter = (props: LetterProps) => {
       expected={expected}
       actual={actual}
       showWrongLetter={!correct && !overflow}
+      underline={untyped}
     >
       {letter}
     </LetterSpan>
@@ -41,7 +41,7 @@ const Word = React.memo((props: WordProps) => {
   const perfect = expected === actual && count === expected.length && passed;
 
   const ref = useRef(null);
-  const offset = useOffset(parentRef, ref);
+  const offset = useOffset(parentRef, ref, [actual, current]);
 
   const setWordOffset = useSetAtom(wordOffsetAtom);
 
@@ -54,7 +54,6 @@ const Word = React.memo((props: WordProps) => {
   }, [current, offset]);
 
   const overflow = actual.slice(expected.length);
-  const passed = index < activeIndex;
 
   return (
     <WordWrapper ref={ref}>

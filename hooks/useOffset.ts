@@ -61,7 +61,12 @@ export const useOffset = <T extends HTMLElement, U extends HTMLElement>(
     }
 
     handleOffset(parent, child);
-  }, [childRef?.current?.offsetHeight, childRef?.current?.offsetWidth, ...properties]);
+  }, [
+    childRef,
+    childRef?.current?.offsetHeight,
+    childRef?.current?.offsetWidth,
+    ...properties
+  ]);
 
   return { left, top, right, bottom } as OffsetType;
 };
