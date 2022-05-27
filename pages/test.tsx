@@ -1,53 +1,53 @@
+import styled from "@emotion/styled";
 import Word from "components/word/word.component";
-import React, { SyntheticEvent, useEffect, useState } from "react";
+import { EmptyOffsetType, OffsetType } from "hooks/useOffset";
+import { atom, useAtom } from "jotai";
+import React, { SyntheticEvent, useEffect, useRef, useState } from "react";
+
+interface KeypressType {
+  key: string;
+  timestamp: number;
+}
+
+interface HighlightProps {
+  offset: OffsetType;
+}
+
+const keypressAtom = atom<KeypressType[]>([]);
+export const wordOffsetAtom = atom<OffsetType>(EmptyOffsetType);
+export const letterOffsetAtom = atom<OffsetType>(EmptyOffsetType);
 
 const expectedString = "The quick brown fox jumps over the lazy dog";
 
+const TextContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+  width: 400px;
+`;
+
+const HighlightStyled = styled.div<HighlightProps>`
+  position: absolute;
+  top: ${(props) => props.offset.top}px;
+  left: ${(props) => props.offset.left}px;
+  width: ${(props) => props.offset.right - props.offset.left}px;
+  height: ${(props) => props.offset.bottom - props.offset.top}px;
+  background-color: yellow;
+  transition: all 0.15s ease-in-out;
+`;
+
+const Highlight = (props: HighlightProps): JSX.Element => <HighlightStyled {...props} />;
+
 export default function Test() {
   const [inputString, setInputString] = useState("");
+  const [keys, setKeys] = useAtom(keypressAtom);
+  const [wordOffset] = useAtom(wordOffsetAtom);
+
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.log(getCurrentInput(inputString));
-    console.log(getCurrentExpected(expectedString, inputString));
-  }, [inputString]);
-
-  const getCurrentInput = (actual: string): string => {
-    const actualArray = actual.split(" ");
-    const [currentActualWord] = actualArray.slice(-1);
-
-    return currentActualWord;
-  };
-
-  const getCurrentExpected = (expected: string, actual: string): string => {
-    const actualArray = actual.split(" ");
-    const currentExpectedIndex = actualArray.length - 1;
-    const currentExpectedWord = expected.split(" ")[currentExpectedIndex];
-
-    return currentExpectedWord;
-  };
-
-  const visualString = (expected: string, actual: string) => {
-    return expected
-      .split("")
-      .map<React.ReactNode>((char, index) => {
-        if (index > actual.length - 1) {
-          return <span style={{ color: "lightgray" }}>{char}</span>;
-        } else if (char === actual[index]) {
-          return (
-            <span key={index} style={{ color: "green" }}>
-              {char}
-            </span>
-          );
-        } else {
-          return (
-            <span key={index} style={{ color: "red", textDecoration: "underline" }}>
-              {actual[index]}
-            </span>
-          );
-        }
-      })
-      .reduce((prev, curr) => [prev, curr]);
-  };
+    console.log(keys);
+  }, [keys]);
 
   const onSelect = (e: SyntheticEvent) => {
     const input = e.target as HTMLInputElement;
@@ -59,23 +59,25 @@ export default function Test() {
     const len = input.value.length;
     const value = input.value.charAt(len - 1);
 
-    if (len === 1) {
-      // Handle first button press
-      if (value === " ") return;
-    } else if (len > 1 && value === " ") {
-      // Reject multiple spaces
-      if (input.value[len - 2] === " ") return;
+    if (inputString.length > len) {
+      setInputString(input.value);
+    } else {
+      if (len === 1) {
+        // Handle first button press
+        if (value === " ") return;
+      } else if (len > 1 && value === " ") {
+        // Reject multiple spaces (and deal with MacOS auto punctuate)
+        if (inputString[len - 2] === " ") return;
 
-      // MacOS autopunctuate fix
-      //   if (input.value[len - 2] === ".") return;
-
-      // Handle space
+        // Handle space
+      }
+      setInputString((inputString) => inputString + value);
     }
-    setInputString(input.value);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key.length > 1 && e.key != "Backspace") e.preventDefault();
+    else setKeys((keys) => [...keys, { key: e.key, timestamp: Date.now() }]);
   };
 
   const onMouseDown = (e: React.MouseEvent) => {
@@ -85,7 +87,7 @@ export default function Test() {
   };
 
   return (
-    <div>
+    <div style={{ margin: "24px" }}>
       <input
         value={inputString}
         onChange={handleInputChange}
@@ -93,20 +95,23 @@ export default function Test() {
         onSelect={onSelect}
         onMouseDown={onMouseDown}
       />
-      {expectedString.split(" ").map((expected, index) => {
-        const actualWord = inputString.split(" ")[index];
-        return (
-          <>
+      <TextContainer ref={ref}>
+        <Highlight offset={wordOffset} />
+        {expectedString.split(" ").map((expected, index) => {
+          const actualWord = inputString.split(" ")[index];
+          return (
             <Word
+              id={`word-${index}`}
               actual={actualWord || ""}
               expected={expected}
+              passed={index < inputString.split(" ").length - 1}
+              current={index === inputString.split(" ").length - 1}
               key={`word-${index}`}
-              id={`word-${index}`}
+              parentRef={ref}
             />
-          </>
-        );
-      })}
-      <div></div>
+          );
+        })}
+      </TextContainer>
     </div>
   );
 }

@@ -1,11 +1,23 @@
-import { useState, useEffect, MutableRefObject, RefObject } from "react";
+import { MutableRefObject, RefObject, useCallback, useEffect, useState } from "react";
+import useIsomorphicLayoutEffect from "./useIsomorphicLayoutEffect";
 
 export interface OffsetType {
   top: number;
   left: number;
   right: number;
   bottom: number;
+  width: number;
+  height: number;
 }
+
+export const EmptyOffsetType = {
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  width: 0,
+  height: 0
+};
 
 export const useOffset = <T extends HTMLElement, U extends HTMLElement>(
   parentRef: MutableRefObject<T> | RefObject<T>,
@@ -17,16 +29,7 @@ export const useOffset = <T extends HTMLElement, U extends HTMLElement>(
   const [right, setRight] = useState(0);
   const [bottom, setBottom] = useState(0);
 
-  useEffect(() => {
-    const parent = parentRef?.current;
-    const child = childRef?.current;
-
-    if (parent && window.getComputedStyle(parent).position === "static") {
-      throw new Error(
-        "parent must have a position other than static! https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetParent"
-      );
-    }
-
+  const handleOffset = useCallback((parent: HTMLElement, child: HTMLElement) => {
     let current: HTMLElement | null | undefined = child;
     let xAcc = 0;
     let yAcc = 0;
@@ -44,12 +47,21 @@ export const useOffset = <T extends HTMLElement, U extends HTMLElement>(
     } else {
       console.warn("Could not find parent from child.");
     }
-  }, [
-    childRef,
-    childRef?.current?.offsetHeight,
-    childRef?.current?.offsetWidth,
-    ...properties
-  ]);
+  }, []);
+
+  useIsomorphicLayoutEffect(() => {
+    const parent = parentRef?.current as HTMLElement;
+    const child = childRef?.current as HTMLElement;
+    console.log("running");
+
+    if (parent && window.getComputedStyle(parent).position === "static") {
+      throw new Error(
+        "parent must have a position other than static! https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetParent"
+      );
+    }
+
+    handleOffset(parent, child);
+  }, [childRef?.current?.offsetHeight, childRef?.current?.offsetWidth, ...properties]);
 
   return { left, top, right, bottom } as OffsetType;
 };

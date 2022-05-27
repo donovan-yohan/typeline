@@ -9,6 +9,7 @@ export const LetterSpan = styled.span<LetterSpanProps>`
   &:after {
     display: ${(props) => !props.showWrongLetter && "none"};
     content: "${(props) => props.actual}";
+    color: red;
     position: absolute;
     width: 100%;
     text-align: center;
@@ -18,6 +19,7 @@ export const LetterSpan = styled.span<LetterSpanProps>`
   }
 `;
 
-export const WordWrapper = styled.span`
-  padding-right: 0.5em;
+export const WordWrapper = styled.div`
+  white-space: nowrap;
+  margin-right: 0.5em;
 `;
