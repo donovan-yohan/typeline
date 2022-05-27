@@ -15,6 +15,7 @@ export const Letter = (props: LetterProps) => {
   const correct = expected === actual;
   const untyped = wordPassed && !correct && !actual;
   const overflow = expected === "";
+  const untyped = wordPassed && !actual;
 
   let color = "lightgray";
   if (wordPerfect) color = "green";
@@ -53,6 +54,7 @@ const Word = React.memo((props: WordProps) => {
   }, [current, offset]);
 
   const overflow = actual.slice(expected.length);
+  const passed = index < activeIndex;
 
   return (
     <WordWrapper ref={ref}>

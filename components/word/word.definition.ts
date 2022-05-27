@@ -1,6 +1,6 @@
-import React from "react";
-
 export interface WordProps {
+  index: number;
+  activeIndex: number;
   expected: string;
   actual: string;
   id: string;
@@ -19,6 +19,8 @@ export interface LetterProps {
 
 export interface LetterSpanProps {
   color: string;
+  opacity: number;
+  underline: boolean;
   actual: string;
   expected: string;
   showWrongLetter: boolean;
